@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 全${officialData.length}干支のシードを開始します...')
+  console.log('🌱 全60干支のシードを開始します...')
 
   const officialData = [
     { id: 1, name: '甲子', title: '知性と意志の強さを併せ持つ、文武両道の独立独歩タイプ', description: ['頭の回転が速く知性豊か', '学問・語学・芸事に才能がある', '向上心が強く独立心旺盛', '意志が強く即断即決できる人', '世のため人のために動く強い正義感がある', '純粋なロマンチスト', '繊細でコツコツ長く物事に打つ', '倹約家であり実務家'] },
