@@ -1,15 +1,28 @@
 import { prisma } from '@/src/lib/prisma';
-import { notFound } from 'next/navigation';
+import { getSession } from '@/src/lib/session';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
+import { logout } from '@/src/app/actions/auth';
 
-// 1. Params の型を Promise に変更
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// 2. async 関数の中で params を await する
 export default async function ResultPage({ params }: PageProps) {
-  // Promise を解凍する
+  // 認証チェック
+  const session = await getSession();
+  if (!session?.userId) {
+    redirect('/login');
+  }
+
+  // ログインユーザー取得
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId as string },
+  });
+  if (!user) {
+    redirect('/login');
+  }
+
   const resolvedParams = await params;
   const id = parseInt(resolvedParams.id);
 
@@ -39,11 +52,9 @@ export default async function ResultPage({ params }: PageProps) {
           </div>
 
           {/* 内容部分 */}
-
-
           <div className="p-8 md:p-12">
             <h2 className="text-xl font-bold text-slate-800 mb-6 border-l-4 border-indigo-500 pl-4">
-              {nickName}さんの主な性格の特徴
+              {user.nickname}さんの主な性格の特徴
             </h2>
 
             <ul className="space-y-3">
@@ -55,13 +66,21 @@ export default async function ResultPage({ params }: PageProps) {
               ))}
             </ul>
 
-            <div className="mt-12 pt-8 border-t border-slate-100 flex justify-center">
-              <Link 
+            <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center">
+              <Link
                 href="/"
                 className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-2 transition-colors"
               >
-                ← 戻って再診断する
+                ← トップへ戻る
               </Link>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  ログアウト
+                </button>
+              </form>
             </div>
           </div>
         </div>
