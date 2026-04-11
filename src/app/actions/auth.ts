@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/src/lib/prisma'
 import { createSession, deleteSession } from '@/src/lib/session'
-import { calculateZodiacId } from '@/src/lib/zodiacCalc'
+import { calculateZodiacId, calculateGenmeiId } from '@/src/lib/zodiacCalc'
 
 type SignupErrors = {
   nickname?: string[]
@@ -62,8 +62,9 @@ export async function signup(
   // パスワードハッシュ化
   const hashedPassword = await bcrypt.hash(password, 10)
 
-  // 干支IDを計算
+  // 干支IDと元命IDを計算
   const zodiacDayId = calculateZodiacId(birthday)
+  const genmeiId = calculateGenmeiId(birthday)
 
   // ユーザー登録
   const user = await prisma.user.create({
@@ -73,6 +74,7 @@ export async function signup(
       password: hashedPassword,
       birthday: new Date(birthday),
       zodiacDayId,
+      genmeiId,
     },
   })
 
@@ -80,7 +82,7 @@ export async function signup(
   await createSession(user.id)
 
   // 結果ページへリダイレクト
-  redirect(`/result/${zodiacDayId}`)
+  redirect('/result')
 }
 
 export async function login(
@@ -111,7 +113,7 @@ export async function login(
   await createSession(user.id)
 
   // 結果ページへリダイレクト
-  redirect(`/result/${user.zodiacDayId}`)
+  redirect('/result')
 }
 
 export async function logout() {

@@ -21,7 +21,16 @@ model User {
   birthTime     String?  // 生まれた時刻
   birthCity     String?  // 生まれた都市
   zodiacDayId   Int?     // 算出された日柱の干支番号（1-60）
+  genmeiId      Int?     // 算出された元命（月柱の地支通変星 1-10）
   createdAt     DateTime @default(now())
+}
+
+// 元命データ（月柱の地支通変星・中心星）
+model GenmeiData {
+  id          Int      @id
+  name        String
+  title       String
+  description String[]
 }
 
 // 60干支のマスターデータ（占い結果用）
