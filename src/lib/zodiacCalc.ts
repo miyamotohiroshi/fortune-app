@@ -1,3 +1,5 @@
+import { getMonthBranchBySetsuiri } from './solarTerms'
+
 /**
  * 生年月日から干支ID(1-60)を算出する
  */
@@ -36,27 +38,6 @@ const CONTROLS = [2, 3, 4, 0, 1]
 // 戌(10)=戊(4), 亥(11)=壬(8)
 const MONTH_BRANCH_MAIN_STEM = [8, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8]
 
-/**
- * 生年月日から月支インデックス(0-11)を取得する
- * 節気の近似日を使用（子=0, 丑=1, 寅=2, ... 亥=11）
- */
-function getMonthBranchIndex(date: Date): number {
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-
-  if (month === 1)  return day <= 5  ? 0 : 1   // 子 or 丑
-  if (month === 2)  return day <= 3  ? 1 : 2   // 丑 or 寅
-  if (month === 3)  return day <= 5  ? 2 : 3   // 寅 or 卯
-  if (month === 4)  return day <= 4  ? 3 : 4   // 卯 or 辰
-  if (month === 5)  return day <= 5  ? 4 : 5   // 辰 or 巳
-  if (month === 6)  return day <= 5  ? 5 : 6   // 巳 or 午
-  if (month === 7)  return day <= 6  ? 6 : 7   // 午 or 未
-  if (month === 8)  return day <= 7  ? 7 : 8   // 未 or 申
-  if (month === 9)  return day <= 7  ? 8 : 9   // 申 or 酉
-  if (month === 10) return day <= 7  ? 9 : 10  // 酉 or 戌
-  if (month === 11) return day <= 6  ? 10 : 11 // 戌 or 亥
-  return day <= 6 ? 11 : 0                     // 亥 or 子（12月）
-}
 
 /**
  * 日干と月支本気の関係から通変星ID(1-10)を算出する
@@ -89,7 +70,7 @@ export function calculateGenmeiId(birthDate: string): number {
   const dayStemIdx = (zodiacId - 1) % 10
 
   // 月支インデックス (0-11)
-  const monthBranchIdx = getMonthBranchIndex(date)
+  const monthBranchIdx = getMonthBranchBySetsuiri(date)
 
   // 月支の本気（天干インデックス）
   const targetStemIdx = MONTH_BRANCH_MAIN_STEM[monthBranchIdx]
