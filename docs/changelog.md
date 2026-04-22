@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-04-22 会員登録不要の試し占いページ追加・結果表示コンポーネント化
+
+### 新規ファイル
+- `src/components/fortune/ZodiacSection.tsx` — 日柱カードの共通コンポーネント
+- `src/components/fortune/GenmeiSection.tsx` — 元命カードの共通コンポーネント
+- `src/app/actions/fortune.ts` — 試し占い用 Server Action（`calculatePreview`）
+- `src/app/try/page.tsx` — 登録不要の試し占いフォームページ（`/try`）
+- `src/app/try/result/page.tsx` — 登録不要の結果表示ページ（`/try/result`）
+
+### 修正ファイル
+- `src/app/result/page.tsx` — 日柱・元命セクションを共通コンポーネントに置き換え
+
+### フロー・補足
+- `/try` → 名前・生年月日を入力 → Server Action が zodiacId・genmeiId を計算 → `/try/result?zodiacId=X&genmeiId=Y&nickname=Z` にリダイレクト
+- `/try/result` は searchParams（URL クエリパラメータ）から ID を受け取り DB から説明文を取得して表示（認証不要）
+- Next.js 16 では `searchParams` は `Promise` 型のため `await searchParams` で取得
+- `/try` および `/try/result` は `proxy.ts` の matcher に含まれないため認証保護対象外
+- `src/components/fortune/` を新設し、再利用可能な Server Component として配置
+
 ## 2026-04-22 Turbopackワークスペースルート誤検知・月支Decemberバグの修正
 
 ### 修正ファイル
