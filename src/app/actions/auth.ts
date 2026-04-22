@@ -42,8 +42,8 @@ export async function signup(
   if (!email || !email.includes('@')) {
     errors.email = ['有効なメールアドレスを入力してください']
   }
-  if (!password || password.length < 6) {
-    errors.password = ['パスワードは6文字以上で入力してください']
+  if (!password || password.length < 8) {
+    errors.password = ['パスワードは8文字以上で入力してください']
   }
   if (!birthday) {
     errors.birthday = ['生年月日を入力してください']
