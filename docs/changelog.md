@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-04-22 Turbopackワークスペースルート誤検知・月支Decemberバグの修正
+
+### 修正ファイル
+- `next.config.ts` — `turbopack.root` を明示設定し、tailwindcss が解決できない問題を修正
+- `src/lib/solarTerms.ts` — 12月大雪以降生まれで月支が亥月になるバグを修正（前年・当年両方の大雪JDをキャッシュ）
+
+### フロー・補足
+- `/Users/admin/package-lock.json` が存在するため Turbopack がルートを `/Users/admin` と誤認し、`tailwindcss` を解決できずに無限エラーループが発生していた。これがMacフリーズの原因
+- `solarTerms.ts` のキャッシュ構造を `Map<branchIndex, jd>` から `{ jd, branchIndex }[]` の昇順配列に変更し、大雪は前年・当年の2件を含めるよう修正
+
 ## 2026-04-16 節入り日を天文計算で正確に算出するよう変更
 
 ### 新規ファイル
