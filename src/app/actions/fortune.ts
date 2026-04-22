@@ -32,6 +32,6 @@ export async function calculatePreview(
   const genmeiId = calculateGenmeiId(birthday)
 
   redirect(
-    `/try/result?zodiacId=${zodiacId}&genmeiId=${genmeiId}&nickname=${encodeURIComponent(nickname.trim())}`
+    `/try/result?zodiacId=${zodiacId}&genmeiId=${genmeiId}&nickname=${encodeURIComponent(nickname.trim())}&birthday=${birthday}`
   )
 }

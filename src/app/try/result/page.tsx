@@ -7,13 +7,19 @@ import { GenmeiSection } from '@/src/components/fortune/GenmeiSection'
 export default async function TryResultPage({
   searchParams,
 }: {
-  searchParams: Promise<{ zodiacId?: string; genmeiId?: string; nickname?: string }>
+  searchParams: Promise<{ zodiacId?: string; genmeiId?: string; nickname?: string; birthday?: string }>
 }) {
-  const { zodiacId: zodiacIdStr, genmeiId: genmeiIdStr, nickname } = await searchParams
+  const { zodiacId: zodiacIdStr, genmeiId: genmeiIdStr, nickname, birthday } = await searchParams
 
   const zodiacId = zodiacIdStr ? parseInt(zodiacIdStr) : null
   const genmeiId = genmeiIdStr ? parseInt(genmeiIdStr) : null
   const displayName = nickname ? decodeURIComponent(nickname) : 'あなた'
+
+  // 会員登録リンクに試し占いで入力した名前・生年月日を引き継ぐ
+  const signupParams = new URLSearchParams()
+  if (nickname) signupParams.set('nickname', nickname)
+  if (birthday) signupParams.set('birthday', birthday)
+  const signupUrl = `/?${signupParams.toString()}`
 
   if (!zodiacId || !genmeiId || isNaN(zodiacId) || isNaN(genmeiId)) {
     notFound()
@@ -41,7 +47,7 @@ export default async function TryResultPage({
           </p>
           <div className="flex gap-3 justify-center">
             <Link
-              href="/"
+              href={signupUrl}
               className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
             >
               会員登録する
