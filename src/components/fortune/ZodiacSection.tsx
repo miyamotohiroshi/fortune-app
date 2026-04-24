@@ -9,21 +9,22 @@ type ZodiacSectionProps = {
 
 export function ZodiacSection({ nickname, zodiac }: ZodiacSectionProps) {
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="bg-indigo-600 p-8 text-center text-white">
-        <p className="text-indigo-200 text-xs font-medium tracking-widest mb-2">日柱</p>
-        <p className="text-indigo-100 text-sm font-medium mb-2">あなたの性格は...?</p>
-        <h1 className="text-5xl font-bold mb-4">{zodiac.name}</h1>
-        <p className="text-lg text-indigo-50 font-medium leading-relaxed">{zodiac.title}</p>
+    <div className="p-6">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-1 h-4 rounded-full bg-indigo-500" />
+        <p className="text-xs text-indigo-400 font-medium tracking-widest">日柱</p>
       </div>
-      <div className="p-8 md:p-12">
-        <h2 className="text-xl font-bold text-slate-800 mb-6 border-l-4 border-indigo-500 pl-4">
-          {nickname}さんの主な性格の特徴
-        </h2>
-        <ul className="space-y-3">
+      <div className="text-center mb-6">
+        <p className="text-slate-500 text-xs mb-2">あなたの性格は…?</p>
+        <h2 className="text-5xl font-bold text-white mb-3">{zodiac.name}</h2>
+        <p className="text-indigo-300 text-sm font-medium">{zodiac.title}</p>
+      </div>
+      <div>
+        <p className="text-xs text-slate-600 mb-3">{nickname}さんの主な性格の特徴</p>
+        <ul className="space-y-2.5">
           {zodiac.description.map((item, index) => (
-            <li key={index} className="flex items-start text-slate-700">
-              <span className="text-indigo-400 mr-2 mt-0.5">•</span>
+            <li key={index} className="flex items-start text-slate-300 text-sm leading-relaxed">
+              <span className="text-indigo-500 mr-2 mt-0.5 shrink-0">•</span>
               {item}
             </li>
           ))}

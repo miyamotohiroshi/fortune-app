@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-04-24 tryページ・結果ページのデザイン変更・セクション再構成
+
+### 新規ファイル
+- `src/components/fortune/ShichusuimeiSection.tsx` — 日柱と通変星を1枚のカードにまとめた「四柱推命」セクション
+
+### 修正ファイル
+- `src/components/fortune/ZodiacSection.tsx` — ダークテーマ対応（サブセクション用に再設計）
+- `src/components/fortune/GenmeiSection.tsx` — ダークテーマ対応（サブセクション用に再設計）
+- `src/app/try/page.tsx` — ダークスペーステーマ適用（トップページと同系統デザイン）
+- `src/app/result/page.tsx` — ダークテーマ + ShichusuimeiSection + 西洋占星術プレースホルダー追加
+- `src/app/try/result/page.tsx` — ダークテーマ + ShichusuimeiSection + グラデーションボーダー会員登録ボタン
+
+### フロー・補足
+- 結果ページのセクション構成: 「四柱推命（日柱+通変星）」→「西洋占星術（近日公開）」の2セクション構成に変更
+- ShichusuimeiSection はグラデーションボーダー（紫→インディゴ）の1枚カードで統一
+- 将来の西洋占星術機能を "COMING SOON" プレースホルダーとして配置済み
+
 ## 2026-04-23 TOPページのデザイン全面リニューアル（ダークスペーステーマ）
 
 ### 修正ファイル
