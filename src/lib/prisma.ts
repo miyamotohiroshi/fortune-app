@@ -1,10 +1,13 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaNeonHttp } from '@prisma/adapter-neon';
+import { PrismaNeonHTTP } from '@prisma/adapter-neon';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
-  const adapter = new PrismaNeonHttp(process.env.POSTGRES_PRISMA_URL!, {});
+  const adapter = new PrismaNeonHTTP(process.env.POSTGRES_PRISMA_URL!, {
+    arrayMode: false,
+    fullResults: false,
+  });
   return new PrismaClient({ adapter });
 }
 
