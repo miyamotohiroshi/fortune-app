@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-06-27 Vercel本番環境のDBエラー修正
+
+### 修正ファイル
+- `package.json` — ビルドスクリプトを `prisma generate && next build` に変更
+- `src/lib/prisma.ts` — サーバーレス向け接続設定追加（`pgbouncer=true`・`connection_limit=1`）、本番でのクエリログ無効化
+
+### 削除ファイル
+- `src/app/api/debug/route.ts` — デバッグ用一時ファイル（DB操作API）
+- `src/app/api/debug-action/route.ts` — デバッグ用スタブ（exportなしでビルドエラーの原因）
+- `src/app/debug-action/actions.ts` / `page.tsx` — デバッグ用テストページ
+
+### フロー・補足
+- 久しぶりの起動後に会員登録フォームを送信すると「サーバーエラー」が発生していた
+- 根本原因: Vercelがnodule_modulesをキャッシュする際、macOS用Prismaバイナリが残りLinux環境で動作しないケースがある
+- `prisma generate` をビルドに組み込むことで毎回正しいバイナリが生成されるよう修正
+- `pgbouncer=true` / `connection_limit=1` を追加しNeon PgBouncer接続を安定化
+
 ## 2026-04-24 tryページ・結果ページのデザイン変更・セクション再構成
 
 ### 新規ファイル
