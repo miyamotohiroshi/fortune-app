@@ -53,22 +53,30 @@ export async function signup(
     return { errors }
   }
 
+  // メールアドレス重複チェック
+  let existingUser
   try {
-    // メールアドレス重複チェック
-    const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) {
-      return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
-    }
+    existingUser = await prisma.user.findUnique({ where: { email } })
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+    return { errors: { general: [`[DEBUG-DB1] ${msg}`] } }
+  }
 
-    // パスワードハッシュ化
-    const hashedPassword = await bcrypt.hash(password, 10)
+  if (existingUser) {
+    return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
+  }
 
-    // 干支IDと元命IDを計算
-    const zodiacDayId = calculateZodiacId(birthday)
-    const genmeiId = calculateGenmeiId(birthday)
+  // パスワードハッシュ化
+  const hashedPassword = await bcrypt.hash(password, 10)
 
-    // ユーザー登録
-    const user = await prisma.user.create({
+  // 干支IDと元命IDを計算
+  const zodiacDayId = calculateZodiacId(birthday)
+  const genmeiId = calculateGenmeiId(birthday)
+
+  // ユーザー登録
+  let user
+  try {
+    user = await prisma.user.create({
       data: {
         nickname: nickname.trim(),
         email,
@@ -78,12 +86,17 @@ export async function signup(
         genmeiId,
       },
     })
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+    return { errors: { general: [`[DEBUG-DB2] ${msg}`] } }
+  }
 
-    // セッション作成
+  // セッション作成
+  try {
     await createSession(user.id)
   } catch (e) {
     const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-    return { errors: { general: [`[DEBUG] ${msg}`] } }
+    return { errors: { general: [`[DEBUG-SESSION] ${msg}`] } }
   }
 
   // 結果ページへリダイレクト
@@ -103,7 +116,14 @@ export async function login(
   }
 
   // ユーザー検索
-  const user = await prisma.user.findUnique({ where: { email } })
+  let user
+  try {
+    user = await prisma.user.findUnique({ where: { email } })
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+    return { errors: { general: [`[DEBUG-DB] ${msg}`] } }
+  }
+
   if (!user) {
     return { errors: { general: ['メールアドレスまたはパスワードが正しくありません'] } }
   }
