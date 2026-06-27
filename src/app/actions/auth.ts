@@ -28,79 +28,94 @@ export async function signup(
   _state: SignupFormState,
   formData: FormData
 ): Promise<SignupFormState> {
-  const nickname = formData.get('nickname') as string
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-  const birthday = formData.get('birthday') as string
-
-  // バリデーション
-  const errors: SignupErrors = {}
-
-  if (!nickname || nickname.trim().length < 1) {
-    errors.nickname = ['名前を入力してください']
-  }
-  if (!email || !email.includes('@')) {
-    errors.email = ['有効なメールアドレスを入力してください']
-  }
-  if (!password || password.length < 8) {
-    errors.password = ['パスワードは8文字以上で入力してください']
-  }
-  if (!birthday) {
-    errors.birthday = ['生年月日を入力してください']
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { errors }
-  }
-
-  // メールアドレス重複チェック
-  let existingUser
   try {
-    existingUser = await prisma.user.findUnique({ where: { email } })
-  } catch (e) {
-    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-    return { errors: { general: [`[DEBUG-DB1] ${msg}`] } }
+    const nickname = formData.get('nickname') as string
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const birthday = formData.get('birthday') as string
+
+    // バリデーション
+    const errors: SignupErrors = {}
+
+    if (!nickname || nickname.trim().length < 1) {
+      errors.nickname = ['名前を入力してください']
+    }
+    if (!email || !email.includes('@')) {
+      errors.email = ['有効なメールアドレスを入力してください']
+    }
+    if (!password || password.length < 8) {
+      errors.password = ['パスワードは8文字以上で入力してください']
+    }
+    if (!birthday) {
+      errors.birthday = ['生年月日を入力してください']
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return { errors }
+    }
+
+    // メールアドレス重複チェック
+    let existingUser
+    try {
+      existingUser = await prisma.user.findUnique({ where: { email } })
+    } catch (e) {
+      const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+      return { errors: { general: [`[DEBUG-DB1] ${msg}`] } }
+    }
+
+    if (existingUser) {
+      return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
+    }
+
+    // パスワードハッシュ化
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // 干支IDと元命IDを計算
+    const zodiacDayId = calculateZodiacId(birthday)
+    const genmeiId = calculateGenmeiId(birthday)
+
+    // ユーザー登録
+    let user
+    try {
+      user = await prisma.user.create({
+        data: {
+          nickname: nickname.trim(),
+          email,
+          password: hashedPassword,
+          birthday: new Date(birthday),
+          zodiacDayId,
+          genmeiId,
+        },
+      })
+    } catch (e) {
+      const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+      return { errors: { general: [`[DEBUG-DB2] ${msg}`] } }
+    }
+
+    // セッション作成
+    try {
+      await createSession(user.id)
+    } catch (e) {
+      const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+      return { errors: { general: [`[DEBUG-SESSION] ${msg}`] } }
+    }
+
+    // 結果ページへリダイレクト
+    redirect('/result')
+  } catch (outerError: unknown) {
+    // redirect() はエラーをthrowするのでそのまま再throw
+    if (
+      outerError instanceof Error &&
+      typeof (outerError as { digest?: string }).digest === 'string'
+    ) {
+      throw outerError
+    }
+    const msg =
+      outerError instanceof Error
+        ? `${outerError.constructor.name}: ${outerError.message}`
+        : String(outerError)
+    return { errors: { general: [`[DEBUG-OUTER] ${msg}`] } }
   }
-
-  if (existingUser) {
-    return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
-  }
-
-  // パスワードハッシュ化
-  const hashedPassword = await bcrypt.hash(password, 10)
-
-  // 干支IDと元命IDを計算
-  const zodiacDayId = calculateZodiacId(birthday)
-  const genmeiId = calculateGenmeiId(birthday)
-
-  // ユーザー登録
-  let user
-  try {
-    user = await prisma.user.create({
-      data: {
-        nickname: nickname.trim(),
-        email,
-        password: hashedPassword,
-        birthday: new Date(birthday),
-        zodiacDayId,
-        genmeiId,
-      },
-    })
-  } catch (e) {
-    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-    return { errors: { general: [`[DEBUG-DB2] ${msg}`] } }
-  }
-
-  // セッション作成
-  try {
-    await createSession(user.id)
-  } catch (e) {
-    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-    return { errors: { general: [`[DEBUG-SESSION] ${msg}`] } }
-  }
-
-  // 結果ページへリダイレクト
-  redirect('/result')
 }
 
 export async function login(
