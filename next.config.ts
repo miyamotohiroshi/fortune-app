@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     // /Users/admin/package-lock.json が存在するため Turbopack がルートを誤検知する問題を修正
     root: path.resolve(__dirname),
   },
+  serverExternalPackages: ['@prisma/client', '@prisma/adapter-neon', '@neondatabase/serverless'],
 };
 
 export default nextConfig;

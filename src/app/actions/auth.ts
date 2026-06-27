@@ -53,33 +53,38 @@ export async function signup(
     return { errors }
   }
 
-  // メールアドレス重複チェック
-  const existing = await prisma.user.findUnique({ where: { email } })
-  if (existing) {
-    return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
+  try {
+    // メールアドレス重複チェック
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
+    }
+
+    // パスワードハッシュ化
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // 干支IDと元命IDを計算
+    const zodiacDayId = calculateZodiacId(birthday)
+    const genmeiId = calculateGenmeiId(birthday)
+
+    // ユーザー登録
+    const user = await prisma.user.create({
+      data: {
+        nickname: nickname.trim(),
+        email,
+        password: hashedPassword,
+        birthday: new Date(birthday),
+        zodiacDayId,
+        genmeiId,
+      },
+    })
+
+    // セッション作成
+    await createSession(user.id)
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
+    return { errors: { general: [`[DEBUG] ${msg}`] } }
   }
-
-  // パスワードハッシュ化
-  const hashedPassword = await bcrypt.hash(password, 10)
-
-  // 干支IDと元命IDを計算
-  const zodiacDayId = calculateZodiacId(birthday)
-  const genmeiId = calculateGenmeiId(birthday)
-
-  // ユーザー登録
-  const user = await prisma.user.create({
-    data: {
-      nickname: nickname.trim(),
-      email,
-      password: hashedPassword,
-      birthday: new Date(birthday),
-      zodiacDayId,
-      genmeiId,
-    },
-  })
-
-  // セッション作成
-  await createSession(user.id)
 
   // 結果ページへリダイレクト
   redirect('/result')
