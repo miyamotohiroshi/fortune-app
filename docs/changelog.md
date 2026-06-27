@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-27 NeonサーバーレスHTTPドライバーへの切り替え（コールドスタート問題の根本解決）
+
+### 新規依存パッケージ
+- `@neondatabase/serverless` — HTTP経由でNeonに接続するドライバー
+- `@prisma/adapter-neon` — PrismaとNeonドライバーをつなぐアダプター
+
+### 修正ファイル
+- `src/lib/prisma.ts` — `PrismaNeonHttp` アダプターを使用するよう変更。TCP接続からHTTP接続に切り替え
+
+### フロー・補足
+- Neon無料プランは5分無操作でDB自動停止 → 起動に5〜10秒かかる → Vercelの10秒タイムアウトを超えてエラー
+- TCPではなくHTTPでDBと通信することでコールドスタートの遅延を回避
+- `prisma/schema.prisma` の `driverAdapters` previewFeature は Prisma 6 でGA済みのため不要（追加せず）
+
 ## 2026-06-27 Vercel本番環境のDBエラー修正
 
 ### 修正ファイル
