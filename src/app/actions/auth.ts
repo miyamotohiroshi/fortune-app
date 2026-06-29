@@ -103,16 +103,9 @@ export async function signup(
     // 結果ページへリダイレクト
     redirect('/result')
   } catch (outerError: unknown) {
-    // redirect() はエラーをthrowするのでそのまま再throw
-    if (
-      outerError instanceof Error &&
-      typeof (outerError as { digest?: string }).digest === 'string'
-    ) {
-      throw outerError
-    }
     const msg =
       outerError instanceof Error
-        ? `${outerError.constructor.name}: ${outerError.message}`
+        ? `${outerError.constructor.name}: ${outerError.message} | digest=${(outerError as { digest?: string }).digest ?? 'none'}`
         : String(outerError)
     return { errors: { general: [`[DEBUG-OUTER] ${msg}`] } }
   }
