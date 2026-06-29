@@ -243,44 +243,48 @@ function SignupForm() {
       </p>
 
       {/* ── メールアドレス（フローティングラベル） ── */}
-      <div>
-        <div className="relative">
-          <input
-            id="email"
-            type="email"
-            name="email"
-            placeholder=" "
-            className={floatingInputClass}
-          />
-          <label htmlFor="email" className={floatingLabelClass}>
-            メールアドレス
-          </label>
+      <div className="flex justify-center" style={{ marginTop: '40px' }}>
+        <div className="w-[85%]">
+          <div className="relative">
+            <input
+              id="email"
+              type="email"
+              name="email"
+              placeholder=" "
+              className={floatingInputClass}
+            />
+            <label htmlFor="email" className={floatingLabelClass}>
+              メールアドレス
+            </label>
+          </div>
+          {state?.errors?.email && <p className="mt-1 text-xs text-red-400">{state.errors.email[0]}</p>}
         </div>
-        {state?.errors?.email && <p className="mt-1 text-xs text-red-400">{state.errors.email[0]}</p>}
       </div>
 
       {/* ── パスワード（フローティングラベル） ── */}
-      <div>
-        <div className="relative">
-          <input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            name="password"
-            placeholder=" "
-            className={`${floatingInputClass} pr-12`}
-          />
-          <label htmlFor="password" className={floatingLabelClass}>
-            パスワード（8文字以上）
-          </label>
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
-          >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-          </button>
+      <div className="flex justify-center" style={{ marginBottom: '40px' }}>
+        <div className="w-[85%]">
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder=" "
+              className={`${floatingInputClass} pr-12`}
+            />
+            <label htmlFor="password" className={floatingLabelClass}>
+              パスワード（8文字以上）
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          </div>
+          {state?.errors?.password && <p className="mt-1 text-xs text-red-400">{state.errors.password[0]}</p>}
         </div>
-        {state?.errors?.password && <p className="mt-1 text-xs text-red-400">{state.errors.password[0]}</p>}
       </div>
 
       {state?.errors?.general && (
