@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/src/lib/prisma'
 import { createSession, deleteSession } from '@/src/lib/session'
@@ -28,9 +29,6 @@ export async function signup(
   _state: SignupFormState,
   formData: FormData
 ): Promise<SignupFormState> {
-  // 最小診断: モジュール読み込みエラーかどうかを確認
-  return { errors: { general: ['[DIAG] function reached'] } }
-  // eslint-disable-next-line no-unreachable
   try {
     const nickname = formData.get('nickname') as string
     const email = formData.get('email') as string
@@ -58,15 +56,8 @@ export async function signup(
     }
 
     // メールアドレス重複チェック
-    let existingUser
-    try {
-      existingUser = await prisma.user.findUnique({ where: { email } })
-    } catch (e) {
-      const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-      return { errors: { general: [`[DEBUG-DB1] ${msg}`] } }
-    }
-
-    if (existingUser) {
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
       return { errors: { email: ['このメールアドレスはすでに登録されています'] } }
     }
 
@@ -78,39 +69,26 @@ export async function signup(
     const genmeiId = calculateGenmeiId(birthday)
 
     // ユーザー登録
-    let user
-    try {
-      user = await prisma.user.create({
-        data: {
-          nickname: nickname.trim(),
-          email,
-          password: hashedPassword,
-          birthday: new Date(birthday),
-          zodiacDayId,
-          genmeiId,
-        },
-      })
-    } catch (e) {
-      const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-      return { errors: { general: [`[DEBUG-DB2] ${msg}`] } }
-    }
+    const user = await prisma.user.create({
+      data: {
+        nickname: nickname.trim(),
+        email,
+        password: hashedPassword,
+        birthday: new Date(birthday),
+        zodiacDayId,
+        genmeiId,
+      },
+    })
 
     // セッション作成
-    try {
-      await createSession(user.id)
-    } catch (e) {
-      const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-      return { errors: { general: [`[DEBUG-SESSION] ${msg}`] } }
-    }
+    await createSession(user.id)
 
     // 結果ページへリダイレクト
     redirect('/result')
-  } catch (outerError: unknown) {
-    const msg =
-      outerError instanceof Error
-        ? `${outerError.constructor.name}: ${outerError.message} | digest=${(outerError as { digest?: string }).digest ?? 'none'}`
-        : String(outerError)
-    return { errors: { general: [`[DEBUG-OUTER] ${msg}`] } }
+  } catch (e: unknown) {
+    if (isRedirectError(e)) throw e
+    const msg = e instanceof Error ? e.message : String(e)
+    return { errors: { general: [`登録に失敗しました: ${msg}`] } }
   }
 }
 
@@ -118,38 +96,37 @@ export async function login(
   _state: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-
-  // バリデーション
-  if (!email || !password) {
-    return { errors: { general: ['メールアドレスとパスワードを入力してください'] } }
-  }
-
-  // ユーザー検索
-  let user
   try {
-    user = await prisma.user.findUnique({ where: { email } })
-  } catch (e) {
-    const msg = e instanceof Error ? `${e.constructor.name}: ${e.message}` : String(e)
-    return { errors: { general: [`[DEBUG-DB] ${msg}`] } }
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    // バリデーション
+    if (!email || !password) {
+      return { errors: { general: ['メールアドレスとパスワードを入力してください'] } }
+    }
+
+    // ユーザー検索
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user) {
+      return { errors: { general: ['メールアドレスまたはパスワードが正しくありません'] } }
+    }
+
+    // パスワード確認
+    const passwordMatch = await bcrypt.compare(password, user.password)
+    if (!passwordMatch) {
+      return { errors: { general: ['メールアドレスまたはパスワードが正しくありません'] } }
+    }
+
+    // セッション作成
+    await createSession(user.id)
+
+    // 結果ページへリダイレクト
+    redirect('/result')
+  } catch (e: unknown) {
+    if (isRedirectError(e)) throw e
+    const msg = e instanceof Error ? e.message : String(e)
+    return { errors: { general: [`ログインに失敗しました: ${msg}`] } }
   }
-
-  if (!user) {
-    return { errors: { general: ['メールアドレスまたはパスワードが正しくありません'] } }
-  }
-
-  // パスワード確認
-  const passwordMatch = await bcrypt.compare(password, user.password)
-  if (!passwordMatch) {
-    return { errors: { general: ['メールアドレスまたはパスワードが正しくありません'] } }
-  }
-
-  // セッション作成
-  await createSession(user.id)
-
-  // 結果ページへリダイレクト
-  redirect('/result')
 }
 
 export async function logout() {
