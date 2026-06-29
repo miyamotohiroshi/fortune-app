@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-06-30 サインアップ500エラーの根本修正
+
+### 修正ファイル
+- `src/app/actions/auth.ts` — 診断コードを削除し、`isRedirectError`で`redirect()`を正しく再スロー。`try/catch`を外側1つに整理し、TypeScript TS18046エラー（`e.constructor.name`）を解消
+
+### 環境変数
+- Vercel本番環境に`SESSION_SECRET`を追加（jose JWT署名に必須）
+
+### フロー・補足
+- **根本原因**: `SESSION_SECRET`がVercelに未設定 → `createSession()`内でjoseがHS256署名時に「キーが短すぎる」エラーをスロー → auth.tsにエラーハンドリングがなかったため500が返っていた
+- **二次問題**: デバッグ過程で追加した`e.constructor.name`アクセスがTypeScript 5.9.3のTS18046エラーを引き起こし、複数コミットでVercelビルドが失敗し続けていた
+- 修正後は`createSession`エラーや他の例外がフォームエラーとして表示され、`redirect()`は正常に動作する
+
 ## 2026-06-27 NeonサーバーレスHTTPドライバーへの切り替え（コールドスタート問題の根本解決）
 
 ### 新規依存パッケージ
