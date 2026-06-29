@@ -155,7 +155,11 @@ function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const searchParams = useSearchParams()
   const prefillNickname = searchParams.get('nickname') ?? ''
-  const prefillBirthday = searchParams.get('birthday') ?? ''
+  // YYYY-MM-DD 形式で来た場合は YYYYMMDD に変換
+  const rawBirthday = searchParams.get('birthday') ?? ''
+  const prefillBirthday = rawBirthday.match(/^\d{4}-\d{2}-\d{2}$/)
+    ? rawBirthday.replace(/-/g, '')
+    : rawBirthday
 
   const inputClass =
     'w-full bg-[#1a1a3a] border border-purple-900/40 rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/30 transition-all'
@@ -181,12 +185,15 @@ function SignupForm() {
         />
       </FormField>
 
-      <FormField icon={<CalendarIcon />} label="生年月日" error={state?.errors?.birthday?.[0]}>
+      <FormField icon={<CalendarIcon />} label="生年月日（例: 19870805）" error={state?.errors?.birthday?.[0]}>
         <input
-          type="date"
+          type="text"
           name="birthday"
+          inputMode="numeric"
+          maxLength={8}
+          placeholder="19870805"
           defaultValue={prefillBirthday}
-          className={`${inputClass} [color-scheme:dark]`}
+          className={inputClass}
         />
       </FormField>
 

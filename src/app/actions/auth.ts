@@ -33,7 +33,7 @@ export async function signup(
     const nickname = formData.get('nickname') as string
     const email = formData.get('email') as string
     const password = formData.get('password') as string
-    const birthday = formData.get('birthday') as string
+    const birthdayRaw = (formData.get('birthday') as string).trim()
     const birthHour = (formData.get('birthHour') as string).trim()
     const birthMinute = (formData.get('birthMinute') as string).trim()
     const birthTime =
@@ -54,8 +54,23 @@ export async function signup(
     if (!password || password.length < 8) {
       errors.password = ['パスワードは8文字以上で入力してください']
     }
-    if (!birthday) {
-      errors.birthday = ['生年月日を入力してください']
+
+    // 生年月日: 8桁数字 (YYYYMMDD) を検証してDateに変換
+    let birthdayDate: Date | undefined
+    let birthdayIso: string | undefined
+    if (!birthdayRaw || !/^\d{8}$/.test(birthdayRaw)) {
+      errors.birthday = ['生年月日を8桁の数字で入力してください（例: 19870805）']
+    } else {
+      const y = parseInt(birthdayRaw.slice(0, 4), 10)
+      const m = parseInt(birthdayRaw.slice(4, 6), 10) - 1
+      const d = parseInt(birthdayRaw.slice(6, 8), 10)
+      const parsed = new Date(y, m, d)
+      if (parsed.getFullYear() !== y || parsed.getMonth() !== m || parsed.getDate() !== d) {
+        errors.birthday = ['有効な生年月日を入力してください']
+      } else {
+        birthdayDate = parsed
+        birthdayIso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -72,8 +87,8 @@ export async function signup(
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // 干支IDと元命IDを計算
-    const zodiacDayId = calculateZodiacId(birthday)
-    const genmeiId = calculateGenmeiId(birthday)
+    const zodiacDayId = calculateZodiacId(birthdayIso!)
+    const genmeiId = calculateGenmeiId(birthdayIso!)
 
     // ユーザー登録
     const user = await prisma.user.create({
@@ -81,7 +96,7 @@ export async function signup(
         nickname: nickname.trim(),
         email,
         password: hashedPassword,
-        birthday: new Date(birthday),
+        birthday: birthdayDate!,
         birthTime,
         birthCity,
         zodiacDayId,
