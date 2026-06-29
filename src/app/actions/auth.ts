@@ -34,6 +34,8 @@ export async function signup(
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const birthday = formData.get('birthday') as string
+    const birthTime = (formData.get('birthTime') as string) || null
+    const birthCity = (formData.get('birthCity') as string) || null
 
     // バリデーション
     const errors: SignupErrors = {}
@@ -75,6 +77,8 @@ export async function signup(
         email,
         password: hashedPassword,
         birthday: new Date(birthday),
+        birthTime,
+        birthCity,
         zodiacDayId,
         genmeiId,
       },

@@ -57,6 +57,68 @@ function EyeIcon() {
   )
 }
 
+function ClockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+}
+
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+    </svg>
+  )
+}
+
+// ─── 都市リスト ───────────────────────────────────────────────────────────────
+
+const CITY_REGIONS = [
+  {
+    label: '北海道',
+    cities: ['札幌', '函館', '旭川'],
+  },
+  {
+    label: '東北',
+    cities: ['青森', '盛岡', '仙台', '秋田', '山形', '福島'],
+  },
+  {
+    label: '関東',
+    cities: ['東京', '横浜', 'さいたま', '千葉', '水戸', '宇都宮', '前橋'],
+  },
+  {
+    label: '中部',
+    cities: ['新潟', '富山', '金沢', '福井', '甲府', '長野', '岐阜', '静岡', '浜松', '名古屋', '津'],
+  },
+  {
+    label: '近畿',
+    cities: ['大津', '京都', '大阪', '堺', '神戸', '奈良', '和歌山'],
+  },
+  {
+    label: '中国',
+    cities: ['鳥取', '松江', '岡山', '広島', '山口'],
+  },
+  {
+    label: '四国',
+    cities: ['徳島', '高松', '松山', '高知'],
+  },
+  {
+    label: '九州・沖縄',
+    cities: ['福岡', '佐賀', '長崎', '熊本', '大分', '宮崎', '鹿児島', '那覇'],
+  },
+  {
+    label: '海外',
+    cities: [
+      'ニューヨーク', 'ロサンゼルス', 'ロンドン', 'パリ', 'ベルリン',
+      'ソウル', '北京', '上海', '台北', '香港', 'バンコク', 'シンガポール',
+      'シドニー', 'ムンバイ',
+    ],
+  },
+]
+
 // ─── フォームフィールド ────────────────────────────────────────────────────────
 
 function FormField({
@@ -117,6 +179,31 @@ function SignupForm() {
           defaultValue={prefillBirthday}
           className={`${inputClass} [color-scheme:dark]`}
         />
+      </FormField>
+
+      <FormField icon={<ClockIcon />} label="生まれた時間（西洋占星術に必要）" error={undefined}>
+        <input
+          type="time"
+          name="birthTime"
+          className={`${inputClass} [color-scheme:dark]`}
+        />
+      </FormField>
+
+      <FormField icon={<MapPinIcon />} label="生まれた都市（西洋占星術に必要）" error={undefined}>
+        <select
+          name="birthCity"
+          className={`${inputClass} appearance-none`}
+          defaultValue=""
+        >
+          <option value="" disabled>選択してください</option>
+          {CITY_REGIONS.map(({ label, cities }) => (
+            <optgroup key={label} label={label}>
+              {cities.map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
       </FormField>
 
       <FormField icon={<MailIcon />} label="メールアドレス" error={state?.errors?.email?.[0]}>
