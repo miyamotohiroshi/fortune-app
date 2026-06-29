@@ -160,6 +160,15 @@ function SignupForm() {
   const inputClass =
     'w-full bg-[#1a1a3a] border border-purple-900/40 rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/30 transition-all'
 
+  const numInputClass =
+    'w-16 bg-[#1a1a3a] border border-purple-900/40 rounded-xl px-3 py-3 text-white placeholder-slate-600 text-sm text-center focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/30 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+
+  const floatingInputClass =
+    'peer w-full bg-[#1a1a3a] border border-purple-900/40 rounded-xl px-4 pt-5 pb-2 h-[54px] text-white text-sm focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/30 transition-all'
+
+  const floatingLabelClass =
+    'absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-all duration-150 peer-focus:top-3 peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:text-purple-400 peer-[&:not(:placeholder-shown)]:top-3 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:text-[10px] peer-[&:not(:placeholder-shown)]:text-slate-400'
+
   return (
     <form action={action} className="space-y-4">
       <FormField icon={<PersonIcon />} label="名前（ニックネーム可）" error={state?.errors?.nickname?.[0]}>
@@ -181,15 +190,37 @@ function SignupForm() {
         />
       </FormField>
 
-      <FormField icon={<ClockIcon />} label="生まれた時間（西洋占星術に必要）" error={undefined}>
-        <input
-          type="time"
-          name="birthTime"
-          className={`${inputClass} [color-scheme:dark]`}
-        />
+      {/* ── 任意項目の区切り ── */}
+      <div className="flex items-center gap-2 py-0.5">
+        <div className="flex-1 h-px bg-purple-900/30" />
+        <span className="text-xs text-slate-500 shrink-0 px-1">─ 分かる場合のみ ─</span>
+        <div className="flex-1 h-px bg-purple-900/30" />
+      </div>
+
+      <FormField icon={<ClockIcon />} label="生まれた時間" error={undefined}>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            name="birthHour"
+            min={0}
+            max={23}
+            placeholder="--"
+            className={numInputClass}
+          />
+          <span className="text-slate-400 text-sm shrink-0">時</span>
+          <input
+            type="number"
+            name="birthMinute"
+            min={0}
+            max={59}
+            placeholder="--"
+            className={numInputClass}
+          />
+          <span className="text-slate-400 text-sm shrink-0">分</span>
+        </div>
       </FormField>
 
-      <FormField icon={<MapPinIcon />} label="生まれた都市（西洋占星術に必要）" error={undefined}>
+      <FormField icon={<MapPinIcon />} label="生まれた都市" error={undefined}>
         <select
           name="birthCity"
           className={`${inputClass} appearance-none`}
@@ -206,23 +237,41 @@ function SignupForm() {
         </select>
       </FormField>
 
-      <FormField icon={<MailIcon />} label="メールアドレス" error={state?.errors?.email?.[0]}>
-        <input
-          type="email"
-          name="email"
-          placeholder="例）sora@example.com"
-          className={inputClass}
-        />
-      </FormField>
+      <p className="text-xs text-slate-500 leading-relaxed ml-[52px] -mt-1">
+        ※時間や都市が分かるとより精度が上がります。<br />
+        都市は同経度の場所や近い所でOK
+      </p>
 
-      <FormField icon={<LockIcon />} label="パスワード" error={state?.errors?.password?.[0]}>
+      {/* ── メールアドレス（フローティングラベル） ── */}
+      <div>
         <div className="relative">
           <input
+            id="email"
+            type="email"
+            name="email"
+            placeholder=" "
+            className={floatingInputClass}
+          />
+          <label htmlFor="email" className={floatingLabelClass}>
+            メールアドレス
+          </label>
+        </div>
+        {state?.errors?.email && <p className="mt-1 text-xs text-red-400">{state.errors.email[0]}</p>}
+      </div>
+
+      {/* ── パスワード（フローティングラベル） ── */}
+      <div>
+        <div className="relative">
+          <input
+            id="password"
             type={showPassword ? 'text' : 'password'}
             name="password"
-            placeholder="半角英数字8文字以上"
-            className={`${inputClass} pr-12`}
+            placeholder=" "
+            className={`${floatingInputClass} pr-12`}
           />
+          <label htmlFor="password" className={floatingLabelClass}>
+            パスワード（8文字以上）
+          </label>
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
@@ -231,14 +280,14 @@ function SignupForm() {
             {showPassword ? <EyeOffIcon /> : <EyeIcon />}
           </button>
         </div>
-      </FormField>
+        {state?.errors?.password && <p className="mt-1 text-xs text-red-400">{state.errors.password[0]}</p>}
+      </div>
 
       {state?.errors?.general && (
         <p className="text-xs text-red-400 text-center">{state.errors.general[0]}</p>
       )}
 
       <div className="pt-2">
-        {/* グラデーションボーダー: 1px のグラデーション背景を持つラッパーの中にボタンを配置 */}
         <div
           className={`rounded-xl p-px transition-opacity duration-200 ${pending ? 'opacity-60' : ''}`}
           style={{

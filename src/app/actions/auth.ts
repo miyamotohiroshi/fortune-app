@@ -34,7 +34,12 @@ export async function signup(
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const birthday = formData.get('birthday') as string
-    const birthTime = (formData.get('birthTime') as string) || null
+    const birthHour = (formData.get('birthHour') as string).trim()
+    const birthMinute = (formData.get('birthMinute') as string).trim()
+    const birthTime =
+      birthHour !== '' && birthMinute !== ''
+        ? `${birthHour.padStart(2, '0')}:${birthMinute.padStart(2, '0')}`
+        : null
     const birthCity = (formData.get('birthCity') as string) || null
 
     // バリデーション
