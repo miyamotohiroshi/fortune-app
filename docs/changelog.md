@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-06-30 西洋占星術の基本実装（天体位置・アスペクト・トリプル）
+
+### 新規ファイル
+- `src/lib/astrology/constants.ts` — PLANET_KEYS, ASPECT_ANGLES, オーブ重みなど定数定義
+- `src/lib/astrology/cities.ts` — 都市別の緯度経度テーブル（日本全国 + 主要海外都市）
+- `src/lib/astrology/planets.ts` — astronomy-engine を使って全12天体（太陽〜MC）の黄道経度を計算
+- `src/lib/astrology/aspects.ts` — ペア・トリプルアスペクト検出ロジック（オーブ規則適用）
+- `src/components/fortune/WesternAstrologySection.tsx` — 結果ページ用 Server Component
+- `prisma/astrology-seed.ts` — AspectPairData (462件) + AspectTripleData (220件) のシードスクリプト
+
+### 修正ファイル
+- `prisma/schema.prisma` — `AspectPairData` / `AspectTripleData` モデルを追加
+- `src/app/result/page.tsx` — 「COMING SOON」プレースホルダーを `WesternAstrologySection` に置き換え
+- `package.json` — `seed:astrology` スクリプトを追加（`npx tsx prisma/astrology-seed.ts`）
+
+### フロー・補足
+- 天体位置: `SunPosition` / `GeoVector + Ecliptic` で黄道経度を取得、12星座に変換して表示
+- ASC/MC: `SiderealTime` から地方恒星時 → RAMC → 古典公式で計算（生まれ時間・都市が必要）
+- オーブ: 45°/135°は常に1°; その他は2天体のオーブ重みの最大値（ASC/MC=10, 太陽/月=6, 水〜土=5, 天/海/冥=4）
+- アスペクト: 0°/180°/90°/60°/120°/45°/135° の7種類
+- トリプル: 3天体すべてがペアアスペクトにある場合のみ検出（天体組み合わせのみで説明文を管理）
+- 説明文: AI生成のプレースホルダー（計462+220件）をDBに格納。「決定版 西洋占星術実修」ベースで後から手修正する想定
+
 ## 2026-06-30 サインアップフォームUI改修（スケッチ対応）
 
 ### 修正ファイル

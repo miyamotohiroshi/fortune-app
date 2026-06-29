@@ -40,3 +40,17 @@ model Zodiac {
   title       String
   description String[]
 }
+
+// 西洋占星術: 2天体アスペクトの解釈（66ペア × 7アスペクト = 462件）
+model AspectPairData {
+  id          String   @id  // e.g. "sun|moon|conjunction"
+  title       String
+  description String
+}
+
+// 西洋占星術: 3天体の組み合わせ解釈（C(12,3) = 220件）
+model AspectTripleData {
+  id          String   @id  // e.g. "mars|moon|sun" (PLANET_KEYS順でソート)
+  title       String
+  description String
+}

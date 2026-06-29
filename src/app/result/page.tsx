@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { logout } from '@/src/app/actions/auth';
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection';
+import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection';
 
 export default async function ResultPage() {
   const session = await getSession();
@@ -57,15 +58,12 @@ export default async function ResultPage() {
           genmei={genmei}
         />
 
-        {/* ── 西洋占星術セクション（近日公開）── */}
-        <div
-          className="rounded-2xl border border-slate-800/60 p-6 text-center"
-          style={{ background: 'rgba(9,9,25,0.6)' }}
-        >
-          <p className="text-xs text-slate-700 tracking-widest mb-2 font-medium">COMING SOON</p>
-          <h2 className="text-lg font-bold text-slate-600">西洋占星術</h2>
-          <p className="text-xs text-slate-700 mt-2">現在開発中です。近日公開予定</p>
-        </div>
+        {/* ── 西洋占星術セクション ── */}
+        <WesternAstrologySection
+          birthday={user.birthday}
+          birthTime={user.birthTime}
+          birthCity={user.birthCity}
+        />
 
         {/* ── フッター ── */}
         <div className="flex justify-between items-center px-1 pt-2 pb-4">
