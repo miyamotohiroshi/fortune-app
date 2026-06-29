@@ -8,6 +8,9 @@
 ### 環境変数
 - Vercel本番環境に`SESSION_SECRET`を追加（jose JWT署名に必須）
 
+### 削除ファイル
+- `src/app/api/health/route.ts` — 診断用エンドポイント（不要になったため削除）
+
 ### フロー・補足
 - **根本原因**: `SESSION_SECRET`がVercelに未設定 → `createSession()`内でjoseがHS256署名時に「キーが短すぎる」エラーをスロー → auth.tsにエラーハンドリングがなかったため500が返っていた
 - **二次問題**: デバッグ過程で追加した`e.constructor.name`アクセスがTypeScript 5.9.3のTS18046エラーを引き起こし、複数コミットでVercelビルドが失敗し続けていた
