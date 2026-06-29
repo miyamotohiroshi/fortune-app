@@ -28,6 +28,9 @@ export async function signup(
   _state: SignupFormState,
   formData: FormData
 ): Promise<SignupFormState> {
+  // 最小診断: モジュール読み込みエラーかどうかを確認
+  return { errors: { general: ['[DIAG] function reached'] } }
+  // eslint-disable-next-line no-unreachable
   try {
     const nickname = formData.get('nickname') as string
     const email = formData.get('email') as string
