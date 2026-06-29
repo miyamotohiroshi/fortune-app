@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-06-30 TOPページに生まれた時間・都市フィールドを追加
+
+### 修正ファイル
+- `src/app/page.tsx` — ClockIcon / MapPinIcon SVG追加、CITY_REGIONS定数（北海道〜海外）、birthTime・birthCityフィールドをSignupFormに追加（生年月日の直後に配置）
+- `src/app/actions/auth.ts` — signup時に birthTime / birthCity を formData から取得してDB保存
+
+### フロー・補足
+- 都市はoptgroup形式でリージョン別に分類（北海道・東北・関東・中部・近畿・中国・四国・九州沖縄・海外）
+- birthTime / birthCity は任意入力（未入力の場合はnullとして保存）
+- DBスキーマの birthTime / birthCity フィールドはすでに存在していたため、スキーマ変更なし
+- 西洋占星術の実際の計算は次フェーズで実装予定
+
 ## 2026-06-30 サインアップ500エラーの根本修正
 
 ### 修正ファイル
