@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-06-30 サインアップフォームUI改修（スケッチ対応）
+
+### 修正ファイル
+- `src/app/page.tsx` — 「─ 分かる場合のみ ─」区切り線追加、生まれた時間を時/分の別入力に変更、都市フィールド下に補足説明追加、メール・パスワードをフローティングラベルUIに変更（アイコン削除）
+- `src/app/actions/auth.ts` — birthHour / birthMinute を "HH:MM" 形式に結合して保存するよう変更
+
+### フロー・補足
+- フローティングラベルは Tailwind `peer` + `:not(:placeholder-shown)` の CSS トリックで実装
+- 時間入力は number type で入力、time type から変更（時・分の個別入力）
+- placeholder に空白スペースを設定することで、未入力時は `:placeholder-shown` が true となり、入力後にラベルがアニメーションで左上に移動する
+
 ## 2026-06-30 TOPページに生まれた時間・都市フィールドを追加
 
 ### 修正ファイル
