@@ -40,8 +40,18 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
 
   const positions = calculatePlanetPositions(birthday, birthTime, cityCoords)
 
-  const pairAspects = detectPairAspects(positions, hasTime)
-  const tripleAspects = detectTripleAspects(positions, pairAspects, hasTime)
+  const rawPairAspects = detectPairAspects(positions, hasTime)
+
+  const ASPECT_SORT_ORDER: Record<string, number> = {
+    conjunction: 0, opposition: 1, square: 2,
+    trine: 3, sextile: 4, semisquare: 5, sesquiquadrate: 6,
+  }
+  const pairAspects = [...rawPairAspects].sort((a, b) => {
+    const od = ASPECT_SORT_ORDER[a.aspect] - ASPECT_SORT_ORDER[b.aspect]
+    return od !== 0 ? od : a.orb - b.orb
+  })
+
+  const tripleAspects = detectTripleAspects(positions, rawPairAspects, hasTime)
 
   // DB からアスペクト説明を取得
   const pairIds = pairAspects.map(pa => pairComboKey(pa.planet1, pa.planet2, pa.aspect))
@@ -110,8 +120,9 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                     <span className="text-sm font-semibold text-white">
                       {PLANET_NAMES_JA[pa.planet1]} × {PLANET_NAMES_JA[pa.planet2]}
                     </span>
-                    <span className="text-xs text-slate-500 ml-auto">
+                    <span className="text-xs text-slate-500 ml-auto flex items-baseline gap-1.5">
                       {ASPECT_NAMES_JA[pa.aspect]}
+                      <span className="text-[10px] text-slate-600">orb {pa.orb.toFixed(1)}°</span>
                     </span>
                   </div>
                   {data ? (
