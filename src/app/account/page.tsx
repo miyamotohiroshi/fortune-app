@@ -1,0 +1,28 @@
+import { prisma } from '@/src/lib/prisma'
+import { getSession } from '@/src/lib/session'
+import { redirect } from 'next/navigation'
+import { AccountForm } from './AccountForm'
+
+export default async function AccountPage() {
+  const session = await getSession()
+  if (!session?.userId) redirect('/login')
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId as string } })
+  if (!user) redirect('/login')
+
+  const iso = user.birthday.toISOString().split('T')[0] // "YYYY-MM-DD"
+  const birthday = iso.replace(/-/g, '') // "YYYYMMDD"
+
+  const [birthHour, birthMinute] = user.birthTime ? user.birthTime.split(':') : ['', '']
+
+  return (
+    <AccountForm
+      nickname={user.nickname}
+      email={user.email}
+      birthday={birthday}
+      birthHour={birthHour}
+      birthMinute={birthMinute}
+      birthCity={user.birthCity ?? ''}
+    />
+  )
+}

@@ -1,5 +1,54 @@
 # Changelog
 
+## 2026-06-30 会員情報ページ（/account）を追加・結果ページにアカウントボタン設置
+
+### 新規ファイル
+- `src/app/account/page.tsx` — Server Component：セッションからユーザー情報を取得してAccountFormに渡す
+- `src/app/account/AccountForm.tsx` — Client Component：名前・生年月日・生まれた時間・生まれた都市を編集できるフォーム（メールは表示のみ）
+- `src/app/actions/account.ts` — Server Action `updateProfile`：nickname/birthday/birthTime/birthCityをDBに保存。生年月日変更時はzodiacDayId・genmeiIdを再計算
+
+### 修正ファイル
+- `src/app/result/page.tsx` — ヘッダー右上にアカウントアイコンボタン（/accountへのLink）を追加
+
+### フロー・補足
+- 結果ページ右上の人物アイコン → /account → 情報編集して「変更を保存する」→ 成功メッセージ表示 → 「占い結果に戻る」で/resultへ
+
+## 2026-06-30 ログインページのデザインをトンマナ統一
+
+### 修正ファイル
+- `src/app/login/page.tsx` — ライトテーマ（白背景・青系ボタン）からダークテーマ（`#07071A`背景・パープルアクセント・グラデーションボタン）に全面リデザイン。フローティングラベル入力・パスワード表示切替・背景グロー追加
+
+### フロー・補足
+- メール・パスワード入力はトップページ会員登録フォームと同じフローティングラベルスタイルを採用
+
+## 2026-06-30 無料体験→会員登録：名前文字化けと時刻・都市未引継ぎを修正
+
+### 修正ファイル
+- `src/app/actions/fortune.ts` — `encodeURIComponent` を除去（URLSearchParamsが自動エンコードするため二重エンコードになっていた）
+- `src/app/try/result/page.tsx` — signupUrlにbirthTime・birthCityを追加。nicknameはNext.jsが自動デコードするためdecodeURIComponent不要に整理
+- `src/app/page.tsx` (SignupForm) — searchParamsからbirthTime・birthCityを読み込み、時刻入力欄（birthHour/birthMinute）と都市セレクトにdefaultValueとして渡すよう追加
+
+### フロー・補足
+- `/try`フォーム送信 → `/try/result` → 「会員登録する」→ `/`（SignupForm）の全経路で名前・誕生日・時刻・都市が正しく引き継がれるようになった
+
+## 2026-06-30 人生タブ：ダイレクション法による人生年表UI実装
+
+### 新規ファイル
+- `src/data/direction-master.ts` — CSVマスターデータをTypeScript定数化（64アスペクト、タグ・行動・注意ポイント含む）
+- `src/lib/astrology/directions.ts` — ソーラーアーク・ダイレクション計算エンジン（DIRECTION_IMPORTANCE_THRESHOLD=8定数含む）
+- `src/components/fortune/DirectionLifeSection.tsx` — Server Component：ダイレクション計算を実行してクライアントへデータ渡し
+- `src/components/fortune/DirectionLifeTab.tsx` — Client Component：横スクロール年表UI（チャンス/転機/試練3段構成）・詳細カード表示
+
+### 修正ファイル
+- `src/app/result/page.tsx` — tab2を準備中プレースホルダーからDirectionLifeSectionへ置き換え
+
+### フロー・補足
+- 出生年〜90才の期間、各年のソーラーアーク（太陽の移動量）を算出し全天体にアーク適用
+- ダイレクション天体とネイタル天体のアスペクトを検出（オーブ1°以内）
+- 重要度>=8のアスペクトのみ表示（閾値定数で変更可能）
+- 各年を横スクロールで閲覧、アスペクトをクリックで詳細カード表示（タグチップ・行動・注意）
+- 現在年付近に初期スクロール位置を自動調整
+
 ## 2026-06-30 西洋占星術の基本実装（天体位置・アスペクト・トリプル）
 
 ### 新規ファイル

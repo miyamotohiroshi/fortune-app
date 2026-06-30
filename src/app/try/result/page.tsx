@@ -2,26 +2,44 @@ import { prisma } from '@/src/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection'
+import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
+import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
+import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 
 export default async function TryResultPage({
   searchParams,
 }: {
-  searchParams: Promise<{ zodiacId?: string; genmeiId?: string; nickname?: string; birthday?: string }>
+  searchParams: Promise<{
+    zodiacId?: string
+    genmeiId?: string
+    nickname?: string
+    birthday?: string
+    birthTime?: string
+    birthCity?: string
+  }>
 }) {
-  const { zodiacId: zodiacIdStr, genmeiId: genmeiIdStr, nickname, birthday } = await searchParams
+  const { zodiacId: zodiacIdStr, genmeiId: genmeiIdStr, nickname, birthday: birthdayRaw, birthTime, birthCity } = await searchParams
 
   const zodiacId = zodiacIdStr ? parseInt(zodiacIdStr) : null
   const genmeiId = genmeiIdStr ? parseInt(genmeiIdStr) : null
-  const displayName = nickname ? decodeURIComponent(nickname) : 'あなた'
+  const displayName = nickname ?? 'あなた'
 
-  const signupParams = new URLSearchParams()
-  if (nickname) signupParams.set('nickname', nickname)
-  if (birthday) signupParams.set('birthday', birthday)
-  const signupUrl = `/?${signupParams.toString()}`
-
-  if (!zodiacId || !genmeiId || isNaN(zodiacId) || isNaN(genmeiId)) {
+  if (!zodiacId || !genmeiId || isNaN(zodiacId) || isNaN(genmeiId) || !birthdayRaw) {
     notFound()
   }
+
+  // YYYYMMDD → Date
+  const y = parseInt(birthdayRaw.slice(0, 4), 10)
+  const m = parseInt(birthdayRaw.slice(4, 6), 10) - 1
+  const d = parseInt(birthdayRaw.slice(6, 8), 10)
+  const birthday = new Date(y, m, d)
+
+  const signupParams = new URLSearchParams()
+  if (displayName && displayName !== 'あなた') signupParams.set('nickname', displayName)
+  if (birthdayRaw) signupParams.set('birthday', birthdayRaw)
+  if (birthTime) signupParams.set('birthTime', birthTime)
+  if (birthCity) signupParams.set('birthCity', birthCity)
+  const signupUrl = `/?${signupParams.toString()}`
 
   const [zodiac, genmei] = await Promise.all([
     prisma.zodiac.findUnique({ where: { id: zodiacId } }),
@@ -42,29 +60,36 @@ export default async function TryResultPage({
         {/* ページヘッダー */}
         <div className="mb-2">
           <p className="text-xs text-purple-400 tracking-widest mb-1">無料体験 / 鑑定結果</p>
-          <h1 className="text-2xl font-bold text-white">
-            {displayName}さんの星を読み解きます
-          </h1>
+          <p className="text-sm text-slate-400">{displayName}さんの</p>
+          <h1 className="text-3xl font-bold text-white">占い結果</h1>
         </div>
 
-        {/* ── 四柱推命セクション ── */}
-        <ShichusuimeiSection
-          nickname={displayName}
-          zodiac={zodiac}
-          genmei={genmei}
+        {/* 3タブ */}
+        <ResultTabs
+          tab0={
+            <ShichusuimeiSection
+              nickname={displayName}
+              zodiac={zodiac}
+              genmei={genmei}
+            />
+          }
+          tab1={
+            <WesternAstrologySection
+              birthday={birthday}
+              birthTime={birthTime ?? null}
+              birthCity={birthCity}
+            />
+          }
+          tab2={
+            <DirectionLifeSection
+              birthday={birthday}
+              birthTime={birthTime ?? null}
+              birthCity={birthCity}
+            />
+          }
         />
 
-        {/* ── 西洋占星術セクション（近日公開）── */}
-        <div
-          className="rounded-2xl border border-slate-800/60 p-6 text-center"
-          style={{ background: 'rgba(9,9,25,0.6)' }}
-        >
-          <p className="text-xs text-slate-700 tracking-widest mb-2 font-medium">COMING SOON</p>
-          <h2 className="text-lg font-bold text-slate-600">西洋占星術</h2>
-          <p className="text-xs text-slate-700 mt-2">現在開発中です。近日公開予定</p>
-        </div>
-
-        {/* ── フッター CTA ── */}
+        {/* フッター CTA */}
         <div
           className="rounded-2xl border border-purple-900/30 p-6 text-center space-y-4"
           style={{ background: 'rgba(12,12,34,0.95)' }}
@@ -73,7 +98,6 @@ export default async function TryResultPage({
             診断結果を保存して、いつでも見返しませんか？
           </p>
           <div className="flex gap-3 justify-center">
-            {/* 会員登録ボタン（グラデーションボーダー） */}
             <div
               className="rounded-xl p-px"
               style={{ background: 'linear-gradient(to right, #d946ef, #8b5cf6, #4f46e5)' }}

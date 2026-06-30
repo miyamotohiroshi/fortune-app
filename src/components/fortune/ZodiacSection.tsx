@@ -16,7 +16,7 @@ export function ZodiacSection({ nickname, zodiac }: ZodiacSectionProps) {
       </div>
       <div className="text-center mb-6">
         <p className="text-slate-500 text-xs mb-2">あなたの性格は…?</p>
-        <h2 className="text-5xl font-bold text-white mb-3">{zodiac.name}</h2>
+        <h2 className="text-3xl font-bold text-white mb-3">{zodiac.name}</h2>
         <p className="text-indigo-300 text-sm font-medium">{zodiac.title}</p>
       </div>
       <div>

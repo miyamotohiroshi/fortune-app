@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { logout } from '@/src/app/actions/auth';
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection';
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection';
+import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection';
 import { ResultTabs } from '@/src/components/fortune/ResultTabs';
 
 export default async function ResultPage() {
@@ -45,9 +46,20 @@ export default async function ResultPage() {
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-5">
 
         {/* ページヘッダー */}
-        <div className="mb-4">
-          <p className="text-sm text-slate-400">{user.nickname}さんの</p>
-          <h1 className="text-3xl font-bold text-white">占い結果</h1>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-sm text-slate-400">{user.nickname}さんの</p>
+            <h1 className="text-3xl font-bold text-white">占い結果</h1>
+          </div>
+          <Link
+            href="/account"
+            className="mt-1 w-10 h-10 rounded-xl bg-[#1a1a3a] border border-purple-900/50 flex items-center justify-center text-purple-400 hover:border-purple-500/70 hover:text-purple-300 transition-all"
+            title="会員情報"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+            </svg>
+          </Link>
         </div>
 
         {/* ── タブ ── */}
@@ -67,12 +79,11 @@ export default async function ResultPage() {
             />
           }
           tab2={
-            <div
-              className="rounded-2xl border border-slate-800/40 p-8 text-center"
-              style={{ background: 'rgba(9,9,25,0.6)' }}
-            >
-              <p className="text-sm text-slate-500">人生鑑定（西洋占星術）は準備中です</p>
-            </div>
+            <DirectionLifeSection
+              birthday={user.birthday}
+              birthTime={user.birthTime}
+              birthCity={user.birthCity}
+            />
           }
         />
 

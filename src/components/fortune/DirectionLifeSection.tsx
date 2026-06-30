@@ -1,0 +1,54 @@
+import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
+import { calculateDirectionAspects } from '@/src/lib/astrology/directions'
+import { CITY_COORDS } from '@/src/lib/astrology/cities'
+import { DirectionLifeTab } from './DirectionLifeTab'
+
+type Props = {
+  birthday: Date
+  birthTime: string | null
+  birthCity: string | null
+}
+
+const DISPLAY_START_OFFSET = 0   // years from birth
+const DISPLAY_END_OFFSET = 100   // years from birth
+
+export async function DirectionLifeSection({ birthday, birthTime, birthCity }: Props) {
+  const cityCoords = birthCity ? (CITY_COORDS[birthCity] ?? null) : null
+  const hasTime = !!birthTime && !!cityCoords
+
+  const natalPositions = calculatePlanetPositions(birthday, birthTime, cityCoords)
+
+  const birthYear = birthday.getFullYear()
+  const currentYear = new Date().getFullYear()
+  const startYear = birthYear + DISPLAY_START_OFFSET
+  const endYear = birthYear + DISPLAY_END_OFFSET
+
+  const aspects = calculateDirectionAspects(
+    birthday,
+    natalPositions,
+    hasTime,
+    startYear,
+    endYear,
+  )
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-[10px] text-purple-400 tracking-widest font-medium">DIRECTION</p>
+        <h2 className="text-lg font-bold text-white mt-0.5">人生年表</h2>
+        {!hasTime && (
+          <p className="text-xs text-slate-500 mt-1">
+            ※ 生まれた時間・都市を登録するとASC・MCも計算できます
+          </p>
+        )}
+      </div>
+      <DirectionLifeTab
+        aspects={aspects}
+        startYear={startYear}
+        endYear={endYear}
+        currentYear={currentYear}
+        birthday={birthday.toISOString()}
+      />
+    </div>
+  )
+}

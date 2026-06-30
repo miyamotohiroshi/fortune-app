@@ -160,6 +160,10 @@ function SignupForm() {
   const prefillBirthday = rawBirthday.match(/^\d{4}-\d{2}-\d{2}$/)
     ? rawBirthday.replace(/-/g, '')
     : rawBirthday
+  const rawBirthTime = searchParams.get('birthTime') ?? ''
+  const prefillHour = rawBirthTime ? rawBirthTime.split(':')[0] : ''
+  const prefillMinute = rawBirthTime ? rawBirthTime.split(':')[1] : ''
+  const prefillCity = searchParams.get('birthCity') ?? ''
 
   const inputClass =
     'w-full bg-[#1a1a3a] border border-purple-900/40 rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/30 transition-all'
@@ -212,6 +216,7 @@ function SignupForm() {
             min={0}
             max={23}
             placeholder="--"
+            defaultValue={prefillHour}
             className={numInputClass}
           />
           <span className="text-slate-400 text-sm shrink-0">時</span>
@@ -221,6 +226,7 @@ function SignupForm() {
             min={0}
             max={59}
             placeholder="--"
+            defaultValue={prefillMinute}
             className={numInputClass}
           />
           <span className="text-slate-400 text-sm shrink-0">分</span>
@@ -231,7 +237,7 @@ function SignupForm() {
         <select
           name="birthCity"
           className={`${inputClass} appearance-none`}
-          defaultValue=""
+          defaultValue={prefillCity}
         >
           <option value="" disabled>選択してください</option>
           {CITY_REGIONS.map(({ label, cities }) => (

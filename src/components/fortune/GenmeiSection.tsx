@@ -16,7 +16,7 @@ export function GenmeiSection({ nickname, genmei }: GenmeiSectionProps) {
       </div>
       <div className="text-center mb-6">
         <p className="text-slate-500 text-xs mb-2">あなたの中心にある星は…?</p>
-        <h2 className="text-5xl font-bold text-white mb-3">{genmei.name}</h2>
+        <h2 className="text-3xl font-bold text-white mb-3">{genmei.name}</h2>
         <p className="text-violet-300 text-sm font-medium">{genmei.title}</p>
       </div>
       <div>
