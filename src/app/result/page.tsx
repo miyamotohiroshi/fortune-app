@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { logout } from '@/src/app/actions/auth';
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection';
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection';
+import { ResultTabs } from '@/src/components/fortune/ResultTabs';
 
 export default async function ResultPage() {
   const session = await getSession();
@@ -44,25 +45,36 @@ export default async function ResultPage() {
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-5">
 
         {/* ページヘッダー */}
-        <div className="mb-2">
-          <p className="text-xs text-purple-400 tracking-widest mb-1">鑑定結果</p>
-          <h1 className="text-2xl font-bold text-white">
-            {user.nickname}さんの星を読み解きます
-          </h1>
+        <div className="mb-4">
+          <p className="text-xs text-slate-500 mb-1">占断結果</p>
+          <p className="text-sm text-slate-400">{user.nickname}さんの</p>
+          <h1 className="text-3xl font-bold text-white">占い結果</h1>
         </div>
 
-        {/* ── 四柱推命セクション ── */}
-        <ShichusuimeiSection
-          nickname={user.nickname}
-          zodiac={zodiac}
-          genmei={genmei}
-        />
-
-        {/* ── 西洋占星術セクション ── */}
-        <WesternAstrologySection
-          birthday={user.birthday}
-          birthTime={user.birthTime}
-          birthCity={user.birthCity}
+        {/* ── タブ ── */}
+        <ResultTabs
+          tab0={
+            <ShichusuimeiSection
+              nickname={user.nickname}
+              zodiac={zodiac}
+              genmei={genmei}
+            />
+          }
+          tab1={
+            <WesternAstrologySection
+              birthday={user.birthday}
+              birthTime={user.birthTime}
+              birthCity={user.birthCity}
+            />
+          }
+          tab2={
+            <div
+              className="rounded-2xl border border-slate-800/40 p-8 text-center"
+              style={{ background: 'rgba(9,9,25,0.6)' }}
+            >
+              <p className="text-sm text-slate-500">人生鑑定（西洋占星術）は準備中です</p>
+            </div>
+          }
         />
 
         {/* ── フッター ── */}
