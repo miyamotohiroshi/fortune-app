@@ -23,19 +23,6 @@ export function ShichusuimeiSection({ nickname, zodiac, genmei }: ShichusuimeiSe
     >
       <div className="rounded-[15px] overflow-hidden" style={{ background: 'rgba(9, 9, 25, 0.98)' }}>
 
-        {/* セクションヘッダー */}
-        <div
-          className="px-6 py-4 flex items-center gap-3"
-          style={{ background: 'linear-gradient(to right, rgba(88,28,135,0.5), rgba(67,56,202,0.3))' }}
-        >
-          <div className="flex items-center gap-1.5">
-            <span className="text-purple-400 text-sm">✦</span>
-            <span className="text-white text-sm font-bold tracking-widest">四柱推命</span>
-          </div>
-          <div className="flex-1 h-px bg-purple-900/40" />
-          <span className="text-xs text-purple-500 tracking-wider">SHICHUSUMEI</span>
-        </div>
-
         {/* 日柱 */}
         <ZodiacSection nickname={nickname} zodiac={zodiac} />
 

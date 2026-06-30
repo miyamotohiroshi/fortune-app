@@ -46,7 +46,6 @@ export default async function ResultPage() {
 
         {/* ページヘッダー */}
         <div className="mb-4">
-          <p className="text-xs text-slate-500 mb-1">占断結果</p>
           <p className="text-sm text-slate-400">{user.nickname}さんの</p>
           <h1 className="text-3xl font-bold text-white">占い結果</h1>
         </div>
