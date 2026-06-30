@@ -3,8 +3,8 @@
 import { useState } from 'react'
 
 const TABS = [
-  { label: '占断結果', sub: '四柱推命' },
-  { label: '占断結果', sub: '西洋占星術' },
+  { label: '性格占断', sub: '四柱推命' },
+  { label: '性格占断', sub: '西洋占星術' },
   { label: '人生', sub: '西洋占星術' },
 ]
 
