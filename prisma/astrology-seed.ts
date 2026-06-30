@@ -3,14 +3,21 @@
  * - AspectPairData:   66ペア × 7アスペクト = 462件
  * - AspectTripleData: C(12,3) = 220件（3天体の組み合わせのみ）
  *
- * 説明文はすべてプレースホルダー（AIによる叩き台）。
- * 後から「決定版 西洋占星術実修」などを参照しながら手作業で修正すること。
- *
  * 実行方法: npx tsx prisma/astrology-seed.ts
  */
 import { config } from 'dotenv'
 config({ path: '.env.local' })
+
 import { PrismaClient } from '@prisma/client'
+import { PAIR_DESC_1 } from './pair-desc-1'
+import { PAIR_DESC_2 } from './pair-desc-2'
+import { PAIR_DESC_3 } from './pair-desc-3'
+import { PAIR_DESC_4 } from './pair-desc-4'
+import { PAIR_DESC_5 } from './pair-desc-5'
+import { TRIPLE_DESC_1 } from './triple-desc-1'
+import { TRIPLE_DESC_2 } from './triple-desc-2'
+import { TRIPLE_DESC_3 } from './triple-desc-3'
+import { TRIPLE_DESC_4 } from './triple-desc-4'
 
 const prisma = new PrismaClient()
 
@@ -25,18 +32,18 @@ const PLANET_KEYS = [
 type PlanetKey = (typeof PLANET_KEYS)[number]
 
 const PLANET_INFO: Record<PlanetKey, { ja: string; theme: string; keyword: string }> = {
-  sun:     { ja: '太陽', theme: '自我・意志・生命力',         keyword: '意志力'   },
-  moon:    { ja: '月',   theme: '感情・直感・内面',           keyword: '感受性'   },
-  mercury: { ja: '水星', theme: '思考・言語・知性',           keyword: '思考力'   },
-  venus:   { ja: '金星', theme: '愛・美・調和・価値観',       keyword: '美意識'   },
-  mars:    { ja: '火星', theme: '行動力・情熱・闘争心',       keyword: '行動力'   },
-  jupiter: { ja: '木星', theme: '拡大・発展・幸運・楽観',     keyword: '拡大力'   },
-  saturn:  { ja: '土星', theme: '規律・責任・制限・成熟',     keyword: '責任感'   },
-  uranus:  { ja: '天王星', theme: '革新・自由・変革・独創性', keyword: '独創性'   },
-  neptune: { ja: '海王星', theme: '夢・霊性・直感・曖昧さ',  keyword: '霊感'     },
-  pluto:   { ja: '冥王星', theme: '変容・再生・権力・深層心理', keyword: '変革力' },
-  asc:     { ja: 'ASC',   theme: '自己表現・外見・第一印象',  keyword: '表現力'   },
-  mc:      { ja: 'MC',    theme: '社会的使命・キャリア・目標', keyword: '目標意識' },
+  sun:     { ja: '太陽',   theme: '自我・意志・生命力',             keyword: '意志力'   },
+  moon:    { ja: '月',     theme: '感情・直感・内面',               keyword: '感受性'   },
+  mercury: { ja: '水星',   theme: '思考・言語・知性',               keyword: '思考力'   },
+  venus:   { ja: '金星',   theme: '愛・美・調和・価値観',           keyword: '美意識'   },
+  mars:    { ja: '火星',   theme: '行動力・情熱・闘争心',           keyword: '行動力'   },
+  jupiter: { ja: '木星',   theme: '拡大・発展・幸運・楽観',         keyword: '拡大力'   },
+  saturn:  { ja: '土星',   theme: '規律・責任・制限・成熟',         keyword: '責任感'   },
+  uranus:  { ja: '天王星', theme: '革新・自由・変革・独創性',       keyword: '独創性'   },
+  neptune: { ja: '海王星', theme: '夢・霊性・直感・曖昧さ',         keyword: '霊感'     },
+  pluto:   { ja: '冥王星', theme: '変容・再生・権力・深層心理',     keyword: '変革力'   },
+  asc:     { ja: 'ASC',    theme: '自己表現・外見・第一印象',        keyword: '表現力'   },
+  mc:      { ja: 'MC',     theme: '社会的使命・キャリア・目標',      keyword: '目標意識' },
 }
 
 const ASPECT_KEYS = [
@@ -46,79 +53,60 @@ const ASPECT_KEYS = [
 
 type AspectKey = (typeof ASPECT_KEYS)[number]
 
-const ASPECT_INFO: Record<AspectKey, { ja: string; deg: number; quality: string }> = {
-  conjunction:    { ja: 'コンジャンクション（合）0°',       deg: 0,   quality: '融合・強化' },
-  opposition:     { ja: 'オポジション（衝）180°',            deg: 180, quality: '対立・補完' },
-  square:         { ja: 'スクエア（矩）90°',                 deg: 90,  quality: '緊張・葛藤' },
-  sextile:        { ja: 'セクスタイル（六分）60°',           deg: 60,  quality: '調和・協力' },
-  trine:          { ja: 'トライン（三分）120°',              deg: 120, quality: '自然な調和' },
-  semisquare:     { ja: 'セミスクエア 45°',                  deg: 45,  quality: '微摩擦・調整' },
-  sesquiquadrate: { ja: 'セスキクァドレート 135°',           deg: 135, quality: '内的緊張・成長' },
+const ASPECT_INFO: Record<AspectKey, { ja: string; quality: string }> = {
+  conjunction:    { ja: 'コンジャンクション（合）0°',      quality: '融合・強化'   },
+  opposition:     { ja: 'オポジション（衝）180°',           quality: '対立・補完'   },
+  square:         { ja: 'スクエア（矩）90°',                quality: '緊張・葛藤'   },
+  sextile:        { ja: 'セクスタイル（六分）60°',          quality: '調和・協力'   },
+  trine:          { ja: 'トライン（三分）120°',             quality: '自然な調和'   },
+  semisquare:     { ja: 'セミスクエア 45°',                 quality: '微摩擦・調整' },
+  sesquiquadrate: { ja: 'セスキクァドレート 135°',          quality: '内的緊張・成長' },
 }
 
-// ─── ペア説明文生成 ───────────────────────────────────────────────────────────
+// ─── 説明データマージ ─────────────────────────────────────────────────────────
 
-function makePairTitle(p1: PlanetKey, p2: PlanetKey, aspect: AspectKey): string {
-  const a = ASPECT_INFO[aspect]
-  const n1 = PLANET_INFO[p1].ja
-  const n2 = PLANET_INFO[p2].ja
-  return `${n1}×${n2} ${a.ja}`
+const ALL_PAIR_DESC: Record<string, { title: string; description: string }> = {
+  ...PAIR_DESC_1,
+  ...PAIR_DESC_2,
+  ...PAIR_DESC_3,
+  ...PAIR_DESC_4,
+  ...PAIR_DESC_5,
 }
 
-function makePairDescription(p1: PlanetKey, p2: PlanetKey, aspect: AspectKey): string {
+const ALL_TRIPLE_DESC: Record<string, { title: string; description: string }> = {
+  ...TRIPLE_DESC_1,
+  ...TRIPLE_DESC_2,
+  ...TRIPLE_DESC_3,
+  ...TRIPLE_DESC_4,
+}
+
+// ─── フォールバック生成（キーが見つからない場合のみ使用）────────────────────
+
+function makePairFallback(p1: PlanetKey, p2: PlanetKey, aspect: AspectKey) {
   const i1 = PLANET_INFO[p1]
   const i2 = PLANET_INFO[p2]
   const a = ASPECT_INFO[aspect]
-
-  const intro: Record<AspectKey, string> = {
-    conjunction:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）がひとつに融合するアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}が互いを増幅し合い、性格として非常に強く前面に出てきます。`,
-    opposition:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が180°向き合う緊張のアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}が互いに引き合いながら対立し、意識化することで補完し合えます。`,
-    square:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が90°で角を作る緊張のアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}の間に葛藤が生じやすいですが、乗り越えることで大きな強さになります。`,
-    sextile:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が60°で協力し合うアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}が自然に手を取り合い、才能を活かす機会が生まれやすい配置です。`,
-    trine:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が120°で流れるように調和するアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}が無理なく発揮でき、この組み合わせは生まれながらの才能や恵みをもたらします。`,
-    semisquare:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が45°で微妙な摩擦を起こすアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}の間に小さなズレがあり、意識的に調整することでスムーズに機能します。`,
-    sesquiquadrate:
-      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が135°で内的な緊張を示すアスペクトです。` +
-      `${i1.keyword}と${i2.keyword}の間にくすぶる課題があり、自覚して向き合うことで精神的な成長につながります。`,
+  return {
+    title: `${i1.ja}×${i2.ja} ${a.ja}`,
+    description:
+      `${i1.ja}（${i1.theme}）と${i2.ja}（${i2.theme}）が${a.ja}を形成します。` +
+      `${i1.keyword}と${i2.keyword}が${a.quality}の関係で結びつく配置です。`,
   }
-
-  return intro[aspect]
 }
-
-// ─── トリプル説明文生成 ───────────────────────────────────────────────────────
 
 function makeTripleKey(planets: PlanetKey[]): string {
-  return planets.slice().sort((a, b) => PLANET_KEYS.indexOf(a) - PLANET_KEYS.indexOf(b)).join('|')
+  return [...planets].sort((a, b) => PLANET_KEYS.indexOf(a) - PLANET_KEYS.indexOf(b)).join('|')
 }
 
-function makeTripleTitle(planets: PlanetKey[]): string {
-  return planets.map(p => PLANET_INFO[p].ja).join('・')
-}
-
-function makeTripleDescription(planets: PlanetKey[]): string {
-  const infos = planets.map(p => PLANET_INFO[p])
-  const names = infos.map(i => i.ja).join('・')
-  const keywords = infos.map(i => i.keyword).join('、')
-  const themes = infos.map(i => `${i.ja}（${i.theme}）`).join('と')
-
-  return (
-    `${themes}が同時に絡み合うトリプルアスペクトです。` +
-    `${keywords}という3つのエネルギーが複雑に作用し、` +
-    `${names}を統合することがこの配置の人生的テーマとなります。` +
-    `この3天体のバランスを意識することで、より豊かな個性と深い洞察が生まれます。`
-  )
+function makeTripleFallback(planets: PlanetKey[]) {
+  const names = planets.map(p => PLANET_INFO[p].ja).join('・')
+  const keywords = planets.map(p => PLANET_INFO[p].keyword).join('・')
+  return {
+    title: names,
+    description:
+      `${names}が同時に絡み合うトリプルアスペクトです。` +
+      `${keywords}の3つのエネルギーを統合することが、この配置の人生的テーマとなります。`,
+  }
 }
 
 // ─── メイン ───────────────────────────────────────────────────────────────────
@@ -134,13 +122,17 @@ async function main() {
       const p1 = PLANET_KEYS[i]
       const p2 = PLANET_KEYS[j]
       for (const aspect of ASPECT_KEYS) {
-        pairEntries.push({
-          id: `${p1}|${p2}|${aspect}`,
-          title: makePairTitle(p1, p2, aspect),
-          description: makePairDescription(p1, p2, aspect),
-        })
+        const id = `${p1}|${p2}|${aspect}`
+        const data = ALL_PAIR_DESC[id] ?? makePairFallback(p1, p2, aspect)
+        pairEntries.push({ id, ...data })
       }
     }
+  }
+
+  const pairMissing = pairEntries.filter(e => !(e.id in ALL_PAIR_DESC))
+  if (pairMissing.length > 0) {
+    console.warn(`⚠️  フォールバック使用: ${pairMissing.length}件のペア説明が未定義`)
+    pairMissing.forEach(e => console.warn('   ', e.id))
   }
 
   console.log(`📝 ${pairEntries.length}件のペアアスペクトを登録中...`)
@@ -155,23 +147,26 @@ async function main() {
 
   // ── トリプルデータ（220件）
   const tripleEntries: { id: string; title: string; description: string }[] = []
-  const seenTriples = new Set<string>()
+  const seen = new Set<string>()
 
   for (let i = 0; i < PLANET_KEYS.length; i++) {
     for (let j = i + 1; j < PLANET_KEYS.length; j++) {
       for (let k = j + 1; k < PLANET_KEYS.length; k++) {
-        const planets = [PLANET_KEYS[i], PLANET_KEYS[j], PLANET_KEYS[k]]
-        const key = makeTripleKey(planets)
-        if (!seenTriples.has(key)) {
-          seenTriples.add(key)
-          tripleEntries.push({
-            id: key,
-            title: makeTripleTitle(planets),
-            description: makeTripleDescription(planets),
-          })
+        const planets = [PLANET_KEYS[i], PLANET_KEYS[j], PLANET_KEYS[k]] as PlanetKey[]
+        const id = makeTripleKey(planets)
+        if (!seen.has(id)) {
+          seen.add(id)
+          const data = ALL_TRIPLE_DESC[id] ?? makeTripleFallback(planets)
+          tripleEntries.push({ id, ...data })
         }
       }
     }
+  }
+
+  const tripleMissing = tripleEntries.filter(e => !(e.id in ALL_TRIPLE_DESC))
+  if (tripleMissing.length > 0) {
+    console.warn(`⚠️  フォールバック使用: ${tripleMissing.length}件のトリプル説明が未定義`)
+    tripleMissing.forEach(e => console.warn('   ', e.id))
   }
 
   console.log(`📝 ${tripleEntries.length}件のトリプルアスペクトを登録中...`)
