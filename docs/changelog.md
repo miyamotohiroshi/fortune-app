@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-01 月絡みアスペクト4件のデータ修正を反映
+
+### 修正ファイル
+- `src/data/direction-master.ts` — data_direction_fix2.csv を全面反映（64行）。月絡み4件（太陽×月・月×土星・月×天王星・月×冥王星）のカテゴリ・テーマ・アイコン・各種フィールドを更新。`DirectionCategory` 型に `変容` を追加
+
+### フロー・補足
+- 太陽×月: チャンス→転機、mainTheme「新たなスタート」🌀
+- 月×土星: mainTheme「試練」🔥、subTheme「忍耐」✨
+- 月×天王星: mainTheme「意識改革」🌀
+- 月×冥王星: 転機カテゴリ、mainTheme「再生」🌀
+
 ## 2026-07-01 人生タブ用CSVマスターデータを新版に差し替え・DetailCardに4項目を追加
 
 ### 修正ファイル
