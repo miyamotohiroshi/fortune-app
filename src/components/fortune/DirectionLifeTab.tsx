@@ -144,6 +144,57 @@ function DetailCard({
       {/* Detail */}
       <p className="text-xs text-slate-400 leading-relaxed">{master.detail}</p>
 
+      {/* likelyEvents */}
+      {master.likelyEvents.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] text-slate-500 font-semibold tracking-widest">起こりやすい出来事</p>
+          <ul className="space-y-0.5">
+            {master.likelyEvents.map((ev, i) => (
+              <li key={i} className="text-xs text-slate-300 flex gap-1">
+                <span className="text-sky-400 mt-0.5 shrink-0">・</span>
+                <span>{ev.replace(/^・/, '')}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* affectedAreas */}
+      {master.affectedAreas && Object.keys(master.affectedAreas).length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-slate-500 font-semibold tracking-widest">影響を受けやすい分野</p>
+          <div className="space-y-1">
+            {Object.entries(master.affectedAreas).map(([area, score]) => {
+              const filled = Math.round(score)
+              return (
+                <div key={area} className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400 w-14 shrink-0">{area}</span>
+                  <span className="text-xs tracking-wider">
+                    {'■'.repeat(filled)}{'□'.repeat(5 - filled)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* howToSpend */}
+      {master.howToSpend && (
+        <div className="space-y-1">
+          <p className="text-[10px] text-slate-500 font-semibold tracking-widest">この時期の過ごし方</p>
+          <p className="text-xs text-slate-300 leading-relaxed">{master.howToSpend}</p>
+        </div>
+      )}
+
+      {/* afterOvercoming */}
+      {master.afterOvercoming && (
+        <div className="space-y-1">
+          <p className="text-[10px] text-slate-500 font-semibold tracking-widest">乗り越えた先</p>
+          <p className="text-xs text-emerald-300 leading-relaxed">{master.afterOvercoming}</p>
+        </div>
+      )}
+
       {/* Tags */}
       {master.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -213,10 +264,14 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
   for (let y = startYear; y <= endYear; y++) {
     yearMap.set(y, { チャンス: [], 転機: [], 試練: [] })
   }
+  const CATEGORY_FALLBACK: Record<string, Category> = { 変容: '転機' }
   for (const asp of filtered) {
     const master = DIRECTION_MASTER_MAP.get(asp.masterKey)
     if (!master) continue
-    const cat = master.category as Category
+    const rawCat = master.category as string
+    const cat: Category = (CATEGORIES as readonly string[]).includes(rawCat)
+      ? rawCat as Category
+      : (CATEGORY_FALLBACK[rawCat] ?? '転機')
     const entry = yearMap.get(asp.year)
     if (!entry) continue
     entry[cat].push(asp)

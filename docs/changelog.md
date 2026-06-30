@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-01 人生タブ用CSVマスターデータを新版に差し替え・DetailCardに4項目を追加
+
+### 修正ファイル
+- `src/data/direction-master.ts` — CSVデータを新版（64行）に全面差し替え。型に `likelyEvents: string[]`, `affectedAreas?: Record<string, number>`, `howToSpend?: string`, `afterOvercoming?: string` を追加
+- `src/components/fortune/DirectionLifeTab.tsx` — DetailCard に「起こりやすい出来事」（箇条書き）・「影響を受けやすい分野」（■■■■□ バー）・「この時期の過ごし方」・「乗り越えた先」セクションを追加。各フィールドが空の場合はセクション全体を非表示
+
+### フロー・補足
+- 起こりやすい出来事は `・` 付きリスト（先頭 `・` を除去して表示）
+- 影響を受けやすい分野は JSON `{"仕事":5,...}` を 0–5 スコアで ■/□ に変換して表示
+- タイムライン年表ロジックは変更なし
+
 ## 2026-06-30 会員情報ページ（/account）を追加・結果ページにアカウントボタン設置
 
 ### 新規ファイル
