@@ -105,10 +105,12 @@ export function detectTripleAspects(
 }
 
 export function tripleComboKey(planets: [PlanetKey, PlanetKey, PlanetKey]): string {
-  return [...planets].sort().join('|')
+  return [...planets]
+    .sort((a, b) => PLANET_KEYS.indexOf(a) - PLANET_KEYS.indexOf(b))
+    .join('|')
 }
 
 export function pairComboKey(p1: PlanetKey, p2: PlanetKey, aspect: AspectType): string {
-  const sorted = [p1, p2].sort()
+  const sorted = [p1, p2].sort((a, b) => PLANET_KEYS.indexOf(a) - PLANET_KEYS.indexOf(b))
   return `${sorted[0]}|${sorted[1]}|${aspect}`
 }
