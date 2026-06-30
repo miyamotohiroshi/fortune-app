@@ -77,14 +77,14 @@ export default async function TryResultPage({
             <WesternAstrologySection
               birthday={birthday}
               birthTime={birthTime ?? null}
-              birthCity={birthCity}
+              birthCity={birthCity ?? null}
             />
           }
           tab2={
             <DirectionLifeSection
               birthday={birthday}
               birthTime={birthTime ?? null}
-              birthCity={birthCity}
+              birthCity={birthCity ?? null}
             />
           }
         />
