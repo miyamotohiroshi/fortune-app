@@ -164,17 +164,22 @@ function DetailCard({
         <div className="space-y-1.5">
           <p className="text-[10px] text-slate-500 font-semibold tracking-widest">影響を受けやすい分野</p>
           <div className="space-y-1">
-            {Object.entries(master.affectedAreas).map(([area, score]) => {
-              const filled = Math.round(score)
-              return (
-                <div key={area} className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 w-14 shrink-0">{area}</span>
-                  <span className="text-xs tracking-wider">
-                    {'■'.repeat(filled)}{'□'.repeat(5 - filled)}
-                  </span>
-                </div>
-              )
-            })}
+            {(() => {
+              const areaEntries = Object.entries(master.affectedAreas!)
+              const maxScore = Math.max(...areaEntries.map(([, v]) => v))
+              const scale = maxScore > 5 ? maxScore : 5
+              return areaEntries.map(([area, score]) => {
+                const filled = Math.min(5, Math.round((score / scale) * 5))
+                return (
+                  <div key={area} className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 w-14 shrink-0">{area}</span>
+                    <span className="text-xs tracking-wider">
+                      {'■'.repeat(filled)}{'□'.repeat(5 - filled)}
+                    </span>
+                  </div>
+                )
+              })
+            })()}
           </div>
         </div>
       )}
