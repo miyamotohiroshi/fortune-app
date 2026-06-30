@@ -104,38 +104,42 @@ function DetailCard({
   const aspectLabel = ASPECT_NAMES_JA[result.aspectType as AspectType] ?? `${result.aspectAngle}°`
 
   return (
-    <div className="rounded-2xl border border-slate-700/60 p-5 space-y-4" style={{ background: 'rgba(20,20,40,0.95)' }}>
+    <div className="rounded-2xl border border-slate-700/60 p-5 space-y-5" style={{ background: 'rgba(20,20,40,0.95)' }}>
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-base font-bold text-white">{master.aspect}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{aspectLabel}</p>
+          <p className="text-xl font-bold text-white">{master.aspect}</p>
+          <p className="text-xs text-slate-400 mt-1">{aspectLabel}</p>
         </div>
         <button
           onClick={onClose}
-          className="text-slate-500 hover:text-slate-300 transition-colors text-lg leading-none mt-0.5"
+          className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center text-slate-400 hover:text-slate-200 hover:border-slate-400 transition-colors shrink-0"
         >
-          ✕
+          ×
         </button>
       </div>
 
-      {/* Icons + themes */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-sm text-slate-200">
-          <span className="text-base">{master.mainIcon}</span>
+      {/* Icons + themes（横並び・区切り線） */}
+      <div className="flex items-center text-sm">
+        <div className="flex items-center gap-2 text-slate-200 flex-1">
+          <span className="text-lg">{master.mainIcon}</span>
           <span>{master.mainTheme}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <span className="text-base">{master.subIcon}</span>
+        <div className="w-px h-4 bg-slate-600 shrink-0 mx-3" />
+        <div className="flex items-center gap-2 text-slate-400 flex-1">
+          <span className="text-lg">{master.subIcon}</span>
           <span>{master.subTheme}</span>
         </div>
       </div>
 
-      {/* Title */}
-      <p className="text-lg font-bold text-white">{master.title}</p>
+      {/* Title（パープル左ボーダー） */}
+      <div className="flex items-center gap-3">
+        <div className="w-1 h-5 rounded-full bg-purple-500 shrink-0" />
+        <p className="text-base font-bold text-white">{master.title}</p>
+      </div>
 
       {/* Summary */}
-      <p className="text-sm text-slate-300 leading-relaxed">{master.summary}</p>
+      <p className="text-sm font-medium text-slate-200 leading-relaxed">{master.summary}</p>
 
       {/* Detail */}
       <p className="text-xs text-slate-400 leading-relaxed">{master.detail}</p>
