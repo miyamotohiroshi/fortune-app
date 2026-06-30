@@ -51,7 +51,17 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
     return od !== 0 ? od : a.orb - b.orb
   })
 
-  const tripleAspects = detectTripleAspects(positions, rawPairAspects, hasTime)
+  const rawTripleAspects = detectTripleAspects(positions, rawPairAspects, hasTime)
+  const tripleAspects = [...rawTripleAspects].sort((a, b) => {
+    const ordA = [...a.aspects].map(asp => ASPECT_SORT_ORDER[asp]).sort((x, y) => x - y)
+    const ordB = [...b.aspects].map(asp => ASPECT_SORT_ORDER[asp]).sort((x, y) => x - y)
+    for (let i = 0; i < 3; i++) {
+      if (ordA[i] !== ordB[i]) return ordA[i] - ordB[i]
+    }
+    const sumOrbA = a.orbs.reduce((s, v) => s + v, 0)
+    const sumOrbB = b.orbs.reduce((s, v) => s + v, 0)
+    return sumOrbA - sumOrbB
+  })
 
   // DB からアスペクト説明を取得
   const pairIds = pairAspects.map(pa => pairComboKey(pa.planet1, pa.planet2, pa.aspect))
