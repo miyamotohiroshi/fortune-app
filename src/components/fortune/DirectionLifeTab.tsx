@@ -47,7 +47,7 @@ function YearColumn({
 }) {
   return (
     <div className={[
-      'flex-shrink-0 w-[88px] border-r border-slate-800/50',
+      'flex-shrink-0 w-25 border-r border-slate-800/50',
       isCurrentYear ? 'bg-purple-950/40' : '',
     ].join(' ')}>
       {/* Year header */}
@@ -370,7 +370,7 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
           className="flex-1 overflow-x-auto rounded-xl border border-slate-800/40"
           style={{ background: 'rgba(9,9,25,0.8)' }}
         >
-          <div className="flex" style={{ minWidth: `${years.length * 88}px` }}>
+          <div className="flex" style={{ minWidth: `${years.length * 100}px` }}>
             {years.map((year) => {
               const age = year - birthYear
               const cats = yearMap.get(year) ?? { チャンス: [], 転機: [], 試練: [] }
