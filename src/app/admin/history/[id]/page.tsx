@@ -6,7 +6,7 @@ import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSectio
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
-import { DeleteHistoryButton } from '../DeleteHistoryButton'
+import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 
 export default async function AdminHistoryDetailPage({
   params,
@@ -35,13 +35,12 @@ export default async function AdminHistoryDetailPage({
 
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-5">
 
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            <p className="text-xs text-purple-400 tracking-widest mb-1">占断履歴</p>
-            <p className="text-sm text-slate-400">{history.name}さんの</p>
-            <h1 className="text-3xl font-bold text-white">占い結果</h1>
-          </div>
-          <DeleteHistoryButton id={history.id} name={history.name} />
+        <AdminTabNav active="history" />
+
+        <div className="mb-2">
+          <p className="text-xs text-purple-400 tracking-widest mb-1">占断履歴</p>
+          <p className="text-sm text-slate-400">{history.name}さんの</p>
+          <h1 className="text-3xl font-bold text-white">占い結果</h1>
         </div>
 
         <ResultTabs

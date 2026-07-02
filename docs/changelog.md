@@ -1,5 +1,46 @@
 # Changelog
 
+## 2026-07-02 ログインセッションを30日保持・ログイン済みでの/loginアクセスを自動リダイレクト
+
+### 新規ファイル
+- `src/app/login/LoginForm.tsx` — 従来`login/page.tsx`にあったログインフォームのClient Componentを分離
+
+### 修正ファイル
+- `src/lib/session.ts` — セッションの有効期限を7日→30日に変更（JWTの`setExpirationTime`とCookieの`expires`の両方）。`createSession`はsignup/login共通で使われるため、新規登録時のセッションも30日保持になる
+- `src/app/login/page.tsx` — Server Componentに変更し、`getCurrentUser()`でログイン済みかどうかを判定。ログイン済みの場合は`/result`へ`redirect`し、未ログインの場合のみ`LoginForm`を表示するようにした
+
+### フロー・補足
+- Cookieは引き続きhttpOnly（JS非公開）のセッションCookieを使用。localStorageはXSS耐性がなくサーバーコンポーネントから直接参照できないため、認証情報の保持先としては採用せず、既存のCookie方式のまま保持期間だけ延長した
+- ブラウザで確認: 新規登録直後のセッションCookieの有効期限が30日後になっていること、ログイン中に`/login`へアクセスすると`/result`に自動リダイレクトされること、ログアウト後は通常通りログインフォームが表示されることを確認済み
+
+## 2026-07-02 管理者向け導線を「自分の結果／占断履歴」タブに統一
+
+### 新規ファイル
+- `src/components/admin/AdminTabNav.tsx` — 管理者専用のタブ型ナビゲーション（「自分の結果」→`/result`、「占断履歴」→`/admin/history`）。アクティブなタブを紫グラデーションでハイライト表示
+
+### 修正ファイル
+- `src/app/result/page.tsx` — `role === 'admin'`の場合、ヘッダー上部に`AdminTabNav`（`active="self"`）を表示。従来ヘッダー右上にあった占断履歴への導線アイコンは`AdminTabNav`に統合したため削除
+- `src/app/admin/history/page.tsx` — ヘッダー上部に`AdminTabNav`（`active="history"`）を追加。タブに統合されたため、フッターの「← 自分の占い結果へ戻る」リンクを削除
+- `src/app/admin/history/[id]/page.tsx` — ヘッダー上部に`AdminTabNav`（`active="history"`）を追加。削除ボタンは履歴一覧画面のみに残す方針のため、この画面（他の人の占断結果）からは削除ボタンを撤去
+
+### フロー・補足
+- 削除操作は`/admin/history`の一覧画面からのみ行える（誤操作防止・操作導線の一本化）
+- ブラウザで確認: `/result`では「自分の結果」がアクティブ、`/admin/history`・`/admin/history/[id]`では「占断履歴」がアクティブになり、削除ボタンは一覧画面にのみ表示されることを確認済み
+
+## 2026-07-02 人生年表の詳細カードに重要度を表示
+
+### 修正ファイル
+- `src/components/fortune/DirectionLifeTab.tsx` — `DetailCard`のヘッダー（アスペクト種別・角度の行）に`重要度 {master.importance}`を追加表示。「スクエア（矩） 90°　重要度 8」のように角度の直後に表示される
+
+## 2026-07-02 人生年表グリッドのDESCラベル欠落を修正
+
+### 修正ファイル
+- `src/components/fortune/DirectionLifeTab.tsx` — 人生年表グリッドのセルラベル生成に使う`PLANET_SHORT`（惑星キー→短縮表記のマップ）に`desc: 'DESC'`が抜けていたため追加。DESC絡みの方位が「木× 90°」のように片側の表記が空白になっていた不具合を修正し、「木×DESC 90°」のように正しく表示されるようにした
+
+### フロー・補足
+- 同種の惑星名マッピングは`constants.ts`・`directions.ts`・`WesternAstrologySection.tsx`にも存在するが、いずれも前回のDESC対応で追加済みで漏れなし。今回の`DirectionLifeTab.tsx`だけ見落としていた
+- ブラウザで生年月日・時刻・都市を指定して人生年表を表示し、「太×DESC」「DESC×木」等が正しく表示されることを確認済み
+
 ## 2026-07-02 DESC（ディセンダント）対応を追加
 
 ### 新規ファイル

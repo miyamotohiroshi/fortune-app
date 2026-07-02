@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { prisma } from '@/src/lib/prisma'
 import { getCurrentUser } from '@/src/lib/session'
 import { DeleteHistoryButton } from './DeleteHistoryButton'
+import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 
 export default async function AdminHistoryPage() {
   const user = await getCurrentUser()
@@ -17,6 +18,8 @@ export default async function AdminHistoryPage() {
       <div className="fixed bottom-0 left-0 w-80 h-80 rounded-full bg-indigo-900/10 blur-3xl pointer-events-none" />
 
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-5">
+
+        <AdminTabNav active="history" />
 
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -71,12 +74,6 @@ export default async function AdminHistoryPage() {
             ))}
           </div>
         )}
-
-        <div className="pt-2">
-          <Link href="/result" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-            ← 自分の占い結果へ戻る
-          </Link>
-        </div>
 
       </div>
     </div>

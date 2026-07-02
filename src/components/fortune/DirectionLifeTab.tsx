@@ -19,7 +19,7 @@ type Props = {
 const PLANET_SHORT: Record<string, string> = {
   sun: '太', moon: '月', mercury: '水', venus: '金', mars: '火',
   jupiter: '木', saturn: '土', uranus: '天', neptune: '海', pluto: '冥',
-  asc: 'ASC', mc: 'MC',
+  asc: 'ASC', mc: 'MC', desc: 'DESC',
 }
 
 const CATEGORIES = ['チャンス', '転機', '試練'] as const
@@ -109,7 +109,7 @@ function DetailCard({
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xl font-bold text-white">{master.aspect}</p>
-          <p className="text-xs text-slate-400 mt-1">{aspectLabel}</p>
+          <p className="text-xs text-slate-400 mt-1">{aspectLabel}　重要度 {master.importance}</p>
         </div>
         <button
           onClick={onClose}
