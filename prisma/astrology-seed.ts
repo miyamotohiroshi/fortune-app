@@ -1,7 +1,7 @@
 /**
  * 西洋占星術アスペクト解釈データのシード
- * - AspectPairData:   66ペア × 7アスペクト = 462件
- * - AspectTripleData: C(12,3) = 220件（3天体の組み合わせのみ）
+ * - AspectPairData:   78ペア × 7アスペクト = 546件
+ * - AspectTripleData: C(13,3) = 286件（3天体の組み合わせのみ）
  *
  * 実行方法: npx tsx prisma/astrology-seed.ts
  */
@@ -14,10 +14,12 @@ import { PAIR_DESC_2 } from './pair-desc-2'
 import { PAIR_DESC_3 } from './pair-desc-3'
 import { PAIR_DESC_4 } from './pair-desc-4'
 import { PAIR_DESC_5 } from './pair-desc-5'
+import { PAIR_DESC_6 } from './pair-desc-6'
 import { TRIPLE_DESC_1 } from './triple-desc-1'
 import { TRIPLE_DESC_2 } from './triple-desc-2'
 import { TRIPLE_DESC_3 } from './triple-desc-3'
 import { TRIPLE_DESC_4 } from './triple-desc-4'
+import { TRIPLE_DESC_5 } from './triple-desc-5'
 
 const prisma = new PrismaClient()
 
@@ -26,7 +28,7 @@ const prisma = new PrismaClient()
 const PLANET_KEYS = [
   'sun', 'moon', 'mercury', 'venus', 'mars',
   'jupiter', 'saturn', 'uranus', 'neptune', 'pluto',
-  'asc', 'mc',
+  'asc', 'mc', 'desc',
 ] as const
 
 type PlanetKey = (typeof PLANET_KEYS)[number]
@@ -43,6 +45,7 @@ const PLANET_INFO: Record<PlanetKey, { ja: string; theme: string; keyword: strin
   neptune: { ja: '海王星', theme: '夢・霊性・直感・曖昧さ',         keyword: '霊感'     },
   pluto:   { ja: '冥王星', theme: '変容・再生・権力・深層心理',     keyword: '変革力'   },
   asc:     { ja: 'ASC',    theme: '自己表現・外見・第一印象',        keyword: '表現力'   },
+  desc:    { ja: 'DESC',   theme: '対人関係・パートナーシップ・他者理解', keyword: '関係性' },
   mc:      { ja: 'MC',     theme: '社会的使命・キャリア・目標',      keyword: '目標意識' },
 }
 
@@ -71,6 +74,7 @@ const ALL_PAIR_DESC: Record<string, { title: string; description: string }> = {
   ...PAIR_DESC_3,
   ...PAIR_DESC_4,
   ...PAIR_DESC_5,
+  ...PAIR_DESC_6,
 }
 
 const ALL_TRIPLE_DESC: Record<string, { title: string; description: string }> = {
@@ -78,6 +82,7 @@ const ALL_TRIPLE_DESC: Record<string, { title: string; description: string }> = 
   ...TRIPLE_DESC_2,
   ...TRIPLE_DESC_3,
   ...TRIPLE_DESC_4,
+  ...TRIPLE_DESC_5,
 }
 
 // ─── フォールバック生成（キーが見つからない場合のみ使用）────────────────────
@@ -114,7 +119,7 @@ function makeTripleFallback(planets: PlanetKey[]) {
 async function main() {
   console.log('🌟 西洋占星術アスペクトデータのシードを開始します...')
 
-  // ── ペアデータ（462件）
+  // ── ペアデータ（546件）
   const pairEntries: { id: string; title: string; description: string }[] = []
 
   for (let i = 0; i < PLANET_KEYS.length; i++) {
@@ -145,7 +150,7 @@ async function main() {
   }
   console.log(`✅ ペアアスペクト ${pairEntries.length}件の登録完了`)
 
-  // ── トリプルデータ（220件）
+  // ── トリプルデータ（286件）
   const tripleEntries: { id: string; title: string; description: string }[] = []
   const seen = new Set<string>()
 

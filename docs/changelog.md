@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-07-02 DESC（ディセンダント）対応を追加
+
+### 新規ファイル
+- `prisma/pair-desc-6.ts` — DESCと他12天体/感受点の2天体アスペクト解釈（12ペア×7アスペクト=84件、Claude執筆）
+- `prisma/triple-desc-5.ts` — DESCを含む3天体組み合わせ解釈（C(13,3)-C(12,3)=66件、Claude執筆）
+
+### 修正ファイル
+- `src/lib/astrology/constants.ts` — `PLANET_KEYS`に`'desc'`追加。`PLANET_NAMES_JA`・`PLANET_ORB_WEIGHT`（ASC/MCと同格の10）にdescを追加
+- `src/lib/astrology/planets.ts` — `calculatePlanetPositions`でDESC座標を`ASC + 180°`として算出し返却するよう追加
+- `src/lib/astrology/aspects.ts` — `detectPairAspects`・`detectTripleAspects`の「時刻未登録時に除外する感受点」フィルタにdescを追加
+- `src/lib/astrology/directions.ts` — `PLANET_JA`にdesc追加。同様の時刻フィルタにもdesc追加
+- `src/components/fortune/WesternAstrologySection.tsx` — `PLANET_SYMBOLS`に`desc: 'DC'`追加。天体位置一覧の非表示条件・案内文にdescを追加
+- `prisma/astrology-seed.ts` — `PLANET_KEYS`・`PLANET_INFO`にdesc追加。`PAIR_DESC_6`・`TRIPLE_DESC_5`をインポートしマージ。件数コメントを462/220→546/286に更新
+- `prisma/schema.prisma` — `AspectPairData`/`AspectTripleData`のコメント件数を66ペア×7=462件→78ペア×7=546件、C(12,3)=220件→C(13,3)=286件に更新
+- `src/data/direction-master.ts` — 人生タブ（ダイレクション法）にDESC絡み12件（太陽×DESC〜MC×DESC）を追加。ユーザー提供CSV（`data_direction_added-desc.csv`）を反映
+
+### 不具合修正（実装中に発覚）
+- 提供CSVのうち12件中9件は、スプレッドシート由来と思われる列ズレ（「影響を受けやすい分野」のJSONが1列右の「この時期の過ごし方」列に入り、以降のタグ・おすすめ行動・注意ポイントも道連れで1列ずつズレる）があった。内容の意味からズレを検出し、正しい列に補正して反映した
+- 当初、DESCコンテンツ（人生タブのCSV12件・性格診断の150件）を追加するだけでは実際には表示されないことが判明。`PLANET_KEYS`（計算ロジックの起点）にdescが無いと、実際のアスペクト検出・ダイレクション計算で一切マッチしないため、計算ロジック側（上記5ファイル）の拡張も本対応に含めた
+
+### フロー・補足
+- DESC = ASC + 180°（下降点）として算出。ASC/MC同様、生まれた時間・都市が未登録の場合は計算・表示ともに非表示になる
+- `npx tsx prisma/astrology-seed.ts` で新規150件（ペア84+トリプル66）をDBにupsert。既存462+220件は非破壊
+- 実装後、`calculateDirectionAspects`を直接呼び出してDESC絡みの方位が実際に検出されること、`DIRECTION_MASTER_MAP`との紐付けが全12件正しく機能することを確認済み。ブラウザでも性格診断タブ・人生タブの双方でDESCが表示されることを確認した
+
+## 2026-07-02 占断履歴の編集機能を追加
+
+### 新規ファイル
+- `src/app/admin/history/[id]/edit/page.tsx` — 履歴1件の編集フォーム画面。既存の名前・生年月日・時刻・都市を初期値としてセット
+- `src/app/admin/history/[id]/edit/EditHistoryForm.tsx` — 編集フォームのClient Component（`/admin/lookup`と同UI構成、送信は`updateHistoryEntry`にバインド）
+
+### 修正ファイル
+- `src/app/actions/adminHistory.ts` — Server Action `updateHistoryEntry(id, prevState, formData)` を追加。バリデーション・干支/元命の再計算後、`FortuneHistory`を更新。`@@unique([adminUserId, name, birthday])`と衝突する編集（既存の別履歴と同じ名前・生年月日に変更しようとした場合）はエラーメッセージを返し、更新を中断
+- `src/app/admin/history/page.tsx` — 一覧の削除ボタンの左に「編集」リンク（`/admin/history/[id]/edit`）を追加
+
+### 不具合修正（実装中に発覚）
+- 履歴編集フォームの生年月日プリフィルが「`Date.toISOString().split('T')[0]`でUTC変換 → タイムゾーン差で前日にずれる」バグを持っていた（JST環境で1980-01-01が1979-12-31と表示される）。`getFullYear()`/`getMonth()`/`getDate()`のローカルgetterで組み立てる方式に修正。同種のパターンが`src/app/account/page.tsx`にも存在するため、必要であれば別途修正を検討
+- 重複エラー（P2002）を`e instanceof Prisma.PrismaClientKnownRequestError`で判定していたが、Turbopackのバンドル環境ではモジュール実体がずれ`instanceof`が失敗し、500エラーになっていた。`e.code === 'P2002' || e.code === '23505'`という値ベースの判定に変更して修正
+
+### フロー・補足
+- 編集後は`/admin/history/[id]`（結果表示）にリダイレクトし、再計算された占い結果がすぐ確認できる
+- 名前・生年月日を他の既存履歴と重複する内容に変更しようとした場合は保存されず、フォームにエラーメッセージが表示される（データは壊れない）
+
 ## 2026-07-02 管理者用「占断履歴」機能を追加
 
 ### 新規ファイル

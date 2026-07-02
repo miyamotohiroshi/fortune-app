@@ -21,7 +21,7 @@ export type DirectionAspectResult = {
 const PLANET_JA: Record<PlanetKey, string> = {
   sun: '太陽', moon: '月', mercury: '水星', venus: '金星', mars: '火星',
   jupiter: '木星', saturn: '土星', uranus: '天王星', neptune: '海王星',
-  pluto: '冥王星', asc: 'ASC', mc: 'MC',
+  pluto: '冥王星', asc: 'ASC', mc: 'MC', desc: 'DESC',
 }
 
 function norm360(deg: number): number {
@@ -48,7 +48,7 @@ export function calculateDirectionAspects(
   endYear: number,
 ): DirectionAspectResult[] {
   const results: DirectionAspectResult[] = []
-  const planets = (hasTime ? PLANET_KEYS : PLANET_KEYS.filter(k => k !== 'asc' && k !== 'mc')) as PlanetKey[]
+  const planets = (hasTime ? PLANET_KEYS : PLANET_KEYS.filter(k => k !== 'asc' && k !== 'mc' && k !== 'desc')) as PlanetKey[]
   const sunNatal = natalPositions.sun
   const birthYear = birthDate.getFullYear()
 

@@ -58,7 +58,15 @@ export default async function AdminHistoryPage() {
                     最終更新: {h.updatedAt.toLocaleDateString('ja-JP')}
                   </p>
                 </Link>
-                <DeleteHistoryButton id={h.id} name={h.name} />
+                <div className="flex items-center gap-1 shrink-0">
+                  <Link
+                    href={`/admin/history/${h.id}/edit`}
+                    className="text-xs text-purple-400/80 hover:text-purple-300 transition-colors px-2 py-1"
+                  >
+                    編集
+                  </Link>
+                  <DeleteHistoryButton id={h.id} name={h.name} />
+                </div>
               </div>
             ))}
           </div>

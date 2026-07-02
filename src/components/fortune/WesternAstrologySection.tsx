@@ -31,7 +31,7 @@ function toDegMin(lon: number): string {
 const PLANET_SYMBOLS: Record<PlanetKey, string> = {
   sun: '☉', moon: '☽', mercury: '☿', venus: '♀', mars: '♂',
   jupiter: '♃', saturn: '♄', uranus: '♅', neptune: '♆', pluto: '♇',
-  asc: 'AC', mc: 'MC',
+  asc: 'AC', mc: 'MC', desc: 'DC',
 }
 
 export async function WesternAstrologySection({ birthday, birthTime, birthCity }: Props) {
@@ -86,13 +86,13 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
         <h2 className="text-lg font-bold text-white">天体位置</h2>
         {!hasTime && (
           <p className="text-xs text-slate-500">
-            ※ 生まれた時間・都市を登録するとASC・MCも計算できます
+            ※ 生まれた時間・都市を登録するとASC・MC・DESCも計算できます
           </p>
         )}
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2">
           {(Object.keys(positions) as PlanetKey[]).map(planet => {
-            if ((planet === 'asc' || planet === 'mc') && !hasTime) return null
+            if ((planet === 'asc' || planet === 'mc' || planet === 'desc') && !hasTime) return null
             const lon = positions[planet]
             return (
               <div key={planet} className="flex items-center gap-2 text-sm">

@@ -30,7 +30,7 @@ export function detectPairAspects(
   hasTime: boolean
 ): PairAspect[] {
   const results: PairAspect[] = []
-  const keys = hasTime ? PLANET_KEYS : PLANET_KEYS.filter(k => k !== 'asc' && k !== 'mc')
+  const keys = hasTime ? PLANET_KEYS : PLANET_KEYS.filter(k => k !== 'asc' && k !== 'mc' && k !== 'desc')
 
   for (let i = 0; i < keys.length; i++) {
     for (let j = i + 1; j < keys.length; j++) {
@@ -62,7 +62,7 @@ export function detectTripleAspects(
   hasTime: boolean
 ): TripleAspect[] {
   const results: TripleAspect[] = []
-  const keys = hasTime ? PLANET_KEYS : PLANET_KEYS.filter(k => k !== 'asc' && k !== 'mc')
+  const keys = hasTime ? PLANET_KEYS : PLANET_KEYS.filter(k => k !== 'asc' && k !== 'mc' && k !== 'desc')
 
   // Build a lookup of pairs that are in aspect
   type PairKey = string

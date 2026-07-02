@@ -90,11 +90,13 @@ export function calculatePlanetPositions(
 
   let asc = 0
   let mc = 0
+  let desc = 0
   if (birthTime && cityCoords) {
     const result = calcASCMC(date, cityCoords)
     asc = result.asc
     mc = result.mc
+    desc = norm360(asc + 180) // DESC(下降点)はASCの対向点
   }
 
-  return { sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto, asc, mc }
+  return { sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto, asc, mc, desc }
 }
