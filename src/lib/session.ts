@@ -1,6 +1,7 @@
 import 'server-only'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
+import { prisma } from '@/src/lib/prisma'
 
 const secretKey = process.env.SESSION_SECRET
 const encodedKey = new TextEncoder().encode(secretKey)
@@ -47,4 +48,10 @@ export async function getSession() {
   const cookieStore = await cookies()
   const session = cookieStore.get('session')?.value
   return decrypt(session)
+}
+
+export async function getCurrentUser() {
+  const session = await getSession()
+  if (!session?.userId) return null
+  return prisma.user.findUnique({ where: { id: session.userId as string } })
 }

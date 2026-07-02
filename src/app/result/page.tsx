@@ -51,15 +51,28 @@ export default async function ResultPage() {
             <p className="text-sm text-slate-400">{user.nickname}さんの</p>
             <h1 className="text-3xl font-bold text-white">占い結果</h1>
           </div>
-          <Link
-            href="/account"
-            className="mt-1 w-10 h-10 rounded-xl bg-[#1a1a3a] border border-purple-900/50 flex items-center justify-center text-purple-400 hover:border-purple-500/70 hover:text-purple-300 transition-all"
-            title="会員情報"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-            </svg>
-          </Link>
+          <div className="flex items-center gap-2">
+            {user.role === 'admin' && (
+              <Link
+                href="/admin/history"
+                className="mt-1 w-10 h-10 rounded-xl bg-[#1a1a3a] border border-purple-900/50 flex items-center justify-center text-purple-400 hover:border-purple-500/70 hover:text-purple-300 transition-all"
+                title="占断履歴"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Link>
+            )}
+            <Link
+              href="/account"
+              className="mt-1 w-10 h-10 rounded-xl bg-[#1a1a3a] border border-purple-900/50 flex items-center justify-center text-purple-400 hover:border-purple-500/70 hover:text-purple-300 transition-all"
+              title="会員情報"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+              </svg>
+            </Link>
+          </div>
         </div>
 
         {/* ── タブ ── */}

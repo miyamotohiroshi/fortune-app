@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-07-02 管理者用「占断履歴」機能を追加
+
+### 新規ファイル
+- `src/app/admin/layout.tsx` — `/admin/*` 配下の権限ガード。未ログインは`/login`へ、`role !== "admin"`は`/`へリダイレクト
+- `src/app/admin/lookup/page.tsx` — 管理者が占断対象者の名前・生年月日（任意で時刻/都市）を入力するフォーム。`/try`の入力フォームと同構成
+- `src/app/admin/history/page.tsx` — 管理者本人に紐づく占断履歴の一覧（名前・最終更新日、削除ボタン付き）
+- `src/app/admin/history/[id]/page.tsx` — 履歴1件の詳細表示。`/try/result`と同じ`ResultTabs`構成で結果を再現
+- `src/app/admin/history/DeleteHistoryButton.tsx` — 確認ダイアログ付きの削除ボタン（Client Component）
+- `src/app/actions/adminHistory.ts` — Server Actions: `lookupAndSaveHistory`（計算して`FortuneHistory`にupsert保存）、`deleteHistory`（所有者チェック付き削除）
+
+### 修正ファイル
+- `prisma/schema.prisma` — `User`に`role`（デフォルト`"user"`）を追加。新規モデル`FortuneHistory`（`adminUserId`+`name`+`birthday`でユニーク制約、同一人物の再検索は上書き）を追加
+- `src/lib/session.ts` — `getCurrentUser()`を追加（セッションからユーザーレコード取得を共通化）
+- `src/app/result/page.tsx` — `role === "admin"`のユーザーにのみ`/admin/history`への導線アイコンを表示
+
+### フロー・補足
+- 管理者権限のあるアカウントでログインした場合のみ、他人（占断対象者）を名前・生年月日で検索でき、結果は自動的に履歴として保存される
+- 同じ名前・生年月日で再検索すると既存の履歴を上書き（1人1レコード）。生年月日が異なれば別人として新規レコードになる
+- 履歴一覧から名前をクリックすると過去の結果に切り替えられ、削除ボタン（確認ダイアログあり）で完全削除できる
+- 管理者への昇格はUIを設けておらず、DBの`User.role`を直接`"admin"`に更新する必要がある（例: `npx prisma studio`）
+- DBスキーマ反映は`npx prisma migrate dev`ではなく`npx prisma db push`で実施。このプロジェクトは元々`prisma/migrations`履歴を持たずDBが構築されていたため、`migrate dev`はdrift検出により全データリセットを提案してくる。既存データを保持するため`db push`を使用した
+
 ## 2026-07-01 月絡みアスペクト4件のデータ修正を反映
 
 ### 修正ファイル
