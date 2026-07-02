@@ -35,8 +35,8 @@ function calcASCMC(date: Date, coords: CityCoords): { asc: number; mc: number } 
   const mc = norm360(mcRad / DEG)
 
   const ascRad = Math.atan2(
-    -Math.cos(ramcRad),
-    Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad)
+    Math.cos(ramcRad),
+    -(Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad))
   )
   const asc = norm360(ascRad / DEG)
 
