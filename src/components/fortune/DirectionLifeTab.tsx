@@ -298,7 +298,7 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
   useEffect(() => {
     if (!scrollRef.current) return
     const idx = currentYear - startYear
-    const colWidth = 88
+    const colWidth = 100
     const containerWidth = scrollRef.current.clientWidth
     scrollRef.current.scrollLeft = Math.max(0, idx * colWidth - containerWidth / 2 + colWidth / 2)
   }, [currentYear, startYear])
