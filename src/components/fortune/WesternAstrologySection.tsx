@@ -2,6 +2,7 @@ import { prisma } from '@/src/lib/prisma'
 import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { detectPairAspects, detectTripleAspects, tripleComboKey, pairComboKey } from '@/src/lib/astrology/aspects'
 import { calculateHouseCusps, assignPlanetsToHouses } from '@/src/lib/astrology/houses'
+import { HouseList } from './HouseList'
 import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_SYMBOLS } from '@/src/lib/astrology/constants'
 import type { PlanetKey } from '@/src/lib/astrology/constants'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
@@ -134,35 +135,10 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
             ※ 生まれた時間・都市を登録するとハウスも計算できます
           </p>
         ) : (
-          <div className="mt-2">
-            {houseCusps.map((cusp, i) => {
-              const houseNum = i + 1
-              const planets = housePlanets[houseNum] ?? []
-              return (
-                <div
-                  key={houseNum}
-                  className="flex items-center gap-3 text-sm py-1.5 border-b border-slate-800/40 last:border-0"
-                >
-                  <span className="text-purple-400 w-20 shrink-0 font-medium whitespace-nowrap">第{houseNum}ハウス</span>
-                  <span className="text-slate-500 text-xs w-24 shrink-0">
-                    {toZodiacSign(cusp)} {toDegMin(cusp)}
-                  </span>
-                  <span className="flex-1 text-white">
-                    {planets.length > 0 ? (
-                      planets.map(p => (
-                        <span key={p} className="inline-flex items-center gap-1 mr-3">
-                          <span className="text-purple-300 font-mono">{PLANET_SYMBOLS[p]}</span>
-                          <span className="text-slate-300 text-xs">{PLANET_NAMES_JA[p]}</span>
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-slate-600">－</span>
-                    )}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+          <>
+            <p className="text-xs text-slate-500">天体名をタップすると解説が表示されます</p>
+            <HouseList houseCusps={houseCusps} housePlanets={housePlanets} />
+          </>
         )}
       </div>
 
