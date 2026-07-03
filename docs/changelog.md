@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-03 「2天体のアスペクト」からASC・DESC・MC絡みを非表示化
+
+### 修正ファイル
+- `src/components/fortune/WesternAstrologySection.tsx` — 「2天体のアスペクト」一覧に`visiblePairAspects`（ASC・DESC・MCを含むペアを除外したフィルタ済みリスト）を導入し、表示・DB問い合わせ・空表示判定をこちらに切り替え。計算自体（`detectPairAspects`の結果）とそれを使う3天体判定（`detectTripleAspects`）には手を加えていないため、ASC・DESC・MCが絡む2天体の判定は内部的に継続して行われ、「3天体の組み合わせ」ではこれらを含む組み合わせが引き続き表示される
+
+### フロー・補足
+- ブラウザで確認: 「2天体のアスペクト」一覧にASC・DESC・MCが一切表示されないこと、「3天体の組み合わせ」ではASC・DESC・MCを含む組み合わせが引き続き表示されることを確認済み
+
 ## 2026-07-02 人生年表の自動中央スクロールを修正
 
 ### 修正ファイル

@@ -52,6 +52,12 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
     return od !== 0 ? od : a.orb - b.orb
   })
 
+  // ASC・DESC・MCが絡む2天体アスペクトは計算はするが一覧には表示しない（3天体の組み合わせでは表示する）
+  const HIDDEN_IN_PAIR_LIST: PlanetKey[] = ['asc', 'desc', 'mc']
+  const visiblePairAspects = pairAspects.filter(
+    pa => !HIDDEN_IN_PAIR_LIST.includes(pa.planet1) && !HIDDEN_IN_PAIR_LIST.includes(pa.planet2)
+  )
+
   const rawTripleAspects = detectTripleAspects(positions, rawPairAspects, hasTime)
   const tripleAspects = [...rawTripleAspects].sort((a, b) => {
     const ordA = [...a.aspects].map(asp => ASPECT_SORT_ORDER[asp]).sort((x, y) => x - y)
@@ -65,7 +71,7 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
   })
 
   // DB からアスペクト説明を取得
-  const pairIds = pairAspects.map(pa => pairComboKey(pa.planet1, pa.planet2, pa.aspect))
+  const pairIds = visiblePairAspects.map(pa => pairComboKey(pa.planet1, pa.planet2, pa.aspect))
   const tripleIds = tripleAspects.map(ta => tripleComboKey(ta.planets))
 
   const [pairDataList, tripleDataList] = await Promise.all([
@@ -157,7 +163,7 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
       </div>
 
       {/* ── ペアアスペクト ── */}
-      {pairAspects.length > 0 && (
+      {visiblePairAspects.length > 0 && (
         <div
           className="rounded-2xl border border-indigo-900/40 p-5 space-y-4"
           style={{ background: 'rgba(9,9,25,0.6)' }}
@@ -168,7 +174,7 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
           </div>
 
           <div className="space-y-4">
-            {pairAspects.map(pa => {
+            {visiblePairAspects.map(pa => {
               const key = pairComboKey(pa.planet1, pa.planet2, pa.aspect)
               const data = pairDataMap.get(key)
               return (
@@ -226,7 +232,7 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
         </div>
       )}
 
-      {pairAspects.length === 0 && (
+      {visiblePairAspects.length === 0 && (
         <div
           className="rounded-2xl border border-slate-800/40 p-5 text-center"
           style={{ background: 'rgba(9,9,25,0.6)' }}
