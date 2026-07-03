@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-03 「3天体の組み合わせ」でASC・DESC・MCが2つ以上絡むものを非表示化
+
+### 修正ファイル
+- `src/components/fortune/WesternAstrologySection.tsx` — 「2天体のアスペクト」で導入した`ANGLE_POINTS`（ASC・DESC・MC）を流用し、`detectTripleAspects`の結果から3天体のうち`ANGLE_POINTS`が2つ以上含まれる組み合わせ（例: 太陽×ASC×MC）を除外する`visibleTripleAspects`を追加。感受点が1つまで（例: 月×土星×MC）の組み合わせは従来通り表示される
+
+### フロー・補足
+- ブラウザで確認: ASC・DESC・MCが2つ以上絡む組み合わせが一切表示されないこと、1つだけ絡む組み合わせ（「月×土星×MC」等）は引き続き表示されることを確認済み
+
 ## 2026-07-03 「2天体のアスペクト」からASC・DESC・MC絡みを非表示化
 
 ### 修正ファイル

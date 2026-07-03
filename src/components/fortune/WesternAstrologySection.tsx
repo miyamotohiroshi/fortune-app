@@ -52,14 +52,18 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
     return od !== 0 ? od : a.orb - b.orb
   })
 
-  // ASC・DESC・MCが絡む2天体アスペクトは計算はするが一覧には表示しない（3天体の組み合わせでは表示する）
-  const HIDDEN_IN_PAIR_LIST: PlanetKey[] = ['asc', 'desc', 'mc']
+  // ASC・DESC・MC（感受点）が絡む2天体アスペクトは計算はするが一覧には表示しない（3天体の組み合わせでは1つまでなら表示する）
+  const ANGLE_POINTS: PlanetKey[] = ['asc', 'desc', 'mc']
   const visiblePairAspects = pairAspects.filter(
-    pa => !HIDDEN_IN_PAIR_LIST.includes(pa.planet1) && !HIDDEN_IN_PAIR_LIST.includes(pa.planet2)
+    pa => !ANGLE_POINTS.includes(pa.planet1) && !ANGLE_POINTS.includes(pa.planet2)
   )
 
   const rawTripleAspects = detectTripleAspects(positions, rawPairAspects, hasTime)
-  const tripleAspects = [...rawTripleAspects].sort((a, b) => {
+  // ASC・DESC・MCが2つ以上絡む組み合わせ（例: 太陽×ASC×MC）は表示しない。1つまでは表示する
+  const visibleTripleAspects = rawTripleAspects.filter(
+    ta => ta.planets.filter(p => ANGLE_POINTS.includes(p)).length < 2
+  )
+  const tripleAspects = [...visibleTripleAspects].sort((a, b) => {
     const ordA = [...a.aspects].map(asp => ASPECT_SORT_ORDER[asp]).sort((x, y) => x - y)
     const ordB = [...b.aspects].map(asp => ASPECT_SORT_ORDER[asp]).sort((x, y) => x - y)
     for (let i = 0; i < 3; i++) {
