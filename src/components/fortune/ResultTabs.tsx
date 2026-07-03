@@ -2,27 +2,30 @@
 
 import { useState } from 'react'
 
-const TABS = [
+const ALL_TABS = [
   { label: '性格占断', sub: '四柱推命' },
   { label: '性格占断', sub: '西洋占星術' },
   { label: '人生', sub: '西洋占星術' },
+  { label: '運気', sub: '今年' },
 ]
 
 type Props = {
   tab0: React.ReactNode
   tab1: React.ReactNode
   tab2: React.ReactNode
+  tab3?: React.ReactNode
 }
 
-export function ResultTabs({ tab0, tab1, tab2 }: Props) {
+export function ResultTabs({ tab0, tab1, tab2, tab3 }: Props) {
   const [active, setActive] = useState(0)
-  const panels = [tab0, tab1, tab2]
+  const panels = [tab0, tab1, tab2, ...(tab3 !== undefined ? [tab3] : [])]
+  const tabs = ALL_TABS.slice(0, panels.length)
 
   return (
     <div>
       {/* タブナビゲーション */}
       <div className="flex border-b border-slate-800 mb-5">
-        {TABS.map((tab, i) => (
+        {tabs.map((tab, i) => (
           <button
             key={i}
             onClick={() => setActive(i)}

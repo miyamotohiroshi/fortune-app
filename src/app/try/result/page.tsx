@@ -5,6 +5,7 @@ import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSectio
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
+import { TransitSection } from '@/src/components/fortune/TransitSection'
 
 export default async function TryResultPage({
   searchParams,
@@ -82,6 +83,13 @@ export default async function TryResultPage({
           }
           tab2={
             <DirectionLifeSection
+              birthday={birthday}
+              birthTime={birthTime ?? null}
+              birthCity={birthCity ?? null}
+            />
+          }
+          tab3={
+            <TransitSection
               birthday={birthday}
               birthTime={birthTime ?? null}
               birthCity={birthCity ?? null}

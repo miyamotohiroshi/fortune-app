@@ -6,6 +6,7 @@ import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSectio
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
+import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 
 export default async function AdminHistoryDetailPage({
@@ -60,6 +61,13 @@ export default async function AdminHistoryDetailPage({
           }
           tab2={
             <DirectionLifeSection
+              birthday={history.birthday}
+              birthTime={history.birthTime}
+              birthCity={history.birthCity}
+            />
+          }
+          tab3={
+            <TransitSection
               birthday={history.birthday}
               birthTime={history.birthTime}
               birthCity={history.birthCity}
