@@ -14,14 +14,22 @@ export function TransitSection({ birthday, birthTime, birthCity }: Props) {
   const hasTime = !!birthTime && !!cityCoords
 
   const natalPositions = calculatePlanetPositions(birthday, birthTime, cityCoords)
-  const year = new Date().getFullYear()
-  const bands = calculateTransitBands(natalPositions, year, hasTime)
+
+  const now = new Date()
+  const yearThis = now.getFullYear()
+  const todayISO = `${yearThis}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+  // 今年を含めた5年分（今年〜4年先）
+  const years = Array.from({ length: 5 }, (_, i) => {
+    const year = yearThis + i
+    return { year, bands: calculateTransitBands(natalPositions, year, hasTime) }
+  })
 
   return (
     <div className="space-y-3">
       <div>
         <p className="text-[10px] text-purple-400 tracking-widest font-medium">TRANSIT</p>
-        <h2 className="text-lg font-bold text-white mt-0.5">{year}年の運気</h2>
+        <h2 className="text-lg font-bold text-white mt-0.5">運気（トランシット）</h2>
         <p className="text-xs text-slate-500 mt-1">
           トランシット（現在の空の星）が出生図に与える影響の時期です。冥王星・海王星・天王星・土星・木星の順に表示しています。
         </p>
@@ -31,7 +39,7 @@ export function TransitSection({ birthday, birthTime, birthCity }: Props) {
           </p>
         )}
       </div>
-      <TransitTimeline bands={bands} year={year} />
+      <TransitTimeline years={years} todayISO={todayISO} />
     </div>
   )
 }
