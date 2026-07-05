@@ -36,6 +36,9 @@ const PLANET_SYMBOLS: Record<PlanetKey, string> = {
   asc: 'AC', mc: 'MC', desc: 'DC',
 }
 
+// 0°(合)・90°(矩)・180°(衝) は緊張・葛藤が強く出るハードアスペクト
+const HARD_ASPECTS = new Set(['conjunction', 'square', 'opposition'])
+
 export async function WesternAstrologySection({ birthday, birthTime, birthCity }: Props) {
   const cityCoords = birthCity ? (CITY_COORDS[birthCity] ?? null) : null
   const hasTime = !!birthTime && !!cityCoords
@@ -157,14 +160,32 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
             {visiblePairAspects.map(pa => {
               const key = pairComboKey(pa.planet1, pa.planet2, pa.aspect)
               const data = pairDataMap.get(key)
+              // 0°(合)・90°(矩)・180°(衝) は影響が強く出るハードアスペクト。温度感を強めて表示する
+              const isHard = HARD_ASPECTS.has(pa.aspect)
               return (
-                <div key={key} className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0">
+                <div
+                  key={key}
+                  className={`border-b border-slate-800/60 pb-4 last:border-0 last:pb-0${
+                    isHard ? ' border-l-2 border-l-amber-500/50 pl-3' : ''
+                  }`}
+                >
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-lg text-purple-300">{ASPECT_SYMBOLS[pa.aspect]}</span>
+                    <span className={`text-lg ${isHard ? 'text-amber-300' : 'text-purple-300'}`}>
+                      {ASPECT_SYMBOLS[pa.aspect]}
+                    </span>
                     <span className="text-sm font-semibold text-white">
                       {PLANET_NAMES_JA[pa.planet1]} × {PLANET_NAMES_JA[pa.planet2]}
                     </span>
-                    <span className="text-xs text-slate-500 ml-auto flex items-baseline gap-1.5">
+                    {isHard && (
+                      <span className="text-[10px] font-bold text-amber-300 border border-amber-500/40 bg-amber-500/10 rounded px-1 leading-tight">
+                        強
+                      </span>
+                    )}
+                    <span
+                      className={`text-xs ml-auto flex items-baseline gap-1.5 ${
+                        isHard ? 'text-amber-400/80' : 'text-slate-500'
+                      }`}
+                    >
                       {ASPECT_NAMES_JA[pa.aspect]}
                       <span className="text-[10px] text-slate-600">orb {pa.orb.toFixed(1)}°</span>
                     </span>

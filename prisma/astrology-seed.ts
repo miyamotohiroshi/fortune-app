@@ -20,6 +20,9 @@ import { TRIPLE_DESC_2 } from './triple-desc-2'
 import { TRIPLE_DESC_3 } from './triple-desc-3'
 import { TRIPLE_DESC_4 } from './triple-desc-4'
 import { TRIPLE_DESC_5 } from './triple-desc-5'
+import { TRIPLE_DESC_SUN } from './triple-desc-sun'
+import { PAIR_DESC_ENRICHED } from './pair-desc-enriched'
+import { TRIPLE_DESC_ENRICHED } from './triple-desc-enriched'
 
 const prisma = new PrismaClient()
 
@@ -75,6 +78,7 @@ const ALL_PAIR_DESC: Record<string, { title: string; description: string }> = {
   ...PAIR_DESC_4,
   ...PAIR_DESC_5,
   ...PAIR_DESC_6,
+  ...PAIR_DESC_ENRICHED, // 膨らませ版（フランク現代口語・全546件）で上書き
 }
 
 const ALL_TRIPLE_DESC: Record<string, { title: string; description: string }> = {
@@ -83,6 +87,8 @@ const ALL_TRIPLE_DESC: Record<string, { title: string; description: string }> = 
   ...TRIPLE_DESC_3,
   ...TRIPLE_DESC_4,
   ...TRIPLE_DESC_5,
+  ...TRIPLE_DESC_SUN,
+  ...TRIPLE_DESC_ENRICHED, // 膨らませ版（フランク現代口語・全286件）で最終上書き
 }
 
 // ─── フォールバック生成（キーが見つからない場合のみ使用）────────────────────
