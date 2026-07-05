@@ -6,6 +6,7 @@ import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrolo
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
+import { computeMeishiki } from '@/src/lib/meishikiCalc'
 
 export default async function TryResultPage({
   searchParams,
@@ -34,6 +35,10 @@ export default async function TryResultPage({
   const m = parseInt(birthdayRaw.slice(4, 6), 10) - 1
   const d = parseInt(birthdayRaw.slice(6, 8), 10)
   const birthday = new Date(y, m, d)
+
+  // 命式図（四柱）— m は 0 始まりなので +1 して渡す
+  const birthHour = birthTime ? parseInt(birthTime.split(':')[0], 10) : null
+  const meishiki = computeMeishiki(y, m + 1, d, Number.isNaN(birthHour as number) ? null : birthHour)
 
   const signupParams = new URLSearchParams()
   if (displayName && displayName !== 'あなた') signupParams.set('nickname', displayName)
@@ -72,6 +77,7 @@ export default async function TryResultPage({
               nickname={displayName}
               zodiac={zodiac}
               genmei={genmei}
+              meishiki={meishiki}
             />
           }
           tab1={
