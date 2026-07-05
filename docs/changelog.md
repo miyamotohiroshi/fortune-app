@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-07-06 西洋占星術アスペクト占断文の全面刷新（フランク現代口語・全832件）＋本の核特徴で監査補強
+
+### 新規ファイル
+- `prisma/pair-desc-enriched.ts` — 全ペア546件の膨らませ版（フランク現代口語）。seedで最後にspreadし既存 PAIR_DESC_1..6 を上書き
+- `prisma/triple-desc-enriched.ts` — 全トリプル286件の膨らませ版。seedで最後にspreadし既存 TRIPLE_DESC_* を上書き
+
+### 修正ファイル
+- `prisma/astrology-seed.ts` — `PAIR_DESC_ENRICHED` / `TRIPLE_DESC_ENRICHED` をimportし、各ALLマップの末尾でspreadして全上書き
+- `prisma/pair-desc-enriched.ts` — 監査で核が抜けていた金星×冥王星7件（魔力/美しさ/運命的な恋）ほかペア2件を書き直し
+- `prisma/triple-desc-enriched.ts` — 監査でトリプル25件を書き直し（例: 月・水星・土星は本と逆だった慎重派→移り気に是正）
+
+### フロー・補足
+- 文体は「フランクな現代口語」に刷新（です・ます維持、話しかける口調、カギ括弧で気持ち代弁、断定的・宿命的表現は回避）。参照元は docs/出生.pdf（本文は転記せずオリジナル書き起こし）
+- 温度感の強調は引き続きUIのみ（合・矩・衝の暖色＋「強」バッジ）
+- 生成→ID全件検証→title決定生成→enrichedファイル書き出し→`npm run seed:astrology` の流れ。全マルチエージェントWorkflowで実施
+- 監査Workflowで全832件を「本の核特徴を拾えているか」で点検し、抜けが目立つ27件のみ補強（多くのセクションは修正不要）
+- 旧 pair-desc-1..6 / triple-desc-1..5 / triple-desc-sun はenrichedで完全上書きされ実質未使用（削除禁止ルールにより非破壊で保持）
+
 ## 2026-07-06 四柱推命の性格占断に命式図（四柱一覧表）を追加
 
 ### 新規ファイル
