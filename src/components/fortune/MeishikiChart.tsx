@@ -53,6 +53,17 @@ export function MeishikiChart({ meishiki }: MeishikiChartProps) {
   // 各行のセル配列を作る小ヘルパー
   const isDay = (p: Pillar) => p.label === '日'
 
+  // 五行・陰陽・身強弱の表示用に派生値を算出
+  const maxEl = Math.max(1, ...meishiki.elements)
+  const yyTotal = meishiki.yin + meishiki.yang
+  const yinPct = yyTotal > 0 ? (meishiki.yin / yyTotal) * 100 : 50
+  const strengthStyle =
+    meishiki.strength.label === '身強'
+      ? { bg: 'rgba(244,63,94,0.18)', color: '#fda4af' }
+      : meishiki.strength.label === '身弱'
+        ? { bg: 'rgba(56,189,248,0.18)', color: '#7dd3fc' }
+        : { bg: 'rgba(148,163,184,0.18)', color: '#e2e8f0' }
+
   return (
     <div className="p-6">
       <div className="flex items-center gap-2 mb-5">
@@ -182,9 +193,76 @@ export function MeishikiChart({ meishiki }: MeishikiChartProps) {
         </table>
       </div>
 
+      {/* 五行・陰陽・身強弱 */}
+      <div className="mt-6 space-y-4">
+
+        {/* 五行バランス */}
+        <div>
+          <p className="text-[11px] text-slate-500 mb-2 tracking-wider">五行バランス</p>
+          <div className="grid grid-cols-5 gap-2">
+            {ELEMENTS.map((el, i) => {
+              const s = ELEMENT_STYLE[i]
+              const n = meishiki.elements[i]
+              const pct = maxEl > 0 ? (n / maxEl) * 100 : 0
+              return (
+                <div
+                  key={el}
+                  className="flex flex-col items-center gap-1 rounded-lg py-2 px-1"
+                  style={{ backgroundColor: s.bg }}
+                >
+                  <span className="text-sm font-bold leading-none" style={{ color: s.color }}>{el}</span>
+                  <span className="text-lg font-bold leading-none text-white">{n}</span>
+                  <span className="w-full h-1 rounded-full bg-black/30 overflow-hidden">
+                    <span className="block h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: s.color }} />
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 陰陽バランス */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[11px] text-slate-500 tracking-wider">陰陽バランス</p>
+            <p className="text-[11px] text-slate-400">
+              <span className="text-slate-300">陰 {meishiki.yin}</span>
+              <span className="mx-1.5 text-slate-600">/</span>
+              <span className="text-amber-300">陽 {meishiki.yang}</span>
+            </p>
+          </div>
+          <div className="flex h-2 rounded-full overflow-hidden bg-black/30">
+            <span className="bg-slate-500/70" style={{ width: `${yinPct}%` }} />
+            <span className="bg-amber-400/70" style={{ width: `${100 - yinPct}%` }} />
+          </div>
+        </div>
+
+        {/* 身強・身弱 */}
+        <div className="rounded-xl border border-purple-900/40 p-4" style={{ background: 'rgba(20,16,45,0.6)' }}>
+          <div className="flex items-center gap-3 mb-2">
+            <span
+              className="inline-flex items-center rounded-md px-3 py-1 text-base font-bold"
+              style={{ backgroundColor: strengthStyle.bg, color: strengthStyle.color }}
+            >
+              {meishiki.strength.label}
+            </span>
+            <span className="text-[11px] text-slate-500">
+              味方（比劫・印）<span className="text-slate-300 font-medium">{meishiki.strength.ally}</span>
+              <span className="mx-1.5 text-slate-600">/</span>
+              敵（食傷・財・官）<span className="text-slate-300 font-medium">{meishiki.strength.enemy}</span>
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed">{meishiki.strength.desc}</p>
+        </div>
+
+        <p className="text-[10px] text-slate-600 leading-relaxed">
+          ※ 五行・陰陽は天干・地支の8字を各1点で集計。身強弱は日主を強める星（比肩・劫財・偏印・印綬）と弱める星の比較で、月支（月令）を重めに見て判定しています。
+        </p>
+      </div>
+
       {hourUnknown && (
         <p className="mt-3 text-[11px] text-slate-600 leading-relaxed">
-          ※ 出生時刻が未登録のため、時柱は算出していません。会員情報で出生時刻を登録すると時柱も表示されます。
+          ※ 出生時刻が未登録のため、時柱を除いた七字で算出しています。会員情報で出生時刻を登録すると時柱も反映されます。
         </p>
       )}
     </div>

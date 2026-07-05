@@ -107,11 +107,33 @@ export type Pillar = {
   hasRoot: boolean | null
 }
 
+/** 日主（身）の強弱判定 */
+export type StrengthAnalysis = {
+  /** 身強 / 中庸 / 身弱 */
+  label: string
+  /** 日主を強める星（比劫・印）の点数 */
+  ally: number
+  /** 日主を弱める星（食傷・財・官殺）の点数 */
+  enemy: number
+  /** 日主の五行インデックス */
+  dayElement: number
+  /** 短い解説 */
+  desc: string
+}
+
 export type Meishiki = {
   /** 年・月・日・時 の順 */
   pillars: Pillar[]
   /** 時柱が時刻不明で算出できないか */
   hourUnknown: boolean
+  /** 五行の個数 [木, 火, 土, 金, 水]（干支8字で集計） */
+  elements: number[]
+  /** 陰の個数 */
+  yin: number
+  /** 陽の個数 */
+  yang: number
+  /** 日主の強弱 */
+  strength: StrengthAnalysis
 }
 
 // ─── メイン ──────────────────────────────────────────────────────────────────
@@ -187,15 +209,84 @@ export function computeMeishiki(
     }
   }
 
-  return {
-    pillars: [
-      build('年', yearStem, yearBranch, false),
-      build('月', monthStem, monthBranch, false),
-      build('日', dayStem, dayBranch, true),
-      build('時', hourStem, hourBranch, false),
-    ],
-    hourUnknown: hour === null,
+  const pillars = [
+    build('年', yearStem, yearBranch, false),
+    build('月', monthStem, monthBranch, false),
+    build('日', dayStem, dayBranch, true),
+    build('時', hourStem, hourBranch, false),
+  ]
+
+  // ── 五行・陰陽バランス（天干＋地支の8字を各1点で集計） ──
+  const elements = [0, 0, 0, 0, 0]
+  let yin = 0
+  let yang = 0
+  for (const p of pillars) {
+    if (p.stem !== null) {
+      elements[STEM_ELEMENT[p.stem]] += 1
+      STEM_POLARITY[p.stem] === 1 ? yang++ : yin++
+    }
+    if (p.branch !== null) {
+      elements[BRANCH_ELEMENT[p.branch]] += 1
+      BRANCH_POLARITY[p.branch] === 1 ? yang++ : yin++
+    }
   }
+
+  // ── 身強・身弱の判定 ──
+  // 味方＝比肩(1)・劫財(2)・偏印(9)・印綬(10)、敵＝食傷・財・官殺
+  const ALLY_TSUHEN = new Set([1, 2, 9, 10])
+  let ally = 0
+  let enemy = 0
+  for (const p of pillars) {
+    // 天干（日柱は日主そのもの＝味方）
+    if (p.stem !== null) {
+      if (p.label === '日') ally += 1
+      else if (p.tsuhenStem !== null) ALLY_TSUHEN.has(p.tsuhenStem) ? ally++ : enemy++
+    }
+    // 地支（本気）。月支は月令として重み2
+    if (p.tsuhenBranch !== null) {
+      const w = p.label === '月' ? 2 : 1
+      ALLY_TSUHEN.has(p.tsuhenBranch) ? (ally += w) : (enemy += w)
+    }
+  }
+  const de = STEM_ELEMENT[dayStem]
+  let label: string
+  let desc: string
+  if (ally > enemy) {
+    label = '身強'
+    desc = `日主（${ELEMENTS[de]}）を強める星が多く、自我とエネルギーが強いタイプ。自立心が高く責任や財も自力で扱える一方、我が強く出やすい面も。`
+  } else if (ally < enemy) {
+    label = '身弱'
+    desc = `日主（${ELEMENTS[de]}）を弱める星が多く、周囲との協調やサポートの中で力を発揮するタイプ。柔軟で気配り上手な一方、環境に影響されやすい面も。`
+  } else {
+    label = '中庸'
+    desc = `日主（${ELEMENTS[de]}）を強める星と弱める星が拮抗したバランス型。状況に応じて強さと柔軟さを使い分けられるタイプ。`
+  }
+
+  return {
+    pillars,
+    hourUnknown: hour === null,
+    elements,
+    yin,
+    yang,
+    strength: { label, ally, enemy, dayElement: de, desc },
+  }
+}
+
+/**
+ * DB 保存の birthday(Date) と birthTime(文字列 "HH:MM") から命式を算出する。
+ *
+ * 生年月日は「日本時間(JST)の暦日」として解釈する。birthday は JST 基準の
+ * 深夜0時で保存される（例: 1982-10-07 → 1982-10-06T15:00:00Z）ため、UTC で
+ * 日付を読むと前日にズレてしまう。ここで +9h して JST の暦日を復元することで、
+ * 保存済みの日柱(zodiacDayId)・元命(genmeiId) と必ず一致させる。
+ */
+export function computeMeishikiFromBirth(birthday: Date, birthTime: string | null): Meishiki {
+  const jst = new Date(birthday.getTime() + 9 * 60 * 60 * 1000)
+  const year = jst.getUTCFullYear()
+  const month = jst.getUTCMonth() + 1
+  const day = jst.getUTCDate()
+  const h = birthTime ? parseInt(birthTime.split(':')[0], 10) : null
+  return computeMeishiki(year, month, day, Number.isNaN(h as number) ? null : h)
 }
 
 // ─── 表示用ヘルパー ──────────────────────────────────────────────────────────

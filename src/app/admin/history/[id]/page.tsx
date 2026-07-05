@@ -8,6 +8,7 @@ import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSect
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
+import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 
 export default async function AdminHistoryDetailPage({
   params,
@@ -28,6 +29,9 @@ export default async function AdminHistoryDetailPage({
   ])
 
   if (!zodiac) notFound()
+
+  // 命式図（四柱）— 生年月日はJSTの暦日で解釈（保存済みの日柱・元命と一致させる）
+  const meishiki = computeMeishikiFromBirth(history.birthday, history.birthTime)
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
@@ -50,6 +54,7 @@ export default async function AdminHistoryDetailPage({
               nickname={history.name}
               zodiac={zodiac}
               genmei={genmei}
+              meishiki={meishiki}
             />
           }
           tab1={

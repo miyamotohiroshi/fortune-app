@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-07-06 命式図の生年月日が1日ズレる不具合を修正（元命と月柱通変星の不一致）
+
+### 背景・原因
+- 命式図の「月柱の通変星（地支）」が、上部の元命（通変星・元命）と食い違う事例を確認（例: 元命=偏印 なのに命式表の月柱=印綬）。
+- 原因は生年月日の日付取得。DBの `birthday` は日本時間(JST)の深夜0時で保存される（例: 1982-10-07 → `1982-10-06T15:00:00Z`）ため、`birthday.toISOString().split('T')[0]` で読むと **前日(10-06)** になり、`computeMeishiki` に1日早い日付を渡していた。結果、日柱が癸亥→壬戌、日干が癸→壬に化けて全通変星がズレていた（保存済み zodiacDayId・genmeiId は10-07基準で正しく、命式表だけが誤り）。
+
+### 修正ファイル
+- `src/lib/meishikiCalc.ts` — `computeMeishikiFromBirth(birthday, birthTime)` を追加。`birthday` を +9h して **JSTの暦日**を復元してから `computeMeishiki` を呼ぶ。保存済みの日柱(zodiacDayId)・元命(genmeiId) と必ず一致する
+- `src/app/result/page.tsx` / `src/app/admin/history/[id]/page.tsx` — 手組みの `toISOString().split('T')` をやめ `computeMeishikiFromBirth` を使用
+- （`src/app/try/result/page.tsx` はクエリの数値(YYYYMMDD)を直接渡しており元から正しいため変更なし）
+
+### 検証
+- よしるん（1982-10-07 08:26、DB上 `birthday=1982-10-06T15:00Z`, zodiacDayId=60=癸亥, genmeiId=9=偏印）で確認：修正後、命式表の日柱=**癸亥**（zodiacDayId一致）、月柱通変星(地支)=**偏印**（元命一致）となり食い違い解消
+- `tsc --noEmit`・`npm run build` 通過
+
+## 2026-07-06 命式図に五行・陰陽バランスと身強／身弱の判定を追加＋管理画面にも命式図を表示
+
+### 修正ファイル
+- `src/lib/meishikiCalc.ts` — `Meishiki` に `elements`（五行の個数 [木火土金水]）・`yin`/`yang`（陰陽の個数）・`strength`（身強弱判定）を追加。五行・陰陽は天干＋地支の8字を各1点で集計。身強弱は日主を強める星（比肩・劫財・偏印・印綬）と弱める星（食傷・財・官殺）の点数を比較し、月支（月令）を重み2で評価して `身強`／`中庸`／`身弱` を判定＋短い解説文を付与
+- `src/components/fortune/MeishikiChart.tsx` — 表の下に「五行バランス（五行別カード＋バー）」「陰陽バランス（陰陽の割合バー）」「身強・身弱（バッジ＋味方/敵の点数＋解説）」を追加。集計方法の注記も表示
+- `src/app/admin/history/[id]/page.tsx` — `computeMeishiki` で命式を算出し `ShichusuimeiSection` に `meishiki` を渡すよう修正。これで管理者が閲覧する他者の占断結果でも命式図・五行/陰陽・身強弱が表示される
+
+### フロー・補足
+- 命式図の直下に五行・陰陽の強弱と、全体としての身強／身弱（＋日主の五行）が一目で分かるようになった
+- 命式図は自分の結果（/result）・お試し（/try/result）・管理履歴（/admin/history/[id]）の全経路で表示される
+- 五行は色分けカード、身強＝暖色・身弱＝寒色・中庸＝グレーのバッジで視覚的に区別
+- 型チェック（`tsc --noEmit`）・`npm run build` 通過。ブラウザで五行2/0/2/4/0・陰0/陽8・身弱（味方3/敵6）が正しく算出・描画されることを確認済み
+
 ## 2026-07-06 西洋占星術アスペクト占断文の全面刷新（フランク現代口語・全832件）＋本の核特徴で監査補強
 
 ### 新規ファイル

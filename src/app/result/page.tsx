@@ -1,7 +1,7 @@
 import { prisma } from '@/src/lib/prisma';
 import { getSession } from '@/src/lib/session';
 import { calculateGenmeiId } from '@/src/lib/zodiacCalc';
-import { computeMeishiki } from '@/src/lib/meishikiCalc';
+import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { logout } from '@/src/app/actions/auth';
@@ -39,10 +39,8 @@ export default async function ResultPage() {
 
   const genmei = await prisma.genmeiData.findUnique({ where: { id: genmeiId } });
 
-  // 命式図（四柱）— 生年月日は元命計算と同じ暦日を用いる
-  const [by, bm, bd] = user.birthday.toISOString().split('T')[0].split('-').map(Number);
-  const birthHour = user.birthTime ? parseInt(user.birthTime.split(':')[0], 10) : null;
-  const meishiki = computeMeishiki(by, bm, bd, Number.isNaN(birthHour as number) ? null : birthHour);
+  // 命式図（四柱）— 生年月日はJSTの暦日で解釈（保存済みの日柱・元命と一致させる）
+  const meishiki = computeMeishikiFromBirth(user.birthday, user.birthTime);
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
