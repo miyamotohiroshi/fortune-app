@@ -8,7 +8,7 @@ import { DIRECTION_MASTER_MAP } from '@/src/data/direction-master'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
 import { computeYearFortune, branchRelations, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
-import { NENUN_COMMON, NENUN_BY_GENMEI } from '@/src/data/nenun-master'
+import { NENUN_COMMON, NENUN_BY_GENMEI, NENUN_JUNIUN } from '@/src/data/nenun-master'
 import { AISHO_TEXT, aishoVerdict } from '@/src/data/aisho-master'
 
 // 相性トーン → 配色
@@ -558,6 +558,13 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
                 <p className="text-sm text-slate-200 leading-relaxed">{personal}</p>
               </div>
             )}
+
+            <div>
+              <p className="text-[11px] text-amber-300/80 tracking-wider mb-1.5">
+                その年の勢い（十二運「{JUNI_UN[f.juniUn]}」）
+              </p>
+              <p className="text-sm text-slate-300 leading-relaxed">{NENUN_JUNIUN[JUNI_UN[f.juniUn]]}</p>
+            </div>
 
             {f.isKubou && (
               <p className="text-[11px] text-rose-300/90 leading-relaxed">
