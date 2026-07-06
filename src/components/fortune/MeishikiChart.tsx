@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import {
   STEMS,
   BRANCHES,
@@ -12,6 +15,8 @@ import {
   type Meishiki,
   type Pillar,
 } from '@/src/lib/meishikiCalc'
+import { GOGYO_DEFICIENCY } from '@/src/data/gogyo-deficiency'
+import { JUNIUN_MASTER, JUNIUN_PILLAR_THEME } from '@/src/data/juniun-master'
 
 type MeishikiChartProps = {
   meishiki: Meishiki
@@ -50,8 +55,15 @@ function PowerStars({ power }: { power: number }) {
 export function MeishikiChart({ meishiki }: MeishikiChartProps) {
   const { pillars, hourUnknown } = meishiki
 
+  // クリックで開いている十二運（柱ラベル＋運星名）
+  const [openJuniun, setOpenJuniun] = useState<{ label: string; stage: string } | null>(null)
+
   // 各行のセル配列を作る小ヘルパー
   const isDay = (p: Pillar) => p.label === '日'
+
+  const toggleJuniun = (label: string, stage: string) => {
+    setOpenJuniun((cur) => (cur && cur.label === label && cur.stage === stage ? null : { label, stage }))
+  }
 
   // 五行・陰陽・身強弱の表示用に派生値を算出
   const maxEl = Math.max(1, ...meishiki.elements)
@@ -63,6 +75,12 @@ export function MeishikiChart({ meishiki }: MeishikiChartProps) {
       : meishiki.strength.label === '身弱'
         ? { bg: 'rgba(56,189,248,0.18)', color: '#7dd3fc' }
         : { bg: 'rgba(148,163,184,0.18)', color: '#e2e8f0' }
+
+  // 不足している五行（個数0）のインデックス
+  const deficient = meishiki.elements
+    .map((n, i) => ({ n, i }))
+    .filter((e) => e.n === 0)
+    .map((e) => e.i)
 
   return (
     <div className="p-6">
@@ -173,25 +191,68 @@ export function MeishikiChart({ meishiki }: MeishikiChartProps) {
               ))}
             </Row>
 
-            {/* 十二運（パワー） */}
+            {/* 十二運（パワー） クリックで下に説明を表示 */}
             <Row label={<>十二運<br /><span className="text-[9px] text-slate-600">(パワー)</span></>}>
-              {pillars.map((p) => (
-                <Cell key={p.label} highlight={isDay(p)}>
-                  {p.juniUn === null ? (
-                    <span className="text-slate-600 text-xs">{DASH}</span>
-                  ) : (
-                    <span className="inline-flex flex-col items-center gap-0.5">
-                      <span className="text-xs text-slate-300">{JUNI_UN[p.juniUn]}</span>
-                      <PowerStars power={juniUnPower(p.juniUn)} />
-                    </span>
-                  )}
-                </Cell>
-              ))}
+              {pillars.map((p) => {
+                const stage = p.juniUn === null ? null : JUNI_UN[p.juniUn]
+                const isOpen = !!stage && openJuniun?.label === p.label && openJuniun?.stage === stage
+                return (
+                  <Cell key={p.label} highlight={isDay(p)}>
+                    {p.juniUn === null || stage === null ? (
+                      <span className="text-slate-600 text-xs">{DASH}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => toggleJuniun(p.label, stage)}
+                        aria-expanded={isOpen}
+                        className={`inline-flex flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 transition-colors cursor-pointer hover:bg-purple-500/10 ${
+                          isOpen ? 'bg-purple-500/15 ring-1 ring-purple-400/50' : ''
+                        }`}
+                      >
+                        <span className={`text-xs font-medium underline decoration-dotted decoration-purple-400/50 underline-offset-2 ${
+                          isOpen ? 'text-purple-200' : 'text-purple-300'
+                        }`}>
+                          {stage}
+                        </span>
+                        <PowerStars power={juniUnPower(p.juniUn)} />
+                      </button>
+                    )}
+                  </Cell>
+                )
+              })}
             </Row>
 
           </tbody>
         </table>
       </div>
+
+      {/* 十二運の説明（クリックで開閉） */}
+      {openJuniun && JUNIUN_MASTER[openJuniun.label]?.[openJuniun.stage] && (
+        <div
+          className="mt-3 rounded-xl border border-purple-400/30 p-4"
+          style={{ background: 'rgba(30,22,60,0.6)' }}
+        >
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-base font-bold text-purple-200">
+                {openJuniun.label}柱の十二運「{openJuniun.stage}」
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpenJuniun(null)}
+              className="text-slate-500 hover:text-slate-300 text-xs shrink-0"
+              aria-label="閉じる"
+            >
+              閉じる ✕
+            </button>
+          </div>
+          <p className="text-[11px] text-purple-300/70 mb-2">{JUNIUN_PILLAR_THEME[openJuniun.label]}</p>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            {JUNIUN_MASTER[openJuniun.label][openJuniun.stage]}
+          </p>
+        </div>
+      )}
 
       {/* 五行・陰陽・身強弱 */}
       <div className="mt-6 space-y-4">
@@ -220,6 +281,58 @@ export function MeishikiChart({ meishiki }: MeishikiChartProps) {
             })}
           </div>
         </div>
+
+        {/* 不足している五行の特徴とアドバイス */}
+        {deficient.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-[11px] text-slate-500 tracking-wider">
+              不足している五行（{deficient.map((i) => ELEMENTS[i]).join('・')}）
+            </p>
+            {deficient.map((i) => {
+              const s = ELEMENT_STYLE[i]
+              const d = GOGYO_DEFICIENCY[i]
+              return (
+                <div
+                  key={i}
+                  className="rounded-xl overflow-hidden border border-white/5"
+                  style={{ background: 'rgba(20,16,45,0.55)' }}
+                >
+                  <div
+                    className="flex items-center gap-2 px-4 py-2.5"
+                    style={{ backgroundColor: s.bg }}
+                  >
+                    <span className="text-lg font-bold leading-none" style={{ color: s.color }}>{ELEMENTS[i]}</span>
+                    <span className="text-xs font-medium" style={{ color: s.color }}>が不足ぎみ</span>
+                  </div>
+                  <div className="px-4 py-3 space-y-3">
+                    <div>
+                      <p className="text-[11px] text-slate-500 mb-1.5">こんな特徴が出やすい</p>
+                      <ul className="space-y-1.5">
+                        {d.traits.map((t, k) => (
+                          <li key={k} className="flex items-start text-xs text-slate-300 leading-relaxed">
+                            <span className="mr-2 mt-0.5 shrink-0" style={{ color: s.color }}>•</span>
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-slate-500 mb-1.5">補って運気を上げるヒント</p>
+                      <ul className="space-y-1.5">
+                        {d.advice.map((a, k) => (
+                          <li key={k} className="flex items-start text-xs text-slate-300 leading-relaxed">
+                            <span className="mr-2 mt-0.5 shrink-0 text-amber-400/80">✦</span>
+                            {a}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* 陰陽バランス */}
         <div>
