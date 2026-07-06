@@ -7,8 +7,17 @@ import type { DirectionMaster } from '@/src/data/direction-master'
 import { DIRECTION_MASTER_MAP } from '@/src/data/direction-master'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
-import { computeYearFortune, TSUHENSEI, JUNI_UN, type YearFortune } from '@/src/lib/meishikiCalc'
+import { computeYearFortune, branchRelations, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
 import { NENUN_COMMON, NENUN_BY_GENMEI } from '@/src/data/nenun-master'
+import { AISHO_TEXT, aishoVerdict } from '@/src/data/aisho-master'
+
+// 相性トーン → 配色
+const AISHO_TONE_STYLE: Record<string, { color: string; bg: string }> = {
+  good: { color: '#6ee7b7', bg: 'rgba(16,185,129,0.14)' },
+  bad: { color: '#fca5a5', bg: 'rgba(244,63,94,0.14)' },
+  mixed: { color: '#fcd34d', bg: 'rgba(245,158,11,0.14)' },
+  none: { color: '#94a3b8', bg: 'transparent' },
+}
 
 type Props = {
   aspects: DirectionAspectResult[]
@@ -45,6 +54,9 @@ function YearColumn({
   fortune,
   onSelectFortune,
   isFortuneSelected,
+  aisho,
+  onSelectAisho,
+  isAishoSelected,
 }: {
   year: number
   age: number
@@ -55,6 +67,9 @@ function YearColumn({
   fortune: YearFortune | null
   onSelectFortune: (year: number) => void
   isFortuneSelected: boolean
+  aisho: BranchRelation[] | null
+  onSelectAisho: (year: number) => void
+  isAishoSelected: boolean
 }) {
   return (
     <div className={[
@@ -93,6 +108,39 @@ function YearColumn({
             )}
           </button>
         ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[10px] text-slate-600">—</span>
+          </div>
+        )}
+      </div>
+
+      {/* 地支相性（日支×年支。クリックで解説） */}
+      <div className="h-[52px] border-b border-slate-700/40">
+        {aisho ? (() => {
+          const v = aishoVerdict(aisho)
+          const s = AISHO_TONE_STYLE[v.tone]
+          return (
+            <button
+              type="button"
+              onClick={() => onSelectAisho(year)}
+              aria-expanded={isAishoSelected}
+              className={[
+                'w-full h-full flex flex-col items-center justify-center px-1 leading-none transition-colors',
+                isAishoSelected ? 'ring-1 ring-inset ring-slate-300/50 bg-white/5' : 'hover:bg-white/5',
+              ].join(' ')}
+            >
+              <span className="text-[11px] font-bold" style={{ color: s.color }}>
+                {aisho.length ? aisho.join('・') : '—'}
+              </span>
+              <span
+                className="text-[9px] font-semibold mt-0.5 px-1 rounded"
+                style={{ color: s.color, backgroundColor: s.bg }}
+              >
+                {v.label}
+              </span>
+            </button>
+          )
+        })() : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-[10px] text-slate-600">—</span>
           </div>
@@ -294,9 +342,11 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
   const [filterMode, setFilterMode] = useState<'all' | 'important'>('important')
   const [orb, setOrb] = useState<number>(0.5)
   const [nenunYear, setNenunYear] = useState<number | null>(null)
+  const [aishoYear, setAishoYear] = useState<number | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const toggleNenun = (year: number) => setNenunYear((cur) => (cur === year ? null : year))
+  const toggleAisho = (year: number) => setAishoYear((cur) => (cur === year ? null : year))
 
   // Filter by importance threshold and orb
   const filtered = aspects.filter(a => {
@@ -394,7 +444,10 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
       <p className="text-[10px] text-slate-500 leading-relaxed">
         <span className="text-amber-200/90">年運星</span>＝その年のテーマ（通変星）／
         <span className="text-slate-300">十二運</span>＝その年の勢い／
-        <span className="text-rose-300">赤・天中殺</span>＝運気の変わり目・無理を控えたい年
+        <span className="text-rose-300">赤・天中殺</span>＝運気の変わり目・無理を控えたい年<br />
+        <span className="text-slate-300">相性</span>＝あなたの日支とその年の相性：
+        <span className="text-emerald-300">支合・三合＝良い運</span> ／
+        <span className="text-rose-300">冲・刑・害・破＝注意</span>
       </p>
 
       {/* Legend row labels */}
@@ -403,7 +456,12 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
           <div className="h-[52px] border-b border-slate-700/30" />
           <div className="h-[52px] border-b border-slate-800/40 flex items-center justify-center">
             <span className="text-[9px] font-semibold tracking-wider text-amber-300/80" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-              運勢
+              年運勢
+            </span>
+          </div>
+          <div className="h-[52px] border-b border-slate-800/40 flex items-center justify-center">
+            <span className="text-[9px] font-semibold tracking-wider text-slate-300/80" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+              相性
             </span>
           </div>
           {CATEGORIES.map((cat) => (
@@ -433,6 +491,8 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
                 dayStem !== null && dayBranch !== null
                   ? computeYearFortune(dayStem, dayBranch, year)
                   : null
+              const aisho =
+                dayBranch !== null && fortune ? branchRelations(dayBranch, fortune.branch) : null
               return (
                 <YearColumn
                   key={year}
@@ -445,6 +505,9 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
                   fortune={fortune}
                   onSelectFortune={toggleNenun}
                   isFortuneSelected={nenunYear === year}
+                  aisho={aisho}
+                  onSelectAisho={toggleAisho}
+                  isAishoSelected={aishoYear === year}
                 />
               )
             })}
@@ -499,6 +562,58 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
             {f.isKubou && (
               <p className="text-[11px] text-rose-300/90 leading-relaxed">
                 ※ この年は天中殺（空亡）にあたります。運気の変わり目で、新規の大きな決断や無理な勝負は控えめにし、守りと充電を意識すると穏やかに過ごせます。
+              </p>
+            )}
+          </div>
+        )
+      })()}
+
+      {/* 地支相性の解説パネル（相性セルのクリックで開閉） */}
+      {aishoYear !== null && dayBranch !== null && (() => {
+        const f = computeYearFortune(dayStem ?? 0, dayBranch, aishoYear)
+        const rels = branchRelations(dayBranch, f.branch)
+        const v = aishoVerdict(rels)
+        const s = AISHO_TONE_STYLE[v.tone]
+        return (
+          <div className="rounded-2xl border border-slate-600/40 p-5 space-y-4" style={{ background: 'rgba(20,20,40,0.95)' }}>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-lg font-bold text-white">
+                  {aishoYear}年（{aishoYear - birthYear}才）の相性
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  あなたの日支 × その年（{BRANCHES[f.branch]}年）：
+                  <span className="font-medium ml-1" style={{ color: s.color }}>
+                    {rels.length ? rels.join('・') : '特になし'}（{v.label}）
+                  </span>
+                </p>
+              </div>
+              <button
+                onClick={() => setAishoYear(null)}
+                className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center text-slate-400 hover:text-slate-200 hover:border-slate-400 transition-colors shrink-0"
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            {rels.length ? (
+              <div className="space-y-3">
+                {rels.map((r) => {
+                  const info = AISHO_TEXT[r]
+                  return (
+                    <div key={r} className="rounded-xl p-3.5" style={{ background: info.good ? 'rgba(16,185,129,0.07)' : 'rgba(244,63,94,0.06)' }}>
+                      <p className="text-sm font-bold mb-1" style={{ color: info.good ? '#6ee7b7' : '#fca5a5' }}>
+                        {r}（{info.good ? '良い運' : '注意'}）— {info.short}
+                      </p>
+                      <p className="text-sm text-slate-300 leading-relaxed">{info.desc}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 leading-relaxed">
+                この年は、あなたの日支と特に強い相性（支合・三合・冲・刑・害・破）は結びません。良くも悪くも大きな相性の影響が少ない、穏やかな年といえます。
               </p>
             )}
           </div>

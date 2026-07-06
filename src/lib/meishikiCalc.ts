@@ -337,6 +337,49 @@ export function computeYearFortune(
   }
 }
 
+// ─── 地支の相性（支合・三合・冲・刑・害・破） ───────────────────────────────
+
+export type BranchRelation = '支合' | '三合' | '冲' | '刑' | '害' | '破'
+
+// 六合（支合）
+const ROKUGOU: [number, number][] = [[0, 1], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7]]
+// 三合の局（申子辰・亥卯未・寅午戌・巳酉丑）
+const SANGOU_GROUPS: number[][] = [[8, 0, 4], [11, 3, 7], [2, 6, 10], [5, 9, 1]]
+// 七冲
+const CHU: [number, number][] = [[0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]]
+// 三刑の組（寅巳申・丑戌未）、子卯の刑、自刑（辰・午・酉・亥）
+const KEI_GROUPS: number[][] = [[2, 5, 8], [1, 10, 7]]
+const KEI_PAIR: [number, number][] = [[0, 3]]
+const KEI_SELF = [4, 6, 9, 11]
+// 六害
+const GAI: [number, number][] = [[0, 7], [1, 6], [2, 5], [3, 4], [8, 11], [9, 10]]
+// 六破
+const HA: [number, number][] = [[0, 9], [1, 4], [2, 11], [3, 6], [5, 8], [7, 10]]
+
+function hasPair(pairs: [number, number][], a: number, b: number): boolean {
+  return pairs.some(([x, y]) => (x === a && y === b) || (x === b && y === a))
+}
+
+/**
+ * 2つの地支の相性（支合・三合・冲・刑・害・破）を返す。
+ * 1組で複数の関係を持つことがある（例: 巳申＝支合・刑・破）。
+ * 並びは 支合→三合（吉）→冲→刑→害→破（凶）の順。
+ */
+export function branchRelations(b1: number, b2: number): BranchRelation[] {
+  const r: BranchRelation[] = []
+  if (hasPair(ROKUGOU, b1, b2)) r.push('支合')
+  if (b1 !== b2 && SANGOU_GROUPS.some((g) => g.includes(b1) && g.includes(b2))) r.push('三合')
+  if (hasPair(CHU, b1, b2)) r.push('冲')
+  const kei =
+    (b1 !== b2 && KEI_GROUPS.some((g) => g.includes(b1) && g.includes(b2))) ||
+    hasPair(KEI_PAIR, b1, b2) ||
+    (b1 === b2 && KEI_SELF.includes(b1))
+  if (kei) r.push('刑')
+  if (hasPair(GAI, b1, b2)) r.push('害')
+  if (hasPair(HA, b1, b2)) r.push('破')
+  return r
+}
+
 // ─── 表示用ヘルパー ──────────────────────────────────────────────────────────
 
 /** 十干の五行インデックス */
