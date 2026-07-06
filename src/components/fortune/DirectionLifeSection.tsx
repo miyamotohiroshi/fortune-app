@@ -1,6 +1,7 @@
 import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { calculateDirectionAspects } from '@/src/lib/astrology/directions'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
+import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 import { DirectionLifeTab } from './DirectionLifeTab'
 
 type Props = {
@@ -31,6 +32,11 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
     endYear,
   )
 
+  // 四柱推命の年運（流年）用に日柱（日干・日支）を算出
+  const meishiki = computeMeishikiFromBirth(birthday, birthTime)
+  const dayStem = meishiki.pillars[2].stem
+  const dayBranch = meishiki.pillars[2].branch
+
   return (
     <div className="space-y-3">
       <div>
@@ -48,6 +54,8 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
         endYear={endYear}
         currentYear={currentYear}
         birthday={birthday.toISOString()}
+        dayStem={dayStem}
+        dayBranch={dayBranch}
       />
     </div>
   )

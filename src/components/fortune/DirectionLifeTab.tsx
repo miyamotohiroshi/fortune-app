@@ -7,6 +7,7 @@ import type { DirectionMaster } from '@/src/data/direction-master'
 import { DIRECTION_MASTER_MAP } from '@/src/data/direction-master'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
+import { computeYearFortune, TSUHENSEI, JUNI_UN, type YearFortune } from '@/src/lib/meishikiCalc'
 
 type Props = {
   aspects: DirectionAspectResult[]
@@ -14,6 +15,8 @@ type Props = {
   endYear: number
   currentYear: number
   birthday: string // ISO string
+  dayStem: number | null
+  dayBranch: number | null
 }
 
 const PLANET_SHORT: Record<string, string> = {
@@ -37,6 +40,7 @@ function YearColumn({
   onSelect,
   selectedKey,
   isCurrentYear,
+  fortune,
 }: {
   year: number
   age: number
@@ -44,6 +48,7 @@ function YearColumn({
   onSelect: (r: DirectionAspectResult, m: DirectionMaster) => void
   selectedKey: string | null
   isCurrentYear: boolean
+  fortune: YearFortune | null
 }) {
   return (
     <div className={[
@@ -57,6 +62,24 @@ function YearColumn({
       ].join(' ')}>
         <span className={`text-xs font-bold ${isCurrentYear ? 'text-purple-300' : 'text-slate-200'}`}>{year}</span>
         <span className={`text-[10px] ${isCurrentYear ? 'text-purple-400/70' : 'text-slate-500'}`}>{age}才</span>
+      </div>
+
+      {/* 四柱推命 年運（年運星＋十二運、天中殺はハイライト） */}
+      <div className={[
+        'h-[52px] flex flex-col items-center justify-center border-b px-1 leading-none',
+        fortune?.isKubou ? 'bg-rose-950/40 border-rose-800/40' : 'border-slate-700/40',
+      ].join(' ')}>
+        {fortune ? (
+          <>
+            <span className="text-xs font-bold text-amber-200/90">{TSUHENSEI[fortune.tsuhen]}</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{JUNI_UN[fortune.juniUn]}</span>
+            {fortune.isKubou && (
+              <span className="text-[8px] font-semibold text-rose-300 mt-0.5">天中殺</span>
+            )}
+          </>
+        ) : (
+          <span className="text-[10px] text-slate-600">—</span>
+        )}
       </div>
 
       {/* 3 rows */}
@@ -249,7 +272,7 @@ function DetailCard({
   )
 }
 
-export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, birthday }: Props) {
+export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, birthday, dayStem, dayBranch }: Props) {
   const [selected, setSelected] = useState<SelectedAspect | null>(null)
   const [filterMode, setFilterMode] = useState<'all' | 'important'>('important')
   const [orb, setOrb] = useState<number>(0.5)
@@ -347,10 +370,22 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
         </label>
       </div>
 
+      {/* 四柱推命の運勢行の凡例 */}
+      <p className="text-[10px] text-slate-500 leading-relaxed">
+        <span className="text-amber-200/90">年運星</span>＝その年のテーマ（通変星）／
+        <span className="text-slate-300">十二運</span>＝その年の勢い／
+        <span className="text-rose-300">赤・天中殺</span>＝運気の変わり目・無理を控えたい年
+      </p>
+
       {/* Legend row labels */}
       <div className="flex gap-2" style={{ background: 'rgba(9,9,25,0.6)' }}>
         <div className="flex-shrink-0 w-10 rounded-xl border border-slate-800/40 overflow-hidden">
           <div className="h-[52px] border-b border-slate-700/30" />
+          <div className="h-[52px] border-b border-slate-800/40 flex items-center justify-center">
+            <span className="text-[9px] font-semibold tracking-wider text-amber-300/80" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+              運勢
+            </span>
+          </div>
           {CATEGORIES.map((cat) => (
             <div key={cat} className="h-[80px] border-b border-slate-800/40 flex items-center justify-center">
               <span className={[
@@ -374,6 +409,10 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
             {years.map((year) => {
               const age = year - birthYear
               const cats = yearMap.get(year) ?? { チャンス: [], 転機: [], 試練: [] }
+              const fortune =
+                dayStem !== null && dayBranch !== null
+                  ? computeYearFortune(dayStem, dayBranch, year)
+                  : null
               return (
                 <YearColumn
                   key={year}
@@ -383,6 +422,7 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
                   onSelect={handleSelect}
                   selectedKey={selectedKey}
                   isCurrentYear={year === currentYear}
+                  fortune={fortune}
                 />
               )
             })}

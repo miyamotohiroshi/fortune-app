@@ -289,6 +289,54 @@ export function computeMeishikiFromBirth(birthday: Date, birthTime: string | nul
   return computeMeishiki(year, month, day, Number.isNaN(h as number) ? null : h)
 }
 
+// ─── 流年（年運）計算 ────────────────────────────────────────────────────────
+
+/**
+ * 日柱の旬空（空亡）にあたる2つの地支インデックスを返す。
+ * その年の年支がこの2支のいずれかなら「天中殺（空亡）」の年。
+ */
+export function kubouBranches(dayStemIdx: number, dayBranchIdx: number): [number, number] {
+  const b1 = (10 - dayStemIdx + dayBranchIdx + 12) % 12
+  return [b1, (b1 + 1) % 12]
+}
+
+/** ある年の年運（流年） */
+export type YearFortune = {
+  year: number
+  /** 年干インデックス */
+  stem: number
+  /** 年支インデックス */
+  branch: number
+  /** 年運星（日干×年干の通変星 1-10） */
+  tsuhen: number
+  /** 十二運星インデックス(0-11)（日干×年支） */
+  juniUn: number
+  /** 天中殺（空亡）の年か */
+  isKubou: boolean
+}
+
+/**
+ * 日柱（日干・日支）と西暦から、その年の年運を算出する。
+ * 年干支は立春を境界とする太陽年（暦年＝太陽年として (year-4) で導出）。
+ */
+export function computeYearFortune(
+  dayStemIdx: number,
+  dayBranchIdx: number,
+  year: number
+): YearFortune {
+  const stem = ((year - 4) % 10 + 10) % 10
+  const branch = ((year - 4) % 12 + 12) % 12
+  const [k1, k2] = kubouBranches(dayStemIdx, dayBranchIdx)
+  return {
+    year,
+    stem,
+    branch,
+    tsuhen: calcTsuhensei(dayStemIdx, stem),
+    juniUn: calcJuniUn(dayStemIdx, branch),
+    isKubou: branch === k1 || branch === k2,
+  }
+}
+
 // ─── 表示用ヘルパー ──────────────────────────────────────────────────────────
 
 /** 十干の五行インデックス */
