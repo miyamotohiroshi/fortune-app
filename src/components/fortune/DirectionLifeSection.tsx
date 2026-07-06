@@ -32,10 +32,11 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
     endYear,
   )
 
-  // 四柱推命の年運（流年）用に日柱（日干・日支）を算出
+  // 四柱推命の年運（流年）用に日柱（日干・日支）と元命（月支本気の通変星）を算出
   const meishiki = computeMeishikiFromBirth(birthday, birthTime)
   const dayStem = meishiki.pillars[2].stem
   const dayBranch = meishiki.pillars[2].branch
+  const genmei = meishiki.pillars[1].tsuhenBranch // 元命（通変星ID 1-10）
 
   return (
     <div className="space-y-3">
@@ -56,6 +57,7 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
         birthday={birthday.toISOString()}
         dayStem={dayStem}
         dayBranch={dayBranch}
+        genmei={genmei}
       />
     </div>
   )

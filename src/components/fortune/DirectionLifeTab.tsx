@@ -8,6 +8,7 @@ import { DIRECTION_MASTER_MAP } from '@/src/data/direction-master'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
 import { computeYearFortune, TSUHENSEI, JUNI_UN, type YearFortune } from '@/src/lib/meishikiCalc'
+import { NENUN_COMMON, NENUN_BY_GENMEI } from '@/src/data/nenun-master'
 
 type Props = {
   aspects: DirectionAspectResult[]
@@ -17,6 +18,7 @@ type Props = {
   birthday: string // ISO string
   dayStem: number | null
   dayBranch: number | null
+  genmei: number | null // 元命（通変星ID 1-10）
 }
 
 const PLANET_SHORT: Record<string, string> = {
@@ -41,6 +43,8 @@ function YearColumn({
   selectedKey,
   isCurrentYear,
   fortune,
+  onSelectFortune,
+  isFortuneSelected,
 }: {
   year: number
   age: number
@@ -49,6 +53,8 @@ function YearColumn({
   selectedKey: string | null
   isCurrentYear: boolean
   fortune: YearFortune | null
+  onSelectFortune: (year: number) => void
+  isFortuneSelected: boolean
 }) {
   return (
     <div className={[
@@ -64,21 +70,32 @@ function YearColumn({
         <span className={`text-[10px] ${isCurrentYear ? 'text-purple-400/70' : 'text-slate-500'}`}>{age}才</span>
       </div>
 
-      {/* 四柱推命 年運（年運星＋十二運、天中殺はハイライト） */}
+      {/* 四柱推命 年運（クリックで解説。年運星＋十二運、天中殺はハイライト） */}
       <div className={[
-        'h-[52px] flex flex-col items-center justify-center border-b px-1 leading-none',
-        fortune?.isKubou ? 'bg-rose-950/40 border-rose-800/40' : 'border-slate-700/40',
+        'h-[52px] border-b',
+        fortune?.isKubou ? 'border-rose-800/40' : 'border-slate-700/40',
       ].join(' ')}>
         {fortune ? (
-          <>
-            <span className="text-xs font-bold text-amber-200/90">{TSUHENSEI[fortune.tsuhen]}</span>
+          <button
+            type="button"
+            onClick={() => onSelectFortune(year)}
+            aria-expanded={isFortuneSelected}
+            className={[
+              'w-full h-full flex flex-col items-center justify-center px-1 leading-none transition-colors',
+              fortune.isKubou ? 'bg-rose-950/40' : '',
+              isFortuneSelected ? 'ring-1 ring-inset ring-amber-400/60 bg-amber-500/10' : 'hover:bg-amber-500/10',
+            ].join(' ')}
+          >
+            <span className="text-xs font-bold text-amber-200/90 underline decoration-dotted decoration-amber-400/40 underline-offset-2">{TSUHENSEI[fortune.tsuhen]}</span>
             <span className="text-[10px] text-slate-400 mt-0.5">{JUNI_UN[fortune.juniUn]}</span>
             {fortune.isKubou && (
               <span className="text-[8px] font-semibold text-rose-300 mt-0.5">天中殺</span>
             )}
-          </>
+          </button>
         ) : (
-          <span className="text-[10px] text-slate-600">—</span>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[10px] text-slate-600">—</span>
+          </div>
         )}
       </div>
 
@@ -272,11 +289,14 @@ function DetailCard({
   )
 }
 
-export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, birthday, dayStem, dayBranch }: Props) {
+export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, birthday, dayStem, dayBranch, genmei }: Props) {
   const [selected, setSelected] = useState<SelectedAspect | null>(null)
   const [filterMode, setFilterMode] = useState<'all' | 'important'>('important')
   const [orb, setOrb] = useState<number>(0.5)
+  const [nenunYear, setNenunYear] = useState<number | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const toggleNenun = (year: number) => setNenunYear((cur) => (cur === year ? null : year))
 
   // Filter by importance threshold and orb
   const filtered = aspects.filter(a => {
@@ -423,12 +443,67 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
                   selectedKey={selectedKey}
                   isCurrentYear={year === currentYear}
                   fortune={fortune}
+                  onSelectFortune={toggleNenun}
+                  isFortuneSelected={nenunYear === year}
                 />
               )
             })}
           </div>
         </div>
       </div>
+
+      {/* 四柱推命 年運の解説パネル（運勢セルのクリックで開閉） */}
+      {nenunYear !== null && dayStem !== null && dayBranch !== null && (() => {
+        const f = computeYearFortune(dayStem, dayBranch, nenunYear)
+        const nenunName = TSUHENSEI[f.tsuhen]
+        const genmeiName = genmei ? TSUHENSEI[genmei] : null
+        const common = NENUN_COMMON[nenunName]
+        const personal = genmeiName ? NENUN_BY_GENMEI[genmeiName]?.[nenunName] : null
+        return (
+          <div className="rounded-2xl border border-amber-500/25 p-5 space-y-4" style={{ background: 'rgba(24,20,40,0.95)' }}>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-lg font-bold text-white">
+                  {nenunYear}年（{nenunYear - birthYear}才）の運勢
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  年運星
+                  <span className="text-amber-200 font-medium mx-1">{nenunName}</span>
+                  ／十二運 <span className="text-slate-300">{JUNI_UN[f.juniUn]}</span>
+                  {f.isKubou && <span className="text-rose-300 font-medium ml-1">／天中殺</span>}
+                </p>
+              </div>
+              <button
+                onClick={() => setNenunYear(null)}
+                className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center text-slate-400 hover:text-slate-200 hover:border-slate-400 transition-colors shrink-0"
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            <div>
+              <p className="text-[11px] text-amber-300/80 tracking-wider mb-1.5">この年のテーマ（{nenunName}の年）</p>
+              <p className="text-sm text-slate-300 leading-relaxed">{common}</p>
+            </div>
+
+            {personal && (
+              <div className="rounded-xl p-3.5" style={{ background: 'rgba(245,158,11,0.06)' }}>
+                <p className="text-[11px] text-amber-300/80 tracking-wider mb-1.5">
+                  あなた（元命「{genmeiName}」）の場合
+                </p>
+                <p className="text-sm text-slate-200 leading-relaxed">{personal}</p>
+              </div>
+            )}
+
+            {f.isKubou && (
+              <p className="text-[11px] text-rose-300/90 leading-relaxed">
+                ※ この年は天中殺（空亡）にあたります。運気の変わり目で、新規の大きな決断や無理な勝負は控えめにし、守りと充電を意識すると穏やかに過ごせます。
+              </p>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Detail card */}
       {selected && (
