@@ -19,14 +19,14 @@ export default async function AdminHistoryPage() {
     birthTime: user!.birthTime,
     birthCity: user!.birthCity,
   }
-  const scored = histories.map((h) => ({
-    h,
-    total: synastryFromBirth(adminBirth, {
+  const scored = histories.map((h) => {
+    const r = synastryFromBirth(adminBirth, {
       birthday: h.birthday.toISOString(),
       birthTime: h.birthTime,
       birthCity: h.birthCity,
-    }).total,
-  }))
+    })
+    return { h, total: r.total, love: r.categories.恋愛, work: r.categories.仕事 }
+  })
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
@@ -65,7 +65,7 @@ export default async function AdminHistoryPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {scored.map(({ h, total }) => (
+            {scored.map(({ h, total, love, work }) => (
               <div
                 key={h.id}
                 className="rounded-2xl border border-purple-900/30 p-4 flex items-center justify-between gap-3"
@@ -74,19 +74,37 @@ export default async function AdminHistoryPage() {
                 <Link href={`/admin/history/${h.id}`} className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{h.name}</p>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    最終更新: {h.updatedAt.toLocaleDateString('ja-JP')}
+                    {h.birthday.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' })}
                   </p>
                 </Link>
                 <Link
                   href={`/result?compat=${h.id}`}
-                  className="shrink-0 text-center px-2 py-1 rounded-lg hover:bg-pink-500/10 transition-colors"
+                  className="shrink-0 flex items-stretch gap-2 px-2 py-1 rounded-lg hover:bg-pink-500/10 transition-colors"
                   title={`${h.name}さんとの相性を見る`}
                 >
-                  <p className="text-[9px] text-pink-400/80 leading-none">相性</p>
-                  <p className="text-base font-bold text-pink-300 leading-tight underline decoration-dotted decoration-pink-400/40 underline-offset-2">
-                    {total === null ? '—' : total}
-                    {total !== null && <span className="text-[9px] text-slate-500 ml-0.5">点</span>}
-                  </p>
+                  <div className="text-center">
+                    <p className="text-[9px] text-pink-400/80 leading-none">総合</p>
+                    <p className="text-base font-bold text-pink-300 leading-tight underline decoration-dotted decoration-pink-400/40 underline-offset-2">
+                      {total === null ? '—' : total}
+                      {total !== null && <span className="text-[9px] text-slate-500 ml-0.5">点</span>}
+                    </p>
+                  </div>
+                  <div className="w-px bg-slate-700/50" />
+                  <div className="text-center">
+                    <p className="text-[9px] text-rose-400/80 leading-none">恋愛</p>
+                    <p className="text-base font-bold text-rose-300 leading-tight underline decoration-dotted decoration-rose-400/40 underline-offset-2">
+                      {love === null || love === undefined ? '—' : love}
+                      {love !== null && love !== undefined && <span className="text-[9px] text-slate-500 ml-0.5">点</span>}
+                    </p>
+                  </div>
+                  <div className="w-px bg-slate-700/50" />
+                  <div className="text-center">
+                    <p className="text-[9px] text-sky-400/80 leading-none">仕事</p>
+                    <p className="text-base font-bold text-sky-300 leading-tight underline decoration-dotted decoration-sky-400/40 underline-offset-2">
+                      {work === null || work === undefined ? '—' : work}
+                      {work !== null && work !== undefined && <span className="text-[9px] text-slate-500 ml-0.5">点</span>}
+                    </p>
+                  </div>
                 </Link>
                 <div className="flex items-center gap-1 shrink-0">
                   <Link
