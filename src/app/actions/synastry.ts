@@ -1,25 +1,13 @@
 'use server'
 
-import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
-import { CITY_COORDS } from '@/src/lib/astrology/cities'
-import { computeSynastry, type SynResult } from '@/src/lib/astrology/synastry'
+import { synastryFromBirth } from '@/src/lib/astrology/synastry-server'
+import type { BirthInput } from '@/src/lib/astrology/synastry-server'
+import type { SynResult } from '@/src/lib/astrology/synastry'
 
-export type BirthInput = {
-  birthday: string // ISO or YYYY-MM-DD
-  birthTime: string | null // "HH:MM"
-  birthCity: string | null
-}
+// 注意: 'use server' ファイルは async 関数のみを export できる。
+// 型の再export（export type ...）は Next.js のサーバー関数変換で実行時エラーになるため置かない。
 
 /** 自分と相手の生年月日から相性（シナストリー）を算出する */
 export async function runSynastry(self: BirthInput, partner: BirthInput): Promise<SynResult> {
-  const calc = (b: BirthInput) => {
-    const cityCoords = b.birthCity ? (CITY_COORDS[b.birthCity] ?? null) : null
-    const hasTime = !!b.birthTime
-    const hasCity = !!cityCoords
-    const pos = calculatePlanetPositions(new Date(b.birthday), b.birthTime, cityCoords)
-    return { pos, avail: { hasTime, hasCity } }
-  }
-  const s = calc(self)
-  const p = calc(partner)
-  return computeSynastry(s.pos, p.pos, s.avail, p.avail)
+  return synastryFromBirth(self, partner)
 }

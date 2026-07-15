@@ -21,16 +21,19 @@ type Props = {
   transit?: React.ReactNode
   /** 相性（2人のシナストリー） */
   compat?: React.ReactNode
+  /** 初期表示で相性タブを開く（履歴一覧からの遷移用） */
+  openCompat?: boolean
 }
 
-export function ResultTabs({ shichu, western, life, transit, compat }: Props) {
-  const [active, setActive] = useState(0)
+export function ResultTabs({ shichu, western, life, transit, compat, openCompat }: Props) {
   const panels = [
     <PersonalityTabs key="personality" eastern={shichu} western={western} />,
     life,
     ...(transit !== undefined ? [transit] : []),
     ...(compat !== undefined ? [compat] : []),
   ]
+  // 相性タブは常に末尾。openCompat のときは初期選択を相性タブにする
+  const [active, setActive] = useState(openCompat && compat !== undefined ? panels.length - 1 : 0)
   const tabs = ALL_TABS.slice(0, panels.length)
 
   return (

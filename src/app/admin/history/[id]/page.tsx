@@ -31,6 +31,21 @@ export default async function AdminHistoryDetailPage({
 
   if (!zodiac) notFound()
 
+  // 相性タブ: 管理者は登録済みの人（この人以外の占断履歴）から相手を選べる
+  const compatPeople = (
+    await prisma.fortuneHistory.findMany({
+      where: { adminUserId: user!.id, id: { not: id } },
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true, name: true, birthday: true, birthTime: true, birthCity: true },
+    })
+  ).map((h) => ({
+    id: h.id,
+    name: h.name,
+    birthday: h.birthday.toISOString(),
+    birthTime: h.birthTime,
+    birthCity: h.birthCity,
+  }))
+
   // 命式図（四柱）— 生年月日はJSTの暦日で解釈（保存済みの日柱・元命と一致させる）
   const meishiki = computeMeishikiFromBirth(history.birthday, history.birthTime)
 
@@ -84,6 +99,7 @@ export default async function AdminHistoryDetailPage({
               selfBirthday={history.birthday.toISOString()}
               selfBirthTime={history.birthTime}
               selfBirthCity={history.birthCity}
+              people={compatPeople}
             />
           }
         />

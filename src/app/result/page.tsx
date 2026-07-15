@@ -13,7 +13,12 @@ import { TransitSection } from '@/src/components/fortune/TransitSection';
 import { SynastryTab } from '@/src/components/fortune/SynastryTab';
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav';
 
-export default async function ResultPage() {
+export default async function ResultPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ compat?: string }>;
+}) {
+  const { compat: compatPartnerId } = await searchParams;
   const session = await getSession();
   if (!session?.userId) {
     redirect('/login');
@@ -42,6 +47,24 @@ export default async function ResultPage() {
 
   // 命式図（四柱）— 生年月日はJSTの暦日で解釈（保存済みの日柱・元命と一致させる）
   const meishiki = computeMeishikiFromBirth(user.birthday, user.birthTime);
+
+  // 相性タブ: 管理者は登録済みの人（占断履歴）から相手を選べる
+  const compatPeople =
+    user.role === 'admin'
+      ? (
+          await prisma.fortuneHistory.findMany({
+            where: { adminUserId: user.id },
+            orderBy: { updatedAt: 'desc' },
+            select: { id: true, name: true, birthday: true, birthTime: true, birthCity: true },
+          })
+        ).map((h) => ({
+          id: h.id,
+          name: h.name,
+          birthday: h.birthday.toISOString(),
+          birthTime: h.birthTime,
+          birthCity: h.birthCity,
+        }))
+      : undefined;
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
@@ -75,6 +98,7 @@ export default async function ResultPage() {
 
         {/* ── タブ ── */}
         <ResultTabs
+          openCompat={!!compatPartnerId}
           shichu={
             <ShichusuimeiSection
               nickname={user.nickname}
@@ -109,6 +133,8 @@ export default async function ResultPage() {
               selfBirthday={user.birthday.toISOString()}
               selfBirthTime={user.birthTime}
               selfBirthCity={user.birthCity}
+              people={compatPeople}
+              preselectId={compatPartnerId}
             />
           }
         />

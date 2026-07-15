@@ -1,6 +1,52 @@
 # Changelog
 
-## 2026-07-15 「相性」タブ（4つ目）を追加＝西洋占星術シナストリー
+## 2026-07-16 相性アスペクトを書籍準拠で全面刷新（60ペア・外惑星追加・キャリブレーション）
+
+### 背景
+書籍「西洋_相性アスペクト.pdf（第7章）」を全27ページ精読し、収録ペアに沿って相性データを再構築。書籍に無いが恋愛で重要なペア（金星/火星×外惑星ほか）はネット調査（Cafe Astrology等）で補完。点数は書籍内容を優先しつつ総合判断で付け直し。
+
+### 修正ファイル
+- `docs/相性アスペクト評価.xlsx` — 15→**60ペア**に刷新（本51＋補完9）。1ペア=1行、点数は1-10・0.5刻み、該当しないカテゴリは空欄（集計から除外）、出典列（本/補完）、方向は原則共通・明確な差のみ分岐。旧版は `相性アスペクト評価_旧15ペア.xlsx` に退避
+- `src/data/aspect-compat-master.ts` — エクセルから自動生成（60ペア・1エントリ/ペア・scores は null 対応・向き別コメント）
+- `src/lib/astrology/synastry.ts` — (1)天王星・海王星・冥王星を感受点に追加（外惑星は時刻不要）(2)角度→重み(A5/B3/C1)で強弱・点数/文章はペア共通 (3)「なし(null)」カテゴリは集計から除外 (4)**キャリブレーション**：カテゴリ点=round(min(100, 加重平均÷8.5×100))で満点到達可に。総合=有効カテゴリの平均
+- `src/components/fortune/SynastryTab.tsx` — カテゴリ別コメントは該当説明があるアスペクトのみ表示＋各見出しに点数併記
+
+### 点数設計の要点（書籍＋一般知見）
+- 各カテゴリに満点10あり（100点到達可）。最難＝火星×土星（恋愛/友人3）
+- 恋愛・結婚は全体+0.5で底上げ。水星系＝会話が関係の土台として恋愛/結婚を付与。太陽×木星・月×月・月×太陽は吉星として上位。月×火星・水星×火星は摩擦で調和カテゴリ低め
+
+### 検証
+- 60ペア生成・数式エラー0（LibreOffice再計算）。エンドツーエンドで総合/カテゴリ算出・外惑星検出・なし除外・キャリブレーション（強い恋愛→95点）を確認。`tsc`・`build` 通過
+
+### 修正ファイル
+- `src/app/admin/history/page.tsx` — 各行の総合点を `/result?compat=<履歴ID>` へのリンク化（点線下線・ホバー）
+- `src/app/result/page.tsx` — `searchParams.compat` を受け取り、`openCompat`（相性タブを初期表示）と `preselectId` を相性タブへ渡す。管理者の登録済みリストに `id` を追加
+- `src/app/admin/history/[id]/page.tsx` — 登録済みリストに `id` を追加
+- `src/components/fortune/ResultTabs.tsx` — `openCompat` プロップ追加。真なら初期選択タブを相性（末尾）にする
+- `src/components/fortune/SynastryTab.tsx` — `preselectId` プロップ追加。初回マウント時に該当の登録済みの人を自動選択して相性を計算（`useRef` で一度だけ）。セレクトを制御化
+
+### フロー・補足
+- 履歴一覧の「相性 XX点」クリック → 管理者本人の /result が開き、相性タブがアクティブ＆その人を自動選択して結果表示
+- 管理者以外が `?compat=` で来ても people 無しのため何もせず相性タブを開くだけ（エラーなし）
+- `tsc`・`build` 通過
+
+### 新規ファイル
+- `src/lib/astrology/synastry-server.ts` — サーバー専用の相性計算コア `synastryFromBirth(self, partner)`（天体位置計算を含むためクライアント非import）。アクションと履歴一覧の両方で再利用
+
+### 修正ファイル
+- `src/app/actions/synastry.ts` — 計算を `synastry-server.ts` に委譲するよう整理
+- `src/components/fortune/SynastryTab.tsx` — `people`（登録済みの人）プロップを追加。管理者のみ「登録済みの人から選ぶ」セレクトを表示し、選択でその場で相性を計算。手入力フォームも併存
+- `src/app/result/page.tsx` — ログインユーザーが管理者なら自分の占断履歴を `people` として相性タブに渡す
+- `src/app/admin/history/[id]/page.tsx` — 管理者の他の占断履歴（この人以外）を `people` として渡す
+- `src/app/admin/history/page.tsx` — 占断履歴一覧の各行に「管理者本人 × その人」の**総合点**を表示（`synastryFromBirth` で算出、該当アスペクト0なら「—」）
+
+### フロー・補足
+- 登録済みの相手選択は管理者のみ（`people` を渡すのは管理者アクセスのページのみ）。一般ユーザー・お試しは従来どおり手入力のみ
+- 相手データ（登録済み）の生年月日はサーバー側でのみ取得し、名前＋生年月日をタブに渡す
+- 検算：管理者×2人で総合46点/55点（時刻・都市の有無でアスペクト数が変化）を確認。`tsc`・`build` 通過
+
+### 不具合修正
+- 相性計算が「計算中にエラーが発生しました」になる不具合を修正。原因は `src/app/actions/synastry.ts`（`'use server'`）から `export type { BirthInput }` していたこと。Next.js 16 のサーバー関数変換で型の再exportが実行時 `ReferenceError: BirthInput is not defined` を起こしていた（`'use server'` ファイルは async 関数のみexport可）。型の再exportを削除して解消。ヘッドレスChrome＋CDPで実機再現→修正後は総合点・カテゴリ点・コメントが正常表示、サーバーエラー0を確認
 
 ### 新規ファイル
 - `src/data/aspect-compat-master.ts` — 相性アスペクト評価マスター。docs/相性アスペクト評価.xlsx から自動生成（15ペア×7角度、恋愛・夫婦家庭・仕事・友人の点数＋向き別コメント）

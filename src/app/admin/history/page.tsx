@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/src/lib/prisma'
 import { getCurrentUser } from '@/src/lib/session'
+import { synastryFromBirth } from '@/src/lib/astrology/synastry-server'
 import { DeleteHistoryButton } from './DeleteHistoryButton'
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 
@@ -11,6 +12,21 @@ export default async function AdminHistoryPage() {
     where: { adminUserId: user!.id },
     orderBy: { updatedAt: 'desc' },
   })
+
+  // 管理者本人 × 各対象者の相性（総合点）を算出
+  const adminBirth = {
+    birthday: user!.birthday.toISOString(),
+    birthTime: user!.birthTime,
+    birthCity: user!.birthCity,
+  }
+  const scored = histories.map((h) => ({
+    h,
+    total: synastryFromBirth(adminBirth, {
+      birthday: h.birthday.toISOString(),
+      birthTime: h.birthTime,
+      birthCity: h.birthCity,
+    }).total,
+  }))
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
@@ -49,7 +65,7 @@ export default async function AdminHistoryPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {histories.map((h) => (
+            {scored.map(({ h, total }) => (
               <div
                 key={h.id}
                 className="rounded-2xl border border-purple-900/30 p-4 flex items-center justify-between gap-3"
@@ -59,6 +75,17 @@ export default async function AdminHistoryPage() {
                   <p className="text-sm font-medium text-white truncate">{h.name}</p>
                   <p className="text-xs text-slate-500 mt-0.5">
                     最終更新: {h.updatedAt.toLocaleDateString('ja-JP')}
+                  </p>
+                </Link>
+                <Link
+                  href={`/result?compat=${h.id}`}
+                  className="shrink-0 text-center px-2 py-1 rounded-lg hover:bg-pink-500/10 transition-colors"
+                  title={`${h.name}さんとの相性を見る`}
+                >
+                  <p className="text-[9px] text-pink-400/80 leading-none">相性</p>
+                  <p className="text-base font-bold text-pink-300 leading-tight underline decoration-dotted decoration-pink-400/40 underline-offset-2">
+                    {total === null ? '—' : total}
+                    {total !== null && <span className="text-[9px] text-slate-500 ml-0.5">点</span>}
                   </p>
                 </Link>
                 <div className="flex items-center gap-1 shrink-0">

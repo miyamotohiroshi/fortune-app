@@ -1,14 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { runSynastry } from '@/src/app/actions/synastry'
 import type { SynResult, SynCategory } from '@/src/lib/astrology/synastry'
+
+/** 管理者が選べる登録済みの人 */
+export type RegisteredPerson = {
+  id?: string
+  name: string
+  birthday: string // ISO
+  birthTime: string | null
+  birthCity: string | null
+}
 
 type Props = {
   selfBirthday: string // ISO
   selfBirthTime: string | null
   selfBirthCity: string | null
+  /** 管理者のみ: 登録済みの人から選べる */
+  people?: RegisteredPerson[]
+  /** 初期表示で自動選択・自動計算する登録済みの人のID */
+  preselectId?: string
 }
 
 // 表示順とラベル（データキー→表示名）
@@ -21,13 +34,49 @@ const CATS: { key: SynCategory; label: string }[] = [
 
 const CITIES = Object.keys(CITY_COORDS)
 
-export function SynastryTab({ selfBirthday, selfBirthTime, selfBirthCity }: Props) {
+export function SynastryTab({ selfBirthday, selfBirthTime, selfBirthCity, people, preselectId }: Props) {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
   const [pending, setPending] = useState(false)
   const [result, setResult] = useState<SynResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedName, setSelectedName] = useState<string | null>(null)
+  const [personIdx, setPersonIdx] = useState('')
+
+  const self = { birthday: selfBirthday, birthTime: selfBirthTime, birthCity: selfBirthCity }
+
+  async function compute(partner: { birthday: string; birthTime: string | null; birthCity: string | null }) {
+    setError(null)
+    setPending(true)
+    try {
+      setResult(await runSynastry(self, partner))
+    } catch {
+      setError('計算中にエラーが発生しました')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  const pickByIndex = (idx: number) => {
+    if (!people || !people[idx]) return
+    const p = people[idx]
+    setPersonIdx(String(idx))
+    setSelectedName(p.name)
+    compute({ birthday: p.birthday, birthTime: p.birthTime, birthCity: p.birthCity })
+  }
+
+  // 履歴一覧から遷移してきた場合、対象の人を自動選択して計算する（初回のみ）
+  const didPreselect = useRef(false)
+  useEffect(() => {
+    if (didPreselect.current || !preselectId || !people) return
+    const idx = people.findIndex((p) => p.id === preselectId)
+    if (idx >= 0) {
+      didPreselect.current = true
+      pickByIndex(idx)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectId, people])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -35,19 +84,19 @@ export function SynastryTab({ selfBirthday, selfBirthTime, selfBirthCity }: Prop
       setError('相手の生年月日を入力してください')
       return
     }
-    setError(null)
-    setPending(true)
-    try {
-      const res = await runSynastry(
-        { birthday: selfBirthday, birthTime: selfBirthTime, birthCity: selfBirthCity },
-        { birthday: date, birthTime: time || null, birthCity: city || null }
-      )
-      setResult(res)
-    } catch {
-      setError('計算中にエラーが発生しました')
-    } finally {
-      setPending(false)
+    setSelectedName(null)
+    setPersonIdx('')
+    await compute({ birthday: date, birthTime: time || null, birthCity: city || null })
+  }
+
+  function onPickPerson(e: React.ChangeEvent<HTMLSelectElement>) {
+    const idx = e.target.value
+    if (idx === '' || !people) {
+      setPersonIdx('')
+      setSelectedName(null)
+      return
     }
+    pickByIndex(Number(idx))
   }
 
   return (
@@ -63,9 +112,32 @@ export function SynastryTab({ selfBirthday, selfBirthTime, selfBirthCity }: Prop
             <p className="text-xs text-pink-400 font-medium tracking-widest">相性（2人のシナストリー）</p>
           </div>
 
+          {/* 管理者: 登録済みの人から選ぶ */}
+          {people && people.length > 0 && (
+            <div className="rounded-xl border border-indigo-800/40 p-4" style={{ background: 'rgba(20,16,40,0.6)' }}>
+              <label className="flex flex-col gap-1 text-xs text-slate-400">
+                登録済みの人から選ぶ（管理者）
+                <select
+                  onChange={onPickPerson}
+                  value={personIdx}
+                  className="bg-slate-800/60 border border-slate-700/60 rounded px-2 py-1.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="">選択…</option>
+                  {people.map((p, i) => (
+                    <option key={i} value={i}>{p.name}</option>
+                  ))}
+                </select>
+              </label>
+              {selectedName && (
+                <p className="text-[11px] text-indigo-300 mt-2">選択中のお相手：{selectedName}</p>
+              )}
+              <p className="text-[10px] text-slate-500 mt-2">または下記に直接入力もできます。</p>
+            </div>
+          )}
+
           {/* 相手の入力フォーム */}
           <form onSubmit={onSubmit} className="space-y-3 rounded-xl border border-pink-900/30 p-4" style={{ background: 'rgba(20,16,40,0.6)' }}>
-            <p className="text-sm text-slate-300 font-medium">お相手の情報</p>
+            <p className="text-sm text-slate-300 font-medium">お相手の情報（手入力）</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="flex flex-col gap-1 text-xs text-slate-400">
                 生年月日
@@ -153,14 +225,15 @@ function SynResultView({ result }: { result: SynResult }) {
         ))}
       </div>
 
-      {/* カテゴリ別コメント（重み5・3のみ） */}
+      {/* カテゴリ別コメント（重み5・3のみ／そのカテゴリの説明があるものだけ） */}
       {CATS.map(({ key, label }) => {
-        const list = aspects.filter((a) => a.weight >= 3)
+        const list = aspects.filter((a) => a.weight >= 3 && a.comment[key])
         return (
           <div key={key}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1 h-4 rounded-full bg-pink-500" />
               <p className="text-sm font-bold text-white">{label}</p>
+              <span className="text-[10px] text-slate-500">{categories[key] === null ? '—' : `${categories[key]}点`}</span>
             </div>
             {list.length ? (
               <ul className="space-y-2">
