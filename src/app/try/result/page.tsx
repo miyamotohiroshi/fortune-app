@@ -6,6 +6,7 @@ import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrolo
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
+import { SynastryTab } from '@/src/components/fortune/SynastryTab'
 import { computeMeishiki } from '@/src/lib/meishikiCalc'
 
 export default async function TryResultPage({
@@ -99,6 +100,13 @@ export default async function TryResultPage({
               birthday={birthday}
               birthTime={birthTime ?? null}
               birthCity={birthCity ?? null}
+            />
+          }
+          compat={
+            <SynastryTab
+              selfBirthday={birthday.toISOString()}
+              selfBirthTime={birthTime ?? null}
+              selfBirthCity={birthCity ?? null}
             />
           }
         />

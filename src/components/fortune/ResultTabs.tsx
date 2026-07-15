@@ -7,6 +7,7 @@ const ALL_TABS = [
   { label: '性格占断', sub: '東洋・西洋' },
   { label: '人生', sub: '西洋占星術' },
   { label: '運気', sub: '今年' },
+  { label: '相性', sub: '2人の相性' },
 ]
 
 type Props = {
@@ -18,14 +19,17 @@ type Props = {
   life: React.ReactNode
   /** 運気（今年） */
   transit?: React.ReactNode
+  /** 相性（2人のシナストリー） */
+  compat?: React.ReactNode
 }
 
-export function ResultTabs({ shichu, western, life, transit }: Props) {
+export function ResultTabs({ shichu, western, life, transit, compat }: Props) {
   const [active, setActive] = useState(0)
   const panels = [
     <PersonalityTabs key="personality" eastern={shichu} western={western} />,
     life,
     ...(transit !== undefined ? [transit] : []),
+    ...(compat !== undefined ? [compat] : []),
   ]
   const tabs = ALL_TABS.slice(0, panels.length)
 
