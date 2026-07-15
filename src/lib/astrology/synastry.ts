@@ -13,6 +13,8 @@ const CALIB_MAX = 8.5
 
 export type SynCategory = '恋愛' | '夫婦家庭' | '仕事' | '友人'
 const CATS: SynCategory[] = ['恋愛', '夫婦家庭', '仕事', '友人']
+/** 総合点を出すときのカテゴリ比重（恋愛・結婚を重めに） */
+const CATEGORY_WEIGHT: Record<SynCategory, number> = { 恋愛: 3, 夫婦家庭: 2, 仕事: 1, 友人: 1 }
 
 function angDiff(a: number, b: number): number {
   let d = Math.abs(a - b) % 360
@@ -130,8 +132,17 @@ export function computeSynastry(
     }
     categories[c] = den === 0 ? null : Math.round(Math.min(100, (num / den / CALIB_MAX) * 100))
   }
-  const vals = CATS.map((c) => categories[c]).filter((v): v is number => v != null)
-  const total = vals.length === 0 ? null : Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+  // 総合＝カテゴリ比重（恋愛・結婚を重め）での加重平均。null カテゴリは除外。
+  let tnum = 0
+  let tden = 0
+  for (const c of CATS) {
+    const v = categories[c]
+    if (v != null) {
+      tnum += v * CATEGORY_WEIGHT[c]
+      tden += CATEGORY_WEIGHT[c]
+    }
+  }
+  const total = tden === 0 ? null : Math.round(tnum / tden)
 
   aspects.sort((a, b) => b.weight - a.weight || a.angle - b.angle)
   return { total, categories, aspects }
