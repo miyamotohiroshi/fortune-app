@@ -74,7 +74,7 @@ export default async function ResultPage() {
 
         {/* ── タブ ── */}
         <ResultTabs
-          tab0={
+          shichu={
             <ShichusuimeiSection
               nickname={user.nickname}
               zodiac={zodiac}
@@ -82,21 +82,21 @@ export default async function ResultPage() {
               meishiki={meishiki}
             />
           }
-          tab1={
+          western={
             <WesternAstrologySection
               birthday={user.birthday}
               birthTime={user.birthTime}
               birthCity={user.birthCity}
             />
           }
-          tab2={
+          life={
             <DirectionLifeSection
               birthday={user.birthday}
               birthTime={user.birthTime}
               birthCity={user.birthCity}
             />
           }
-          tab3={
+          transit={
             <TransitSection
               birthday={user.birthday}
               birthTime={user.birthTime}

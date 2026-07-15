@@ -49,7 +49,7 @@ export default async function AdminHistoryDetailPage({
         </div>
 
         <ResultTabs
-          tab0={
+          shichu={
             <ShichusuimeiSection
               nickname={history.name}
               zodiac={zodiac}
@@ -57,21 +57,21 @@ export default async function AdminHistoryDetailPage({
               meishiki={meishiki}
             />
           }
-          tab1={
+          western={
             <WesternAstrologySection
               birthday={history.birthday}
               birthTime={history.birthTime}
               birthCity={history.birthCity}
             />
           }
-          tab2={
+          life={
             <DirectionLifeSection
               birthday={history.birthday}
               birthTime={history.birthTime}
               birthCity={history.birthCity}
             />
           }
-          tab3={
+          transit={
             <TransitSection
               birthday={history.birthday}
               birthTime={history.birthTime}

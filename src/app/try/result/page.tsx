@@ -70,9 +70,9 @@ export default async function TryResultPage({
           <h1 className="text-3xl font-bold text-white">占い結果</h1>
         </div>
 
-        {/* 3タブ */}
+        {/* タブ */}
         <ResultTabs
-          tab0={
+          shichu={
             <ShichusuimeiSection
               nickname={displayName}
               zodiac={zodiac}
@@ -80,21 +80,21 @@ export default async function TryResultPage({
               meishiki={meishiki}
             />
           }
-          tab1={
+          western={
             <WesternAstrologySection
               birthday={birthday}
               birthTime={birthTime ?? null}
               birthCity={birthCity ?? null}
             />
           }
-          tab2={
+          life={
             <DirectionLifeSection
               birthday={birthday}
               birthTime={birthTime ?? null}
               birthCity={birthCity ?? null}
             />
           }
-          tab3={
+          transit={
             <TransitSection
               birthday={birthday}
               birthTime={birthTime ?? null}

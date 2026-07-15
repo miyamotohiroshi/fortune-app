@@ -1,24 +1,32 @@
 'use client'
 
 import { useState } from 'react'
+import { PersonalityTabs } from './PersonalityTabs'
 
 const ALL_TABS = [
-  { label: '性格占断', sub: '四柱推命' },
-  { label: '性格占断', sub: '西洋占星術' },
+  { label: '性格占断', sub: '東洋・西洋' },
   { label: '人生', sub: '西洋占星術' },
   { label: '運気', sub: '今年' },
 ]
 
 type Props = {
-  tab0: React.ReactNode
-  tab1: React.ReactNode
-  tab2: React.ReactNode
-  tab3?: React.ReactNode
+  /** 性格占断・東洋（四柱推命） */
+  shichu: React.ReactNode
+  /** 性格占断・西洋（西洋占星術） */
+  western: React.ReactNode
+  /** 人生（西洋占星術） */
+  life: React.ReactNode
+  /** 運気（今年） */
+  transit?: React.ReactNode
 }
 
-export function ResultTabs({ tab0, tab1, tab2, tab3 }: Props) {
+export function ResultTabs({ shichu, western, life, transit }: Props) {
   const [active, setActive] = useState(0)
-  const panels = [tab0, tab1, tab2, ...(tab3 !== undefined ? [tab3] : [])]
+  const panels = [
+    <PersonalityTabs key="personality" eastern={shichu} western={western} />,
+    life,
+    ...(transit !== undefined ? [transit] : []),
+  ]
   const tabs = ALL_TABS.slice(0, panels.length)
 
   return (

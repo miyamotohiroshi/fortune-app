@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-12 性格占断タブを1つに統合し、内側に東洋｜西洋サブタブを設置
+
+### 新規ファイル
+- `src/components/fortune/PersonalityTabs.tsx` — 性格占断タブの内側サブタブ（東洋＝四柱推命／西洋＝西洋占星術）。セグメント型UIで `eastern`・`western` を切替表示
+
+### 修正ファイル
+- `src/components/fortune/ResultTabs.tsx` — 従来の「性格占断（四柱推命）」「性格占断（西洋占星術）」の2タブを1つの「性格占断」タブに統合し、中身を `PersonalityTabs` で東洋｜西洋に切替。props を `tab0〜tab3` から意味のある `shichu`・`western`・`life`・`transit` に変更。トップタブ構成は「性格占断（東洋・西洋）｜人生（西洋占星術）｜運気（今年）」の3つに
+- `src/app/result/page.tsx` — `ResultTabs` の props 名を新API（shichu/western/life/transit）に更新
+- `src/app/admin/history/[id]/page.tsx` — 同上
+- `src/app/try/result/page.tsx` — 同上
+
+### フロー・補足
+- 相性占断タブ追加に向けた前段の構成変更。相性占断のロジックは未実装
+- 4タブ→3タブに削減。性格占断内で東洋／西洋を切替える2階層構成に
+- `tsc --noEmit` 通過
+
 ## 2026-07-07 年運勢パネルに「その年の勢い（十二運）」の説明を追加
 
 ### 修正ファイル
