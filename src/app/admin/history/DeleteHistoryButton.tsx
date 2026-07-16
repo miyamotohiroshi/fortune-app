@@ -2,9 +2,18 @@
 
 import { deleteHistory } from '@/src/app/actions/adminHistory'
 
-export function DeleteHistoryButton({ id, name }: { id: string; name: string }) {
+export function DeleteHistoryButton({
+  id,
+  name,
+  className,
+}: {
+  id: string
+  name: string
+  className?: string
+}) {
   return (
     <form
+      className="w-full"
       action={deleteHistory.bind(null, id)}
       onSubmit={(e) => {
         if (!confirm(`${name}さんの履歴を削除しますか？この操作は取り消せません。`)) {
@@ -14,7 +23,7 @@ export function DeleteHistoryButton({ id, name }: { id: string; name: string }) 
     >
       <button
         type="submit"
-        className="text-xs text-red-400/80 hover:text-red-400 transition-colors px-2 py-1"
+        className={className ?? 'text-xs text-red-400/80 hover:text-red-400 transition-colors px-2 py-1'}
       >
         削除
       </button>
