@@ -12,6 +12,7 @@ import { ResultTabs } from '@/src/components/fortune/ResultTabs';
 import { TransitSection } from '@/src/components/fortune/TransitSection';
 import { SynastryTab } from '@/src/components/fortune/SynastryTab';
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav';
+import { synastryFromBirth } from '@/src/lib/astrology/synastry-server';
 
 export default async function ResultPage({
   searchParams,
@@ -64,6 +65,41 @@ export default async function ResultPage({
           birthTime: h.birthTime,
           birthCity: h.birthCity,
         }))
+      : undefined;
+
+  // 相性タブ: 会員（管理者以外）は自分の相性履歴（最大10件、点数つき）を見られる
+  const selfBirth = {
+    birthday: user.birthday.toISOString(),
+    birthTime: user.birthTime,
+    birthCity: user.birthCity,
+  };
+  const compatHistoryItems =
+    user.role !== 'admin'
+      ? (
+          await prisma.compatHistory.findMany({
+            where: { userId: user.id },
+            orderBy: { updatedAt: 'desc' },
+            take: 10,
+          })
+        ).map((h) => {
+          const r = synastryFromBirth(selfBirth, {
+            birthday: h.birthday.toISOString(),
+            birthTime: h.birthTime,
+            birthCity: h.birthCity,
+          });
+          return {
+            id: h.id,
+            name: h.name,
+            birthday: h.birthday.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }), // YYYY-MM-DD
+            birthdayLabel: h.birthday.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+            birthTime: h.birthTime,
+            birthCity: h.birthCity,
+            total: r.total,
+            love: r.categories.恋愛,
+            work: r.categories.仕事,
+            friend: r.categories.友人,
+          };
+        })
       : undefined;
 
   return (
@@ -135,6 +171,8 @@ export default async function ResultPage({
               selfBirthCity={user.birthCity}
               people={compatPeople}
               preselectId={compatPartnerId}
+              isAdmin={user.role === 'admin'}
+              historyItems={compatHistoryItems}
             />
           }
         />

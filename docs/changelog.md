@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-16 会員向け相性履歴（最大10件）＋相性タブ内サブタブ・名前入力を追加
+
+### 新規ファイル
+- `src/app/actions/compatHistory.ts` — 会員の相性履歴の保存/削除アクション。`saveCompatHistory`（名前+生年月日でupsert、保存後に上限10件へ古い順削除）、`deleteCompatHistory`
+
+### 修正ファイル
+- `prisma/schema.prisma` — 会員に紐づく `CompatHistory` モデルを追加（userId, name, birthday, birthTime?, birthCity?、@@unique([userId,name,birthday])）。User に `compatHistories` リレーション追加。`prisma db push` で本番DBに反映済み（管理者の FortuneHistory とは分離）
+- `src/components/fortune/SynastryTab.tsx` — (1)お相手の名前入力欄を追加（会員） (2)会員はサブタブ「相性を占う｜履歴」を表示 (3)「相性を見る」で名前があれば履歴に自動保存し `router.refresh()` (4)履歴タブに保存済みの相手を一覧（総合/恋愛/仕事/友人・クリックで再計算・✕で削除）。管理者は従来UIのまま
+- `src/app/result/page.tsx` — 会員（role≠admin）は自分の相性履歴（最大10件）を self×相手 で点数計算し `historyItems` として渡す。`isAdmin` も渡す
+
+### フロー・補足
+- 会員が相性を占うと自動で履歴に残り（最大10件、超過は古い順に自動削除でDBを圧迫しない）、履歴サブタブから再表示・削除できる
+- 生年月日は保存時UTC0時・表示/再計算ともJST基準で日付ズレなし
+- 検証: 12件保存→10件上限・古い順削除・同名upsert重複なし・点数計算・JST表示を隔離テストユーザーで確認。tsc/build 通過
+
 ## 2026-07-16 占断履歴一覧に並び替え・友人点表示・⋯メニューを追加
 
 ### 新規ファイル

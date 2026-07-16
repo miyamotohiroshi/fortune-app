@@ -26,6 +26,22 @@ model User {
   createdAt     DateTime @default(now())
 
   fortuneHistories FortuneHistory[]
+  compatHistories  CompatHistory[]
+}
+
+// 会員が相性占断した相手の履歴（1人1レコード、名前+生年月日で上書き。1会員あたり最大10件）
+model CompatHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  birthday  DateTime
+  birthTime String?
+  birthCity String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name, birthday])
 }
 
 // 管理者が占断した対象者の履歴（1人1レコード、名前+生年月日で上書き）
