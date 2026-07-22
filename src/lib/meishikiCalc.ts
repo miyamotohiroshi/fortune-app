@@ -405,6 +405,29 @@ function stemGouPartner(idx: number): number {
   return (idx + 5) % 10
 }
 
+/** 十干同士が干合（甲己・乙庚・丙辛・丁壬・戊癸）の関係かどうか */
+export function isStemGou(a: number, b: number): boolean {
+  return stemGouPartner(a) === b
+}
+
+export type StemCompatTier = 'best' | 'good' | 'normal' | 'bad'
+
+/**
+ * 日干同士の相性を4段階で判定する（十干相性表・相性相関図に基づく）。
+ * - best（最高）: 干合（甲己・乙庚・丙辛・丁壬・戊癸）
+ * - good（よい）: 相生（生我＝偏印・印綬、我生＝食神・傷官）
+ * - normal（普通）: 比和（比肩・劫財、同じ五行）
+ * - bad（合わない）: 相剋（偏財・偏官・非干合の正財/正官）※干合の相手は上記bestが優先
+ */
+export function stemCompatTier(a: number, b: number): StemCompatTier {
+  if (isStemGou(a, b)) return 'best'
+  const ea = STEM_ELEMENT[a]
+  const eb = STEM_ELEMENT[b]
+  if (ea === eb) return 'normal'
+  if (CONTROLS[ea] === eb || CONTROLS[eb] === ea) return 'bad'
+  return 'good'
+}
+
 // 六合（支合）の相手
 function branchRokugouPartner(idx: number): number {
   const pair = ROKUGOU.find(([a, b]) => a === idx || b === idx)!

@@ -6,6 +6,14 @@ import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { runSynastry } from '@/src/app/actions/synastry'
 import { saveCompatHistory, deleteCompatHistory } from '@/src/app/actions/compatHistory'
 import type { SynResult, SynCategory } from '@/src/lib/astrology/synastry'
+import type { StemCompatTier } from '@/src/lib/meishikiCalc'
+
+const STEM_TIER_LABEL: Record<StemCompatTier, string> = {
+  best: '最高（干合）',
+  good: 'よい（相生）',
+  normal: '普通（比和）',
+  bad: '合わない（相剋）',
+}
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 /** 管理者が選べる登録済みの人 */
@@ -374,7 +382,7 @@ function HistScore({ label, value, color }: { label: string; value: number | nul
 }
 
 function SynResultView({ result }: { result: SynResult }) {
-  const { total, categories, aspects } = result
+  const { total, categories, aspects, fourPillars } = result
 
   if (total === null) {
     return (
@@ -392,6 +400,14 @@ function SynResultView({ result }: { result: SynResult }) {
         <p className="text-xs text-pink-300/80 tracking-widest mb-1">総合点</p>
         <p className="text-4xl font-bold text-white">{total}<span className="text-lg text-slate-400 ml-1">点</span></p>
       </div>
+
+      {/* 四柱推命：日干支の相性による加点説明 */}
+      {fourPillars.stemTier && (
+        <div className="rounded-lg border border-amber-500/30 px-3 py-2.5 text-xs text-amber-200/90 leading-relaxed" style={{ background: 'rgba(245,158,11,0.08)' }}>
+          🎊 四柱推命：日干同士の相性は「{STEM_TIER_LABEL[fourPillars.stemTier]}」（恋愛に反映）。
+          {fourPillars.shigou && '日支同士は支合しているため、夫婦家庭・友人・仕事の相性もアップしています。'}
+        </div>
+      )}
 
       {/* カテゴリ別点数 */}
       <div className="grid grid-cols-4 gap-2">
