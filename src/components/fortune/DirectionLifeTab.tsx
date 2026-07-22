@@ -12,7 +12,7 @@ import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
 import type { TriggerPolarity } from '@/src/lib/astrology/trigger-polarity'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
-import { computeYearFortune, branchRelations, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
+import { computeYearFortune, branchRelations, STEMS, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
 import { NENUN_COMMON, NENUN_BY_GENMEI, NENUN_JUNIUN } from '@/src/data/nenun-master'
 import { AISHO_TEXT, aishoVerdict } from '@/src/data/aisho-master'
 
@@ -24,6 +24,9 @@ const AISHO_TONE_STYLE: Record<string, { color: string; bg: string }> = {
   none: { color: '#94a3b8', bg: 'transparent' },
 }
 
+// 天剋地冲（冲より一段強い凶意）用の配色
+const TENKOKU_STYLE = { color: '#fecdd3', bg: 'rgba(225,29,72,0.35)' }
+
 type Props = {
   aspects: DirectionAspectResult[]
   directionTriggerWindows: DirectionTriggerWindow[]
@@ -33,6 +36,7 @@ type Props = {
   birthday: string // ISO string
   dayStem: number | null
   dayBranch: number | null
+  monthBranch: number | null
   genmei: number | null // 元命（通変星ID 1-10）
 }
 
@@ -63,6 +67,8 @@ function YearColumn({
   aisho,
   onSelectAisho,
   isAishoSelected,
+  onSelectTentoku,
+  isTentokuSelected,
   triggerPolarityByKey,
 }: {
   year: number
@@ -77,6 +83,8 @@ function YearColumn({
   aisho: BranchRelation[] | null
   onSelectAisho: (year: number) => void
   isAishoSelected: boolean
+  onSelectTentoku: (year: number) => void
+  isTentokuSelected: boolean
   triggerPolarityByKey: Map<string, TriggerPolarity>
 }) {
   return (
@@ -122,11 +130,13 @@ function YearColumn({
         )}
       </div>
 
-      {/* 地支相性（日支×年支。クリックで解説） */}
+      {/* 地支相性（日支×年支。クリックで解説）。天剋地冲の年は特に強い凶意として表示を上書き */}
       <div className="h-[52px] border-b border-slate-700/40">
         {aisho ? (() => {
+          const isChichu = fortune?.isTenkokuChichu ?? false
           const v = aishoVerdict(aisho)
-          const s = AISHO_TONE_STYLE[v.tone]
+          const s = isChichu ? TENKOKU_STYLE : AISHO_TONE_STYLE[v.tone]
+          const label = isChichu ? '天剋地冲' : v.label
           return (
             <button
               type="button"
@@ -144,8 +154,42 @@ function YearColumn({
                 className="text-[9px] font-semibold mt-0.5 px-1 rounded"
                 style={{ color: s.color, backgroundColor: s.bg }}
               >
-                {v.label}
+                {label}
               </span>
+            </button>
+          )
+        })() : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[10px] text-slate-600">—</span>
+          </div>
+        )}
+      </div>
+
+      {/* 天徳貴人・天徳合（月支から決まる守護の干支と、その年の干支が一致するか。クリックで解説） */}
+      <div className="h-[52px] border-b border-slate-700/40">
+        {fortune ? (() => {
+          const { tentoku } = fortune
+          const hit = tentoku.hasKijin ? '天徳貴人' : tentoku.hasGou ? '天徳合' : null
+          return (
+            <button
+              type="button"
+              onClick={() => onSelectTentoku(year)}
+              aria-expanded={isTentokuSelected}
+              className={[
+                'w-full h-full flex flex-col items-center justify-center px-1 leading-none transition-colors',
+                isTentokuSelected ? 'ring-1 ring-inset ring-sky-300/50 bg-white/5' : 'hover:bg-white/5',
+              ].join(' ')}
+            >
+              {hit ? (
+                <>
+                  <span className="text-sm">🛡️</span>
+                  <span className="text-[9px] font-semibold mt-0.5 px-1 rounded text-sky-200" style={{ backgroundColor: 'rgba(56,189,248,0.14)' }}>
+                    {hit}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[10px] text-slate-600">—</span>
+              )}
             </button>
           )
         })() : (
@@ -159,7 +203,7 @@ function YearColumn({
       {CATEGORIES.map((cat) => {
         const items = aspectsByCategory[cat] ?? []
         return (
-          <div key={cat} className="h-[80px] border-b border-slate-800/40 p-1 overflow-y-auto">
+          <div key={cat} className="h-[80px] border-b border-slate-800/40 p-1 overflow-y-auto scrollbar-hide">
             {items.map((asp, idx) => {
               const key = `${asp.year}-${asp.directedPlanet}-${asp.natalPlanet}-${asp.aspectType}`
               const master = DIRECTION_MASTER_MAP.get(asp.masterKey)
@@ -387,16 +431,18 @@ function DetailCard({
   )
 }
 
-export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, endYear, currentYear, birthday, dayStem, dayBranch, genmei }: Props) {
+export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, endYear, currentYear, birthday, dayStem, dayBranch, monthBranch, genmei }: Props) {
   const [selected, setSelected] = useState<SelectedAspect | null>(null)
   const [filterMode, setFilterMode] = useState<'all' | 'important'>('important')
   const [orb, setOrb] = useState<number>(0.5)
   const [nenunYear, setNenunYear] = useState<number | null>(null)
   const [aishoYear, setAishoYear] = useState<number | null>(null)
+  const [tentokuYear, setTentokuYear] = useState<number | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const toggleNenun = (year: number) => setNenunYear((cur) => (cur === year ? null : year))
   const toggleAisho = (year: number) => setAishoYear((cur) => (cur === year ? null : year))
+  const toggleTentoku = (year: number) => setTentokuYear((cur) => (cur === year ? null : year))
 
   // ダイレクション発動年×トランシット重なりのルックアップ（年-進行天体-出生天体をキーに）
   const triggerLookup = new Map<string, { window: DirectionTriggerWindow; pattern: DirectionTriggerPattern }[]>()
@@ -512,7 +558,10 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
         <span className="text-rose-300">赤・天中殺</span>＝運気の変わり目・無理を控えたい年<br />
         <span className="text-slate-300">相性</span>＝あなたの日支とその年の相性：
         <span className="text-emerald-300">支合・三合＝良い運</span> ／
-        <span className="text-rose-300">冲・刑・害・破＝注意</span>
+        <span className="text-rose-300">冲・刑・害・破＝注意</span>（
+        <span style={{ color: TENKOKU_STYLE.color }}>天剋地冲＝特に強い凶意</span>）<br />
+        <span className="text-sky-300/90">天徳</span>＝あなたの月支から決まる守護の干支と、その年の干支が一致するか（
+        <span className="text-sky-300">天徳貴人・天徳合＝吉神</span>）
       </p>
 
       {/* Legend row labels */}
@@ -527,6 +576,11 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
           <div className="h-[52px] border-b border-slate-800/40 flex items-center justify-center">
             <span className="text-[9px] font-semibold tracking-wider text-slate-300/80" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
               相性
+            </span>
+          </div>
+          <div className="h-[52px] border-b border-slate-800/40 flex items-center justify-center">
+            <span className="text-[9px] font-semibold tracking-wider text-sky-300/80" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+              天徳
             </span>
           </div>
           {CATEGORIES.map((cat) => (
@@ -553,8 +607,8 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
               const age = year - birthYear
               const cats = yearMap.get(year) ?? { チャンス: [], 転機: [], 試練: [] }
               const fortune =
-                dayStem !== null && dayBranch !== null
-                  ? computeYearFortune(dayStem, dayBranch, year)
+                dayStem !== null && dayBranch !== null && monthBranch !== null
+                  ? computeYearFortune(dayStem, dayBranch, year, monthBranch)
                   : null
               const aisho =
                 dayBranch !== null && fortune ? branchRelations(dayBranch, fortune.branch) : null
@@ -573,6 +627,8 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
                   aisho={aisho}
                   onSelectAisho={toggleAisho}
                   isAishoSelected={aishoYear === year}
+                  onSelectTentoku={toggleTentoku}
+                  isTentokuSelected={tentokuYear === year}
                   triggerPolarityByKey={triggerPolarityByKey}
                 />
               )
@@ -582,8 +638,8 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
       </div>
 
       {/* 四柱推命 年運の解説パネル（運勢セルのクリックで開閉） */}
-      {nenunYear !== null && dayStem !== null && dayBranch !== null && (() => {
-        const f = computeYearFortune(dayStem, dayBranch, nenunYear)
+      {nenunYear !== null && dayStem !== null && dayBranch !== null && monthBranch !== null && (() => {
+        const f = computeYearFortune(dayStem, dayBranch, nenunYear, monthBranch)
         const nenunName = TSUHENSEI[f.tsuhen]
         const genmeiName = genmei ? TSUHENSEI[genmei] : null
         const common = NENUN_COMMON[nenunName]
@@ -642,8 +698,8 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
       })()}
 
       {/* 地支相性の解説パネル（相性セルのクリックで開閉） */}
-      {aishoYear !== null && dayBranch !== null && (() => {
-        const f = computeYearFortune(dayStem ?? 0, dayBranch, aishoYear)
+      {aishoYear !== null && dayBranch !== null && monthBranch !== null && (() => {
+        const f = computeYearFortune(dayStem ?? 0, dayBranch, aishoYear, monthBranch)
         const rels = branchRelations(dayBranch, f.branch)
         const v = aishoVerdict(rels)
         const s = AISHO_TONE_STYLE[v.tone]
@@ -670,6 +726,17 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
               </button>
             </div>
 
+            {f.isTenkokuChichu && (
+              <div className="rounded-xl p-3.5" style={{ background: 'rgba(225,29,72,0.1)' }}>
+                <p className="text-sm font-bold mb-1" style={{ color: TENKOKU_STYLE.color }}>
+                  天剋地冲（特に強い凶意）
+                </p>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  日柱とその年の干支が、天干は同じ陰陽で相剋、地支は冲となる「天と地の両方でぶつかる」組み合わせです。変化・衝突・トラブルが通常の冲よりも強く出やすい、注意が必要な年です。無理な決断は避け、変化を落ち着いて受け止めましょう。
+                </p>
+              </div>
+            )}
+
             {rels.length ? (
               <div className="space-y-3">
                 {rels.map((r) => {
@@ -687,6 +754,58 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
             ) : (
               <p className="text-sm text-slate-400 leading-relaxed">
                 この年は、あなたの日支と特に強い相性（支合・三合・冲・刑・害・破）は結びません。良くも悪くも大きな相性の影響が少ない、穏やかな年といえます。
+              </p>
+            )}
+          </div>
+        )
+      })()}
+
+      {/* 天徳貴人・天徳合の解説パネル（天徳セルのクリックで開閉） */}
+      {tentokuYear !== null && monthBranch !== null && (() => {
+        const f = computeYearFortune(dayStem ?? 0, dayBranch ?? 0, tentokuYear, monthBranch)
+        const { tentoku } = f
+        const fmt = (v: { type: 'stem' | 'branch'; value: number }) =>
+          v.type === 'stem' ? STEMS[v.value] : BRANCHES[v.value]
+        const hit = tentoku.hasKijin ? '天徳貴人' : tentoku.hasGou ? '天徳合' : null
+        return (
+          <div className="rounded-2xl border border-sky-600/30 p-5 space-y-4" style={{ background: 'rgba(20,20,40,0.95)' }}>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-lg font-bold text-white">
+                  {tentokuYear}年（{tentokuYear - birthYear}才）の天徳
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  あなたの天徳貴人は「{fmt(tentoku.kijin)}」・天徳合は「{fmt(tentoku.gou)}」：
+                  <span className="font-medium ml-1 text-sky-300">
+                    {hit ?? '該当なし'}
+                  </span>
+                </p>
+              </div>
+              <button
+                onClick={() => setTentokuYear(null)}
+                className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center text-slate-400 hover:text-slate-200 hover:border-slate-400 transition-colors shrink-0"
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              天徳貴人・天徳合は、あなたの月支から決まる「守護の干支」です。その年の干支がこの干支と一致すると、災いを軽減し、物事が穏やかに収まりやすいとされる吉神の年になります。
+            </p>
+
+            {hit ? (
+              <div className="rounded-xl p-3.5" style={{ background: 'rgba(56,189,248,0.08)' }}>
+                <p className="text-sm font-bold mb-1 text-sky-300">
+                  {hit}の年
+                </p>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  この年は、あなたの天徳（守護の干支）とその年の干支が一致する、災いが軽くなりやすい年です。トラブルが起きても大事に至りにくく、周囲の助けを得やすいタイミングとされています。ただし油断せず、日頃の行いを大切にすることが吉を活かす鍵です。
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 leading-relaxed">
+                この年は、天徳貴人・天徳合のどちらにも該当しません。特別な後押しはありませんが、悪い意味を持つものでもないので、他の運気を参考にしてください。
               </p>
             )}
           </div>

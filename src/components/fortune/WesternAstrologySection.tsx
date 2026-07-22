@@ -1,6 +1,7 @@
 import { prisma } from '@/src/lib/prisma'
 import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { detectPairAspects, detectTripleAspects, tripleComboKey, pairComboKey } from '@/src/lib/astrology/aspects'
+import type { TripleAspect } from '@/src/lib/astrology/aspects'
 import { calculateHouseCusps, assignPlanetsToHouses } from '@/src/lib/astrology/houses'
 import { calculateTransitBands } from '@/src/lib/astrology/transit'
 import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-triggers'
@@ -102,6 +103,10 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
     const sumOrbB = b.orbs.reduce((s, v) => s + v, 0)
     return sumOrbA - sumOrbB
   })
+  // 3つのうち2つ以上がハードアスペクト（合・矩・衝）なら「特に強い組み合わせ」として区別する
+  const isStrongTriple = (ta: TripleAspect) => ta.aspects.filter(asp => HARD_ASPECTS.has(asp)).length >= 2
+  const strongTripleAspects = tripleAspects.filter(isStrongTriple)
+  const normalTripleAspects = tripleAspects.filter(ta => !isStrongTriple(ta))
 
   // DB からアスペクト説明を取得
   const pairIds = visiblePairAspects.map(pa => pairComboKey(pa.planet1, pa.planet2, pa.aspect))
@@ -262,23 +267,65 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
             <h2 className="text-lg font-bold text-white mt-0.5">3天体の組み合わせ</h2>
           </div>
 
-          <div className="space-y-4">
-            {tripleAspects.map(ta => {
-              const key = tripleComboKey(ta.planets)
-              const data = tripleDataMap.get(key)
-              const names = ta.planets.map(p => PLANET_NAMES_JA[p]).join(' × ')
-              return (
-                <div key={key} className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0">
-                  <p className="text-sm font-semibold text-white mb-1.5">{names}</p>
-                  {data ? (
-                    <p className="text-sm text-slate-300 leading-relaxed">{data.description}</p>
-                  ) : (
-                    <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+          {strongTripleAspects.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
+                <span>⚡</span>特に強い組み合わせ
+              </p>
+              <div className="space-y-4">
+                {strongTripleAspects.map(ta => {
+                  const key = tripleComboKey(ta.planets)
+                  const data = tripleDataMap.get(key)
+                  const names = ta.planets.map(p => PLANET_NAMES_JA[p]).join(' × ')
+                  return (
+                    <div
+                      key={key}
+                      className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0 border-l-2 border-l-amber-500/50 pl-3"
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <p className="text-sm font-semibold text-white">{names}</p>
+                        <span className="text-[10px] font-bold text-amber-300 border border-amber-500/40 bg-amber-500/10 rounded px-1 leading-tight">
+                          強
+                        </span>
+                      </div>
+                      {data ? (
+                        <p className="text-sm text-slate-300 leading-relaxed">{data.description}</p>
+                      ) : (
+                        <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {normalTripleAspects.length > 0 && (
+            <div className="space-y-3">
+              {strongTripleAspects.length > 0 && (
+                <p className="text-[11px] font-medium text-slate-500 pt-3 border-t border-slate-800/60">
+                  その他の組み合わせ
+                </p>
+              )}
+              <div className="space-y-4">
+                {normalTripleAspects.map(ta => {
+                  const key = tripleComboKey(ta.planets)
+                  const data = tripleDataMap.get(key)
+                  const names = ta.planets.map(p => PLANET_NAMES_JA[p]).join(' × ')
+                  return (
+                    <div key={key} className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0">
+                      <p className="text-sm font-semibold text-white mb-1.5">{names}</p>
+                      {data ? (
+                        <p className="text-sm text-slate-300 leading-relaxed">{data.description}</p>
+                      ) : (
+                        <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

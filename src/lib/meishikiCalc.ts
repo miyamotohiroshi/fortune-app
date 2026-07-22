@@ -313,16 +313,21 @@ export type YearFortune = {
   juniUn: number
   /** 天中殺（空亡）の年か */
   isKubou: boolean
+  /** 天剋地冲（天戦地冲）の年か。日柱×その年の干支で判定 */
+  isTenkokuChichu: boolean
+  /** 天徳貴人・天徳合の判定結果 */
+  tentoku: TentokuResult
 }
 
 /**
- * 日柱（日干・日支）と西暦から、その年の年運を算出する。
+ * 日柱（日干・日支）・月支と西暦から、その年の年運を算出する。
  * 年干支は立春を境界とする太陽年（暦年＝太陽年として (year-4) で導出）。
  */
 export function computeYearFortune(
   dayStemIdx: number,
   dayBranchIdx: number,
-  year: number
+  year: number,
+  monthBranchIdx: number
 ): YearFortune {
   const stem = ((year - 4) % 10 + 10) % 10
   const branch = ((year - 4) % 12 + 12) % 12
@@ -334,6 +339,8 @@ export function computeYearFortune(
     tsuhen: calcTsuhensei(dayStemIdx, stem),
     juniUn: calcJuniUn(dayStemIdx, branch),
     isKubou: branch === k1 || branch === k2,
+    isTenkokuChichu: isStemClash(dayStemIdx, stem) && branchRelations(dayBranchIdx, branch).includes('冲'),
+    tentoku: checkTentoku(monthBranchIdx, stem, branch),
   }
 }
 
@@ -378,6 +385,75 @@ export function branchRelations(b1: number, b2: number): BranchRelation[] {
   if (hasPair(GAI, b1, b2)) r.push('害')
   if (hasPair(HA, b1, b2)) r.push('破')
   return r
+}
+
+// ─── 天剋地冲・天徳貴人／天徳合 ────────────────────────────────────────────────
+
+/**
+ * 十干同士が「天剋」の関係（陰陽が同じ・かつ五行相剋）かどうか。
+ * 例: 甲(陽木)と庚(陽金)は陰陽が同じで金剋木の関係にあるため天剋。
+ */
+function isStemClash(a: number, b: number): boolean {
+  if (STEM_POLARITY[a] !== STEM_POLARITY[b]) return false
+  const ea = STEM_ELEMENT[a]
+  const eb = STEM_ELEMENT[b]
+  return ea !== eb && (CONTROLS[ea] === eb || CONTROLS[eb] === ea)
+}
+
+// 天干五合（甲己・乙庚・丙辛・丁壬・戊癸）の相手
+function stemGouPartner(idx: number): number {
+  return (idx + 5) % 10
+}
+
+// 六合（支合）の相手
+function branchRokugouPartner(idx: number): number {
+  const pair = ROKUGOU.find(([a, b]) => a === idx || b === idx)!
+  return pair[0] === idx ? pair[1] : pair[0]
+}
+
+type TentokuValue = { type: 'stem' | 'branch'; value: number }
+
+// 月支ごとの天徳貴人（子月→巳・丑月→庚・寅月→丁・卯月→申・辰月→壬・巳月→辛・
+// 午月→亥・未月→甲・申月→癸・酉月→寅・戌月→丙・亥月→乙）
+const TENTOKU_TABLE: TentokuValue[] = [
+  { type: 'branch', value: 5 },  // 子 → 巳
+  { type: 'stem', value: 6 },    // 丑 → 庚
+  { type: 'stem', value: 3 },    // 寅 → 丁
+  { type: 'branch', value: 8 },  // 卯 → 申
+  { type: 'stem', value: 8 },    // 辰 → 壬
+  { type: 'stem', value: 7 },    // 巳 → 辛
+  { type: 'branch', value: 11 }, // 午 → 亥
+  { type: 'stem', value: 0 },    // 未 → 甲
+  { type: 'stem', value: 9 },    // 申 → 癸
+  { type: 'branch', value: 2 },  // 酉 → 寅
+  { type: 'stem', value: 2 },    // 戌 → 丙
+  { type: 'stem', value: 1 },    // 亥 → 乙
+]
+
+function tentokuGouOf(v: TentokuValue): TentokuValue {
+  return v.type === 'stem'
+    ? { type: 'stem', value: stemGouPartner(v.value) }
+    : { type: 'branch', value: branchRokugouPartner(v.value) }
+}
+
+export type TentokuResult = {
+  kijin: TentokuValue
+  gou: TentokuValue
+  /** その年の干支が天徳貴人と一致するか */
+  hasKijin: boolean
+  /** その年の干支が天徳合と一致するか */
+  hasGou: boolean
+}
+
+/**
+ * 月支・その年の年干支から、天徳貴人・天徳合の判定を行う。
+ * 天徳貴人は月支ごとに決まる十干または十二支、天徳合はその干合・支合の相手。
+ */
+export function checkTentoku(monthBranchIdx: number, yearStemIdx: number, yearBranchIdx: number): TentokuResult {
+  const kijin = TENTOKU_TABLE[monthBranchIdx]
+  const gou = tentokuGouOf(kijin)
+  const matches = (v: TentokuValue) => (v.type === 'stem' ? v.value === yearStemIdx : v.value === yearBranchIdx)
+  return { kijin, gou, hasKijin: matches(kijin), hasGou: matches(gou) }
 }
 
 // ─── 表示用ヘルパー ──────────────────────────────────────────────────────────

@@ -79,3 +79,13 @@ body {
 .animate-loader-letter {
   animation: loaderLetter 3s infinite;
 }
+
+/* スクロール自体は維持しつつ、スクロールバーの見た目だけ非表示にする（人生年表のセル内スクロールなど） */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
