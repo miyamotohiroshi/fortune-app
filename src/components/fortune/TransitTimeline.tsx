@@ -4,7 +4,7 @@ import { useState } from 'react'
 import type { TransitBand, TransitPlanetKey } from '@/src/lib/astrology/transit'
 import type { PairTriggerWindow } from '@/src/lib/astrology/pair-aspect-triggers'
 import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_ANGLES } from '@/src/lib/astrology/constants'
-import { TRANSIT_MASTER, aspectCategory } from '@/src/data/transit-master'
+import { TRANSIT_MASTER, TRANSIT_IMPORTANCE_THRESHOLD, aspectCategory } from '@/src/data/transit-master'
 import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
 import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
 
@@ -15,13 +15,14 @@ type Props = {
   todayISO: string
 }
 
-// トランシット天体ごとの色（冥王星→木星）
+// トランシット天体ごとの色（冥王星→木星→火星）
 const TRANSIT_COLORS: Record<TransitPlanetKey, { bar: string; dot: string; text: string }> = {
   pluto:   { bar: 'rgba(168,85,247,0.55)', dot: '#c084fc', text: 'text-purple-300' },
   neptune: { bar: 'rgba(56,189,248,0.5)',  dot: '#38bdf8', text: 'text-sky-300' },
   uranus:  { bar: 'rgba(45,212,191,0.5)',  dot: '#2dd4bf', text: 'text-teal-300' },
   saturn:  { bar: 'rgba(251,191,36,0.45)', dot: '#fbbf24', text: 'text-amber-300' },
   jupiter: { bar: 'rgba(74,222,128,0.45)', dot: '#4ade80', text: 'text-green-300' },
+  mars:    { bar: 'rgba(251,113,133,0.5)', dot: '#fb7185', text: 'text-rose-300' },
 }
 
 const MONTH_LABELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
@@ -50,12 +51,26 @@ function fmtDate(iso: string): string {
 const LABEL_W = 150
 
 export function TransitTimeline({ years, todayISO }: Props) {
-  const [yearIdx, setYearIdx] = useState(0)
-  const [selected, setSelected] = useState<number | null>(null)
-
-  const { year, bands, triggerWindows } = years[yearIdx]
-  const totalDays = isLeapYear(year) ? 366 : 365
   const todayYear = Number(todayISO.slice(0, 4))
+  const defaultYearIdx = Math.max(0, years.findIndex(y => y.year === todayYear))
+  const [yearIdx, setYearIdx] = useState(defaultYearIdx)
+  const [selected, setSelected] = useState<number | null>(null)
+  const [filterMode, setFilterMode] = useState<'all' | 'important' | 'today'>('important')
+  const [sortMode, setSortMode] = useState<'planet' | 'date'>('planet')
+
+  const { year, bands: allBands, triggerWindows } = years[yearIdx]
+  const filteredBands = filterMode === 'important'
+    ? allBands.filter(b => {
+        const master = TRANSIT_MASTER[`${b.transitPlanet}-${b.natalPoint}-${aspectCategory(b.aspect)}`]
+        return (master?.importance ?? 0) >= TRANSIT_IMPORTANCE_THRESHOLD
+      })
+    : filterMode === 'today'
+      ? allBands.filter(b => b.startDate <= todayISO && todayISO <= b.endDate)
+      : allBands
+  const bands = sortMode === 'date'
+    ? [...filteredBands].sort((a, b) => a.startDate.localeCompare(b.startDate))
+    : filteredBands
+  const totalDays = isLeapYear(year) ? 366 : 365
   const showToday = year === todayYear
   const todayPct = showToday ? (dayOfYearFromISO(todayISO, year) / totalDays) * 100 : 0
 
@@ -66,58 +81,105 @@ export function TransitTimeline({ years, todayISO }: Props) {
 
   return (
     <div className="space-y-2">
-      {/* 年の切替 */}
-      <div className="flex gap-1">
-        {years.map((y, i) => (
-          <button
-            key={y.year}
-            type="button"
-            onClick={() => switchYear(i)}
-            className={[
-              'px-4 py-1.5 rounded-full text-xs font-medium transition-colors',
-              i === yearIdx
-                ? 'bg-purple-600/40 text-purple-100 border border-purple-500/50'
-                : 'text-slate-400 border border-slate-700/50 hover:text-slate-200',
-            ].join(' ')}
-          >
-            {y.year}年
-          </button>
-        ))}
+      {/* 年の切替・表示レベル */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-1">
+          {years.map((y, i) => (
+            <button
+              key={y.year}
+              type="button"
+              onClick={() => switchYear(i)}
+              className={[
+                'px-4 py-1.5 rounded-full text-xs font-medium transition-colors',
+                i === yearIdx
+                  ? 'bg-purple-600/40 text-purple-100 border border-purple-500/50'
+                  : 'text-slate-400 border border-slate-700/50 hover:text-slate-200',
+              ].join(' ')}
+            >
+              {y.year}年
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-slate-400">
+            <span>表示レベル：</span>
+            <select
+              value={filterMode}
+              onChange={e => { setFilterMode(e.target.value as 'all' | 'important' | 'today'); setSelected(null) }}
+              className="bg-slate-800/60 border border-slate-700/60 rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-purple-500"
+            >
+              <option value="important">重要のみ</option>
+              <option value="all">すべて</option>
+              <option value="today">今日のみ</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 text-xs text-slate-400">
+            <span>並び順：</span>
+            <select
+              value={sortMode}
+              onChange={e => { setSortMode(e.target.value as 'planet' | 'date'); setSelected(null) }}
+              className="bg-slate-800/60 border border-slate-700/60 rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-purple-500"
+            >
+              <option value="planet">天体順</option>
+              <option value="date">発生タイミング順</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      {/* 特別なチャンス期間（出生ペアアスペクト × トランシット発動） */}
-      {triggerWindows.length > 0 && (
-        <div className="space-y-2">
-          {triggerWindows.map((tw, i) => {
-            const pattern = PAIR_TRIGGER_PATTERNS.find(p => p.id === tw.patternId)
-            if (!pattern) return null
-            const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
-            return (
-              <div
-                key={i}
-                className={`rounded-xl border ${style.border} p-3.5`}
-                style={{ background: style.bg }}
-              >
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-sm">{style.icon}</span>
-                  <span className={`text-xs font-bold ${style.text}`}>{pattern.title}</span>
-                  <span className={`text-xs ml-auto opacity-80 ${style.text}`}>
-                    {fmtDate(tw.startDate)} 〜 {fmtDate(tw.endDate)}（最接近 {fmtDate(tw.exactDate)}）
-                  </span>
+      {/* 特別なチャンス期間（出生ペアアスペクト × トランシット発動）。同じパターンが複数回発動する場合は1枚にまとめる */}
+      {triggerWindows.length > 0 && (() => {
+        const grouped = new Map<string, typeof triggerWindows>()
+        for (const tw of triggerWindows) {
+          const arr = grouped.get(tw.patternId) ?? []
+          arr.push(tw)
+          grouped.set(tw.patternId, arr)
+        }
+        return (
+          <div className="space-y-2">
+            {[...grouped.entries()].map(([patternId, windows]) => {
+              const pattern = PAIR_TRIGGER_PATTERNS.find(p => p.id === patternId)
+              if (!pattern) return null
+              const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
+              return (
+                <div
+                  key={patternId}
+                  className={`rounded-xl border ${style.border} p-3.5`}
+                  style={{ background: style.bg }}
+                >
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-sm">{style.icon}</span>
+                    <span className={`text-xs font-bold ${style.text}`}>{pattern.title}</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed mt-1.5">{pattern.description}</p>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                    {windows.map((tw, i) => (
+                      <span key={i} className={`text-xs opacity-80 ${style.text}`}>
+                        {fmtDate(tw.startDate)}〜{fmtDate(tw.endDate)}（最接近 {fmtDate(tw.exactDate)}）
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed mt-1.5">{pattern.description}</p>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )
+      })()}
 
       {bands.length === 0 ? (
         <div
           className="rounded-2xl border border-slate-800/40 p-5 text-center"
           style={{ background: 'rgba(9,9,25,0.6)' }}
         >
-          <p className="text-sm text-slate-500">{year}年に対象のトランシットは見つかりませんでした</p>
+          <p className="text-sm text-slate-500">
+            {allBands.length === 0
+              ? `${year}年に対象のトランシットは見つかりませんでした`
+              : filterMode === 'today'
+                ? '今日の日付に被っているトランシットは見つかりませんでした（「すべて」に切り替えると表示されます）'
+                : `${year}年に「重要」なトランシットは見つかりませんでした（「すべて」に切り替えると表示されます）`}
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-indigo-900/40" style={{ background: 'rgba(9,9,25,0.6)' }}>

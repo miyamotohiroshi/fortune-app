@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { lookupAndSaveHistory } from '@/src/app/actions/adminHistory'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 // ─── SVGアイコン ──────────────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ export default function AdminLookupPage() {
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
+      {pending && <LoadingOverlay text="計算中" />}
       <div className="max-w-md mx-auto">
 
         <section className="relative overflow-hidden px-6 pt-16 pb-12">

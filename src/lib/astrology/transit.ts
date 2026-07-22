@@ -2,13 +2,13 @@ import { Body, GeoVector, Ecliptic, SunPosition } from 'astronomy-engine'
 import type { PlanetKey, AspectType } from './constants'
 import type { PlanetPositions } from './planets'
 
-// トランシット対象の外惑星（この配列順が表示の優先順位：冥王星が最上位）
-export const TRANSIT_PLANETS = ['pluto', 'neptune', 'uranus', 'saturn', 'jupiter'] as const
+// トランシット対象の天体（この配列順が表示の優先順位：冥王星が最上位、火星が最下位）
+export const TRANSIT_PLANETS = ['pluto', 'neptune', 'uranus', 'saturn', 'jupiter', 'mars'] as const
 export type TransitPlanetKey = (typeof TRANSIT_PLANETS)[number]
 
 // タイムライン表示はしないが、出生ペアアスペクトの発動判定（トリガー天体・除外天体チェック）には
 // 内惑星も使うことがあるため加えた型
-export type ExtendedTransitPlanetKey = TransitPlanetKey | 'mars' | 'sun' | 'moon' | 'mercury' | 'venus'
+export type ExtendedTransitPlanetKey = TransitPlanetKey | 'sun' | 'moon' | 'mercury' | 'venus'
 
 // メジャー5アスペクト
 export const TRANSIT_ASPECTS: { type: AspectType; angle: number }[] = [

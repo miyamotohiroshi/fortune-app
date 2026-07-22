@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { updateProfile } from '@/src/app/actions/account'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 const CITY_REGIONS = [
   { label: '北海道', cities: ['札幌', '函館', '旭川'] },
@@ -41,6 +42,7 @@ export function AccountForm({ nickname, email, birthday, birthHour, birthMinute,
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
+      {pending && <LoadingOverlay text="保存中" />}
 
       {/* 背景グロー */}
       <div className="fixed top-0 right-0 w-96 h-96 rounded-full bg-purple-900/10 blur-3xl pointer-events-none" />

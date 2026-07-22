@@ -17,7 +17,13 @@ export type TransitMaster = {
   events: string[]
   howToSpend: string
   caution: string
+  // 影響の大きさ（1-10）。スケール自体は人生年表（direction-master）と同じ基準
+  importance: number
 }
+
+// トランシットは頻度が高い（木星・土星・火星は毎年〜数年で巡ってくる）ため、
+// 人生年表（閾値8）より少し緩めの7を「重要」の閾値とする
+export const TRANSIT_IMPORTANCE_THRESHOLD = 7
 
 export const TRANSIT_MASTER: Record<string, TransitMaster> = {
   // ══════════════════════════════════════════════════════════════════
@@ -37,6 +43,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '抵抗せず、古い価値観や役割を手放すことが再生への近道です。本当に大切なものだけを残す意識で過ごしましょう。',
     caution: '支配・被支配のテーマが強まります。他人を思い通りにしようとしたり、逆に飲み込まれたりしないよう、力の使い方に注意してください。',
+    importance: 10,
   },
   'pluto-sun-soft': {
     title: '無理のない自己変革',
@@ -50,6 +57,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな目標に腰を据えて取り組む好機です。深く関わるほど確かな成果につながります。',
     caution: '穏やかな追い風のため見過ごしがちですが、意識して行動することで変化を最大限に活かせます。',
+    importance: 7,
   },
   'pluto-sun-hard': {
     title: '自我と権力の試練',
@@ -63,6 +71,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '力でねじ伏せようとせず、何を手放すべきかを見極めることが鍵です。この試練は本質的な強さを育ててくれます。',
     caution: '強引な行動や執着は状況を悪化させます。無理を重ねず、健康面の変化にも注意を払いましょう。',
+    importance: 9,
   },
 
   // ── 冥王星 × 月 ─────────────────────────────────────────────
@@ -78,6 +87,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '湧き上がる感情を否定せず見つめることで、心の奥にたまった古い痛みが浄化されていきます。安心できる環境を意識的に整えましょう。',
     caution: '感情に飲み込まれたり、人に過度に依存・執着したりしやすい時期です。一人で抱えず信頼できる人に頼ってください。',
+    importance: 9,
   },
   'pluto-moon-soft': {
     title: '心の基盤が深まる',
@@ -91,6 +101,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大切な人と深く向き合う好機です。心の内を分かち合うことで、揺るがない安心感が育ちます。',
     caution: '穏やかな変化のため見過ごしがちですが、心の手入れを意識するとより豊かな時期になります。',
+    importance: 6,
   },
   'pluto-moon-hard': {
     title: '感情を揺さぶる試練',
@@ -104,6 +115,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '揺さぶられる感情は、古い心のパターンを手放すためのプロセスです。焦らず、心の安全を最優先に過ごしましょう。',
     caution: '執着や嫉妬、支配的な感情が関係を壊しやすい時期です。感情的な決断は避け、必要なら専門家の助けも借りましょう。',
+    importance: 9,
   },
 
   // ── 冥王星 × 水星 ─────────────────────────────────────────────
@@ -119,6 +131,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '物事を深く掘り下げるのに最適な時期です。表面的な情報でなく、本質を見抜く目を養いましょう。',
     caution: '思い込みが極端になったり、言葉で人を操作しようとしたりしやすい面があります。柔軟さを忘れずに。',
+    importance: 7,
   },
   'pluto-mercury-soft': {
     title: '深い洞察力が冴える',
@@ -132,6 +145,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '複雑な問題の解決や、深い学び・研究に取り組む好機です。集中して物事に向き合いましょう。',
     caution: '追い風は穏やかなので、能動的に頭を使うほど成果につながります。',
+    importance: 5,
   },
   'pluto-mercury-hard': {
     title: '思考をめぐる緊張',
@@ -145,6 +159,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '一つの考えに固執せず、視野を広く保つことが大切です。冷静に事実を確認してから判断しましょう。',
     caution: '極端な結論や、言葉での支配・操作に注意。契約や発言は慎重に行ってください。',
+    importance: 6,
   },
 
   // ── 冥王星 × 金星 ─────────────────────────────────────────────
@@ -160,6 +175,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '深く関わる相手や本当に価値あるものが見えてくる時期です。表面的でない本物のつながりを大切にしましょう。',
     caution: '恋愛や金銭で強い執着・支配が生まれやすい時期です。相手を束縛したり飲み込まれたりしないよう注意を。',
+    importance: 8,
   },
   'pluto-venus-soft': {
     title: '深い絆と豊かさ',
@@ -173,6 +189,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人との縁を深め、本当に大切にしたいものに投資する好機です。心から満たされる関係を育てましょう。',
     caution: '穏やかな時期のため受け身になりがちです。自分から関係や価値を育てる意識を持ちましょう。',
+    importance: 6,
   },
   'pluto-venus-hard': {
     title: '愛と欲望の試練',
@@ -186,6 +203,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'この時期の関係やお金の揺れは、本当に価値あるものを見極めるための試練です。執着を手放す勇気を持ちましょう。',
     caution: '相手を支配しようとしたり、依存しすぎたりすると関係が壊れます。衝動的な散財にも注意してください。',
+    importance: 8,
   },
 
   // ── 冥王星 × 火星 ─────────────────────────────────────────────
@@ -201,6 +219,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '正しい方向に向ければ大きな壁を突破できる強力な時期です。エネルギーを建設的な目標に集中させましょう。',
     caution: '強引な行動や攻撃性が対立や事故を招きやすい時期です。怒りや衝動のコントロールを意識してください。',
+    importance: 8,
   },
   'pluto-mars-soft': {
     title: '力を建設的に発揮',
@@ -214,6 +233,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな目標や困難な課題に挑む好機です。粘り強く取り組むほど大きな結果が得られます。',
     caution: '力があり余る時期なので、休息とのバランスも意識しましょう。',
+    importance: 6,
   },
   'pluto-mars-hard': {
     title: '衝突と消耗の試練',
@@ -227,6 +247,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '力でぶつかり合うより、一歩引いて冷静に対応することが被害を防ぎます。エネルギーを運動などで発散させましょう。',
     caution: '衝動的な行動や対立は深刻な事態を招きます。怒りに任せた決断や無謀な行動を避けてください。',
+    importance: 8,
   },
 
   // ── 冥王星 × 木星 ─────────────────────────────────────────────
@@ -242,6 +263,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きく飛躍できる力を持つ時期です。深い信念に基づいて、スケールの大きな目標に挑みましょう。',
     caution: '力や成功への欲が過剰になりやすい面があります。傲慢さや極端な信念に注意しましょう。',
+    importance: 9,
   },
   'pluto-jupiter-soft': {
     title: '実り多い成長',
@@ -255,6 +277,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期的な目標に向けて基盤を固める好機です。焦らず本質的な成長を積み重ねましょう。',
     caution: '恵まれた流れを当然と思わず、謙虚に活かす姿勢が実りを大きくします。',
+    importance: 6,
   },
   'pluto-jupiter-hard': {
     title: '拡大と信念の試練',
@@ -268,6 +291,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きく動きたくなりますが、身の丈を見極めることが大切です。誠実さと節度を忘れずに進みましょう。',
     caution: '傲慢さ・過剰な野心・独善的な信念が足元をすくいます。無理な拡大や誇張を控えてください。',
+    importance: 7,
   },
 
   // ── 冥王星 × 土星 ─────────────────────────────────────────────
@@ -283,6 +307,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '簡単には動かない現実と粘り強く向き合う時期です。不要な構造を手放し、本当に必要な土台を築き直しましょう。',
     caution: '重圧から悲観的・孤立的になりやすい時期です。一人で抱え込まず、着実に一歩ずつ進んでください。',
+    importance: 9,
   },
   'pluto-saturn-soft': {
     title: '着実な再構築',
@@ -296,6 +321,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期計画をじっくり進める好機です。時間をかけて築くものほど揺るがない財産になります。',
     caution: '成果が見えにくくても、積み重ねが後で大きく実ります。焦らず継続しましょう。',
+    importance: 7,
   },
   'pluto-saturn-hard': {
     title: '重圧と再生の試練',
@@ -309,6 +335,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'この試練は不要になったものを崩し、より強固な土台を築くためのものです。逃げずに一つずつ課題に向き合いましょう。',
     caution: '悲観や無力感に飲まれやすい時期です。無理を重ねて心身を壊さないよう、支えを求めてください。',
+    importance: 9,
   },
 
   // ── 冥王星 × 天王星 ─────────────────────────────────────────────
@@ -324,6 +351,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化を恐れず、古い枠を壊して新しい自分へ生まれ変わる好機と捉えましょう。柔軟さが道を開きます。',
     caution: '急激な変化に振り回されやすい時期です。衝動的にすべてを壊さないよう、冷静な判断を保ちましょう。',
+    importance: 9,
   },
   'pluto-uranus-soft': {
     title: '建設的な革新',
@@ -337,6 +365,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい試みや変化を前向きに取り入れる好機です。自分らしい変革を進めましょう。',
     caution: '穏やかな追い風なので、意識的に行動すると変化を活かせます。',
+    importance: 7,
   },
   'pluto-uranus-hard': {
     title: '激変と解放の試練',
@@ -350,6 +379,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化は避けられないものとして受け入れ、柔軟に対応することが鍵です。急な決断は一度立ち止まって見極めましょう。',
     caution: '衝動的・破壊的な行動に注意。焦って現状をすべて壊すと後悔につながります。',
+    importance: 8,
   },
 
   // ── 冥王星 × 海王星 ─────────────────────────────────────────────
@@ -365,6 +395,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '目に見えない世界や心の深層に向き合う好機です。内省や瞑想、芸術を通じて自分を見つめ直しましょう。',
     caution: '現実逃避や幻想に飲まれやすい時期です。地に足をつけ、依存的なものから距離を保ちましょう。',
+    importance: 7,
   },
   'pluto-neptune-soft': {
     title: '精神性の建設的な深化',
@@ -378,6 +409,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '内面の探求や創造的な活動に適した時期です。直感を大切にしながら理想を形にしていきましょう。',
     caution: '穏やかな変化のため見過ごしがちですが、内面に意識を向けると豊かな学びが得られます。',
+    importance: 5,
   },
   'pluto-neptune-hard': {
     title: '幻想と現実の試練',
@@ -391,6 +423,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '崩れる幻想は、より本質的な精神性へ向かうプロセスです。現実をしっかり見据えながら過ごしましょう。',
     caution: '依存・逃避・欺瞞に注意。曖昧な話や誘いには冷静に対処し、心身の不調にも気を配りましょう。',
+    importance: 7,
   },
 
   // ── 冥王星 × 冥王星 ─────────────────────────────────────────────
@@ -406,6 +439,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人生の深いテーマと向き合う節目です。根本から自分を見つめ直し、変容を受け入れましょう。',
     caution: '大きな力が動くため、極端な行動や執着に注意しましょう。',
+    importance: 9,
   },
   'pluto-pluto-soft': {
     title: '深い変容の追い風',
@@ -419,6 +453,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '深いテーマにじっくり取り組む好機です。焦らず自分の変化を信じて進みましょう。',
     caution: '穏やかな流れですが、意識して向き合うほど大きな成長につながります。',
+    importance: 6,
   },
   'pluto-pluto-hard': {
     title: '変容を迫る試練',
@@ -432,6 +467,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '古いものが崩れるのは再生のためです。抵抗せず、必要な変化を受け入れる姿勢が道を開きます。',
     caution: '執着や無理な抵抗は苦しみを長引かせます。大きな変化ほど冷静に見極めましょう。',
+    importance: 8,
   },
 
   // ── 冥王星 × ASC ─────────────────────────────────────────────
@@ -447,6 +483,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい自分へ生まれ変わる好機です。古い自己像を手放し、本当の自分を表現していきましょう。',
     caution: '強引さや威圧的な態度が対人トラブルを招きやすい時期です。力の使い方に注意しましょう。',
+    importance: 9,
   },
   'pluto-asc-soft': {
     title: '存在感の自然な深まり',
@@ -460,6 +497,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分らしさを深めるのに適した時期です。内面の充実を大切にしながら自然体で過ごしましょう。',
     caution: '穏やかな追い風なので、能動的に自己表現するほど魅力が増します。',
+    importance: 6,
   },
   'pluto-asc-hard': {
     title: '自己を巡る対人試練',
@@ -473,6 +511,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '力でぶつかるより、自分の在り方を静かに見つめ直すことが大切です。この試練は本当の自分を鍛えてくれます。',
     caution: '支配的な人との衝突や、自分が強引になることに注意。冷静さを保ちましょう。',
+    importance: 8,
   },
 
   // ── 冥王星 × MC ─────────────────────────────────────────────
@@ -488,6 +527,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '社会での役割が大きく変わる節目です。古い立場に固執せず、本当に果たすべき使命へ向かいましょう。',
     caution: '権力争いや立場を巡る対立が起きやすい時期です。強引な手段や執着に注意しましょう。',
+    importance: 9,
   },
   'pluto-mc-soft': {
     title: 'キャリアの着実な発展',
@@ -501,6 +541,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期的なキャリアの基盤を固める好機です。深く関わる仕事ほど大きな成果につながります。',
     caution: '穏やかな流れなので、目標を明確にして能動的に動くと成果が高まります。',
+    importance: 7,
   },
   'pluto-mc-hard': {
     title: '立場を巡る試練',
@@ -514,6 +555,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'この試練は本当に進むべき道を見極めるためのものです。焦らず、何を手放し何を守るかを冷静に判断しましょう。',
     caution: '権力闘争に巻き込まれたり、強引な手段に走ったりしないよう注意。無理な立場の維持は禁物です。',
+    importance: 8,
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -533,6 +575,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '効率や結果より、感性や精神的な満足を大切にする時期です。芸術や瞑想、静かな時間が心を潤します。',
     caution: '現実逃避や理想の追いすぎ、他人への過度な同一化に注意。大事な決断や契約は先延ばしにするのが無難です。',
+    importance: 8,
   },
   'neptune-sun-soft': {
     title: '感性とインスピレーションの高まり',
@@ -546,6 +589,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '創作や癒し、人の役に立つ活動に向く時期です。直感を信じて、心が喜ぶことに時間を使いましょう。',
     caution: '穏やかな追い風なので、ぼんやり過ごすより意識的に感性を活かすと実りが増します。',
+    importance: 6,
   },
   'neptune-sun-hard': {
     title: '理想と現実の狭間の試練',
@@ -559,6 +603,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '無理に頑張ろうとせず、休息と自己ケアを優先しましょう。曖昧さの中で本当に大切な理想が見えてきます。',
     caution: '過度な期待や幻想、依存に注意。重要な判断は事実を丁寧に確認し、体調管理も怠らないでください。',
+    importance: 8,
   },
 
   // ── 海王星 × 月 ─────────────────────────────────────────────
@@ -574,6 +619,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心の声や夢を大切にし、感情を癒す時間を持ちましょう。芸術やスピリチュアルな営みが心を満たします。',
     caution: '気分に流されたり、人に感情移入しすぎたりしやすい時期です。心の境界線を意識して守りましょう。',
+    importance: 7,
   },
   'neptune-moon-soft': {
     title: '優しさと癒しに包まれる',
@@ -587,6 +633,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大切な人との情緒的な交流や、心を癒す活動に向く時期です。感性のおもむくままに過ごしましょう。',
     caution: '穏やかな時期のため、意識して感性を活かすとより豊かになります。',
+    importance: 5,
   },
   'neptune-moon-hard': {
     title: '感情の霧に迷う試練',
@@ -600,6 +647,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '感情に飲まれそうな時ほど、生活リズムを整え、地に足をつけることが助けになります。無理せず休みましょう。',
     caution: '依存関係やごまかし、逃避に注意。一人で抱え込まず、信頼できる人や専門家に頼ってください。',
+    importance: 7,
   },
 
   // ── 海王星 × 水星 ─────────────────────────────────────────────
@@ -615,6 +663,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '創作やイメージを使う活動に最適な時期です。直感を大切にしつつ、事実確認は丁寧に行いましょう。',
     caution: '思い違いや勘違い、情報の混乱が起きやすい時期です。重要な連絡や契約はよく確認してください。',
+    importance: 6,
   },
   'neptune-mercury-soft': {
     title: '感性豊かな発想',
@@ -628,6 +677,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '創作・企画・カウンセリングなど、感性と言葉を使う活動に向きます。直感を信じて表現しましょう。',
     caution: '穏やかな流れなので、能動的に発想を形にすると成果につながります。',
+    importance: 5,
   },
   'neptune-mercury-hard': {
     title: '思考の混乱の試練',
@@ -641,6 +691,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '曖昧なまま進めず、事実を一つずつ確認することが大切です。焦らず、判断は落ち着いてから下しましょう。',
     caution: '契約・約束・重要な連絡は特に慎重に。うのみにせず裏付けを取る習慣を持ちましょう。',
+    importance: 6,
   },
 
   // ── 海王星 × 金星 ─────────────────────────────────────────────
@@ -656,6 +707,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '芸術や美に触れ、愛を育むのに素敵な時期です。心ときめくものに触れて感性を磨きましょう。',
     caution: '相手を理想化しすぎたり、恋に溺れたりしやすい時期です。金銭の貸し借りや曖昧な約束にも注意を。',
+    importance: 6,
   },
   'neptune-venus-soft': {
     title: '愛と美に恵まれる',
@@ -669,6 +721,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '恋愛・芸術・人との交流を楽しむ好機です。優しさや美しさを大切にしながら過ごしましょう。',
     caution: '穏やかな時期のため、受け身になりすぎず自分から愛や美を育てる意識を持ちましょう。',
+    importance: 5,
   },
   'neptune-venus-hard': {
     title: '愛の幻滅の試練',
@@ -682,6 +735,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '理想と現実のギャップに気づく時期です。相手やものごとを冷静に見つめ、幻想を手放す勇気を持ちましょう。',
     caution: '恋愛・金銭での欺きや依存に注意。曖昧な関係や甘い儲け話には特に慎重になってください。',
+    importance: 8,
   },
 
   // ── 海王星 × 火星 ─────────────────────────────────────────────
@@ -697,6 +751,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'がむしゃらに動くより、心が本当に望む方向を見極める時期です。芸術や奉仕など理想に沿った行動が力を生みます。',
     caution: 'エネルギーが低下しやすく、体調も崩しやすい時期です。無理をせず、曖昧な目標に振り回されないように。',
+    importance: 5,
   },
   'neptune-mars-soft': {
     title: '理想に沿った行動',
@@ -710,6 +765,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心が動く方向へ自然に行動できる好機です。奉仕や創作など、意味を感じられる活動に取り組みましょう。',
     caution: '穏やかな時期なので、目標を明確にすると行動が実を結びやすくなります。',
+    importance: 5,
   },
   'neptune-mars-hard': {
     title: '意欲と方向性の試練',
@@ -723,6 +779,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思うように動けなくても焦らず、休息と方向性の再確認を優先しましょう。曖昧なことには手を出さないのが賢明です。',
     caution: '中途半端な行動や、あてにならない話への深入りに注意。体調管理を大切にしてください。',
+    importance: 6,
   },
 
   // ── 海王星 × 木星 ─────────────────────────────────────────────
@@ -738,6 +795,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな理想や精神的な学びに向かう好機です。心を広く持ち、意味あるものへ関心を広げましょう。',
     caution: '楽観や理想が過剰になりやすい時期です。うまい話や誇大な期待、現実離れした計画に注意しましょう。',
+    importance: 6,
   },
   'neptune-jupiter-soft': {
     title: '精神的な豊かさ',
@@ -751,6 +809,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '理想や精神性を現実に活かす好機です。学びや癒し、人助けに取り組むと豊かさが広がります。',
     caution: '穏やかな流れなので、理想を具体的な行動に落とし込むと実りが増します。',
+    importance: 5,
   },
   'neptune-jupiter-hard': {
     title: '過剰な理想の試練',
@@ -764,6 +823,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな夢を描くのは良いですが、地に足をつけて現実性を確かめましょう。堅実さが理想を守ります。',
     caution: '誇大な話や投資、宗教・思想への過度な傾倒に注意。うまい話ほど慎重に見極めてください。',
+    importance: 7,
   },
 
   // ── 海王星 × 土星 ─────────────────────────────────────────────
@@ -779,6 +839,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '理想を地道に形にしていく好機です。夢と現実の橋渡しを意識し、一歩ずつ具体化しましょう。',
     caution: '理想と現実のギャップに落胆しやすい時期です。悲観に傾かず、できることから着実に進めましょう。',
+    importance: 8,
   },
   'neptune-saturn-soft': {
     title: '夢の着実な実現',
@@ -792,6 +853,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '夢を現実の計画に落とし込むのに向く時期です。焦らず着実に理想を築いていきましょう。',
     caution: '穏やかな流れなので、具体的な行動を重ねるほど夢が形になります。',
+    importance: 6,
   },
   'neptune-saturn-hard': {
     title: '幻想と現実の衝突',
@@ -805,6 +867,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '崩れる理想は、より現実的な形へ作り直すためのものです。悲観せず、現実にできることを一つずつ積みましょう。',
     caution: '無力感や逃避に飲まれないよう注意。曖昧な状況ほど、事実を確認し地道に対処してください。',
+    importance: 8,
   },
 
   // ── 海王星 × 天王星 ─────────────────────────────────────────────
@@ -820,6 +883,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい理想やビジョンに心を開く好機です。直感と自由な発想を大切にしましょう。',
     caution: '理想と現実が混ざり、方向が定まりにくい時期です。地に足をつける意識を忘れずに。',
+    importance: 6,
   },
   'neptune-uranus-soft': {
     title: '革新的なインスピレーション',
@@ -833,6 +897,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい試みや創造的な活動に向く時期です。自分らしい理想を自由に追求しましょう。',
     caution: '穏やかな追い風なので、意識して形にすると成果につながります。',
+    importance: 5,
   },
   'neptune-uranus-hard': {
     title: '理想と変化の混乱',
@@ -846,6 +911,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化と曖昧さが重なる時期です。焦って動かず、心の軸を保ちながら流れを見極めましょう。',
     caution: '衝動的な決断や現実逃避に注意。地に足をつけて、確かなものを手放さないように。',
+    importance: 6,
   },
 
   // ── 海王星 × 海王星 ─────────────────────────────────────────────
@@ -861,6 +927,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人生の精神的なテーマと向き合う節目です。内省や癒しを通じて自分を見つめ直しましょう。',
     caution: '曖昧さや迷いが強まる時期です。現実的な足場を保ちながら過ごしましょう。',
+    importance: 7,
   },
   'neptune-neptune-soft': {
     title: '精神的な成熟の追い風',
@@ -874,6 +941,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '内面の探求や癒しに向く時期です。感性を大切に、心が喜ぶことに時間を使いましょう。',
     caution: '穏やかな流れなので、意識して内面に向き合うと学びが深まります。',
+    importance: 6,
   },
   'neptune-neptune-hard': {
     title: '理想を見つめ直す試練',
@@ -887,6 +955,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '揺らぎは理想を成熟させるプロセスです。現実を見据えながら、本当に大切な価値を見極めましょう。',
     caution: '逃避や依存に注意。曖昧なまま流されず、地道に日々を整えることが支えになります。',
+    importance: 7,
   },
 
   // ── 海王星 × 冥王星 ─────────────────────────────────────────────
@@ -902,6 +971,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心の深層と向き合う好機です。内省や癒しを通じて、古い心のパターンを手放しましょう。',
     caution: '曖昧さと深さが重なるため、現実逃避や依存に注意しましょう。',
+    importance: 6,
   },
   'neptune-pluto-soft': {
     title: '深い精神的成長',
@@ -915,6 +985,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '内面の探求や創造活動に向く時期です。直感を大切にしながら深い変容を受け入れましょう。',
     caution: '穏やかな流れなので、意識して内面に向き合うと成長が深まります。',
+    importance: 5,
   },
   'neptune-pluto-hard': {
     title: '深層の揺さぶりの試練',
@@ -928,6 +999,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '深い揺さぶりは心の浄化のプロセスです。現実的な支えを保ちながら、必要な手放しを進めましょう。',
     caution: '依存・逃避・現実離れに注意。一人で抱えず、信頼できる支えを求めてください。',
+    importance: 7,
   },
 
   // ── 海王星 × ASC ─────────────────────────────────────────────
@@ -943,6 +1015,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分を柔軟に捉え直す時期です。感性を大切にしつつ、大事な場面では意識的に自分を明確に示しましょう。',
     caution: '自分を見失ったり、人に流されたりしやすい時期です。心の境界線を意識して守りましょう。',
+    importance: 6,
   },
   'neptune-asc-soft': {
     title: '柔らかな魅力の高まり',
@@ -956,6 +1029,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自然体の優しさが人を惹きつける時期です。感性を活かした自己表現を楽しみましょう。',
     caution: '穏やかな追い風なので、能動的に魅力を活かすとより良い縁につながります。',
+    importance: 5,
   },
   'neptune-asc-hard': {
     title: '自己と対人の曖昧さの試練',
@@ -969,6 +1043,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分の軸を意識的に保つことが大切です。曖昧な関係や状況には、はっきりと線を引きましょう。',
     caution: '人に流される・利用される・欺かれることに注意。無理な同一化や依存を避けてください。',
+    importance: 7,
   },
 
   // ── 海王星 × MC ─────────────────────────────────────────────
@@ -984,6 +1059,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心から意味を感じられる仕事へ向かう好機です。理想を大切にしつつ、現実的な足場も保ちましょう。',
     caution: 'キャリアの方向が定まりにくく、判断を誤りやすい時期です。大きな決断や転職は慎重に。',
+    importance: 7,
   },
   'neptune-mc-soft': {
     title: '理想を仕事に活かす',
@@ -997,6 +1073,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心が動く仕事や社会活動に取り組む好機です。感性と理想を活かして役割を広げましょう。',
     caution: '穏やかな流れなので、方向性を明確にすると成果が高まります。',
+    importance: 5,
   },
   'neptune-mc-hard': {
     title: 'キャリアの迷いの試練',
@@ -1010,6 +1087,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '方向が見えにくい時期は、焦って動かず現状を丁寧に見つめましょう。本当にやりたいことが徐々に見えてきます。',
     caution: '仕事上の曖昧な約束や誇大な話に注意。重要な決断は事実を確認してから下してください。',
+    importance: 8,
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -1029,6 +1107,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化を前向きに捉え、本当の自分らしさを解放する好機です。新しい挑戦や自由な生き方を試しましょう。',
     caution: '衝動的にすべてを変えたくなる時期です。大事なものまで壊さないよう、変化のペースに注意しましょう。',
+    importance: 9,
   },
   'uranus-sun-soft': {
     title: '自分らしい変化の追い風',
@@ -1042,6 +1121,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しいことに挑戦したり、自分らしさを表現したりする好機です。柔軟に変化を取り入れましょう。',
     caution: '穏やかな追い風なので、能動的に変化を起こすほど道が広がります。',
+    importance: 6,
   },
   'uranus-sun-hard': {
     title: '予期せぬ変化の試練',
@@ -1055,6 +1135,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化は避けられないものとして、柔軟に受け止めることが大切です。焦って動かず、変化の意味を見極めましょう。',
     caution: '衝動的な決断や反抗的な行動が状況を悪化させます。大きな変化ほど一度立ち止まって考えてください。',
+    importance: 8,
   },
 
   // ── 天王星 × 月 ─────────────────────────────────────────────
@@ -1070,6 +1151,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '古い生活習慣や感情のパターンを見直す好機です。新しい心地よさを柔軟に取り入れましょう。',
     caution: '感情が不安定になりやすく、衝動的な行動に走りやすい時期です。大事な関係を勢いで壊さないように。',
+    importance: 8,
   },
   'uranus-moon-soft': {
     title: '心の新しい風',
@@ -1083,6 +1165,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '生活や心のあり方に新しい風を取り入れる好機です。変化を楽しみながら過ごしましょう。',
     caution: '穏やかな流れなので、意識して新しさを取り入れると心が軽くなります。',
+    importance: 5,
   },
   'uranus-moon-hard': {
     title: '感情の動揺の試練',
@@ -1096,6 +1179,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '感情が揺れる時ほど、生活の基盤を意識的に整えることが助けになります。衝動的な行動は控えましょう。',
     caution: '勢いで大事な関係や住まいを変えると後悔しがちです。感情的な決断を避けてください。',
+    importance: 7,
   },
 
   // ── 天王星 × 水星 ─────────────────────────────────────────────
@@ -1111,6 +1195,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい発想や技術を学ぶのに最適な時期です。ひらめきをメモし、自由な思考を活かしましょう。',
     caution: '考えが飛躍しすぎたり、落ち着きを欠いたりしやすい時期です。衝動的な発言や決定に注意しましょう。',
+    importance: 5,
   },
   'uranus-mercury-soft': {
     title: '柔軟で革新的な思考',
@@ -1124,6 +1209,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい知識や技術を取り入れる好機です。自由な発想を活かして企画や学びに取り組みましょう。',
     caution: '穏やかな追い風なので、能動的にアイデアを形にすると成果につながります。',
+    importance: 4,
   },
   'uranus-mercury-hard': {
     title: '思考の混乱と焦りの試練',
@@ -1137,6 +1223,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '焦って結論を出さず、一呼吸置いて考えることが大切です。新しい情報も冷静に吟味しましょう。',
     caution: '衝動的な発言・決定・契約に注意。重要な連絡はよく確認してから進めてください。',
+    importance: 5,
   },
 
   // ── 天王星 × 金星 ─────────────────────────────────────────────
@@ -1152,6 +1239,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しいタイプの人や価値観に触れる好機です。自由な気持ちで出会いや変化を楽しみましょう。',
     caution: '刺激を求めて関係が不安定になりやすい時期です。衝動的な恋愛や浪費に注意しましょう。',
+    importance: 7,
   },
   'uranus-venus-soft': {
     title: '新鮮な魅力と縁',
@@ -1165,6 +1253,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい人や場に出向くと良い縁に恵まれやすい時期です。自分らしい魅力を自由に表現しましょう。',
     caution: '穏やかな流れなので、能動的に交流を広げると出会いが増えます。',
+    importance: 5,
   },
   'uranus-venus-hard': {
     title: '関係の急変の試練',
@@ -1178,6 +1267,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '関係の揺れは、本当に自由で対等な関係とは何かを見つめ直す機会です。衝動に流されず慎重に。',
     caution: '刺激や自由を求めるあまり大事な関係を壊さないように。衝動買いや投機にも注意しましょう。',
+    importance: 8,
   },
 
   // ── 天王星 × 火星 ─────────────────────────────────────────────
@@ -1193,6 +1283,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思い切った行動で道を切り開ける時期です。エネルギーを新しい挑戦や改革に向けましょう。',
     caution: '衝動的・無謀な行動や、事故・怪我に注意。勢いだけで動かず、リスクを見極めてください。',
+    importance: 6,
   },
   'uranus-mars-soft': {
     title: '機敏な行動力',
@@ -1206,6 +1297,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しいことに挑戦し、改善を進める好機です。フットワーク軽く動くほど成果が出ます。',
     caution: '穏やかな追い風なので、積極的に行動するほどチャンスを活かせます。',
+    importance: 5,
   },
   'uranus-mars-hard': {
     title: '衝動と衝突の試練',
@@ -1219,6 +1311,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'カッとなった時ほど一呼吸置くことが大切です。エネルギーは運動などで安全に発散させましょう。',
     caution: '衝動的な言動・危険な行動・事故に厳重注意。焦りや反抗心に任せた決断を避けてください。',
+    importance: 8,
   },
 
   // ── 天王星 × 木星 ─────────────────────────────────────────────
@@ -1234,6 +1327,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思いがけない扉が開く好機です。新しいチャンスに柔軟に飛び込み、可能性を広げましょう。',
     caution: '楽観から冒険しすぎたり、話が大きくなりすぎたりしやすい時期です。地に足をつけて判断しましょう。',
+    importance: 6,
   },
   'uranus-jupiter-soft': {
     title: '発展と自由の好機',
@@ -1247,6 +1341,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい挑戦や学びに向く好機です。前向きに機会をつかみ、可能性を広げましょう。',
     caution: '穏やかな追い風なので、能動的にチャンスをつかむと発展につながります。',
+    importance: 5,
   },
   'uranus-jupiter-hard': {
     title: '過剰な変化の試練',
@@ -1260,6 +1355,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'あれもこれもと動きたくなりますが、優先順位を絞ることが大切です。堅実さを保ちながら変化に対応しましょう。',
     caution: '過信・拡大しすぎ・無計画な変更に注意。うまい話や急な誘いは慎重に見極めてください。',
+    importance: 5,
   },
 
   // ── 天王星 × 土星 ─────────────────────────────────────────────
@@ -1275,6 +1371,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '守るべきものと変えるべきものを見極める好機です。伝統と革新のバランスを取りながら進めましょう。',
     caution: '変化への抵抗と衝動の間で揺れやすい時期です。急がず、現実的なペースで刷新を進めてください。',
+    importance: 8,
   },
   'uranus-saturn-soft': {
     title: '着実な革新',
@@ -1288,6 +1385,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '現実に根ざした改革を進める好機です。着実に、しかし新しい発想を取り入れて進めましょう。',
     caution: '穏やかな流れなので、計画的に変化を起こすと確かな成果になります。',
+    importance: 6,
   },
   'uranus-saturn-hard': {
     title: '変化と安定の葛藤',
@@ -1301,6 +1399,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '焦って壊すのでも我慢しすぎるのでもなく、内側から少しずつ変えていく姿勢が有効です。現実的に対処しましょう。',
     caution: '衝動的な反抗や、逆に頑なな抵抗はどちらも状況を悪化させます。冷静なバランスを保ってください。',
+    importance: 7,
   },
 
   // ── 天王星 × 天王星 ─────────────────────────────────────────────
@@ -1316,6 +1415,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人生の自由と個性のテーマに向き合う節目です。本当に望む生き方を見つめ直しましょう。',
     caution: '大きな変化の時期なので、衝動的な決断は避け、じっくり見極めましょう。',
+    importance: 9,
   },
   'uranus-uranus-soft': {
     title: '自由な変化の追い風',
@@ -1329,6 +1429,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しいことに挑戦するのに向く時期です。自分らしさを自由に表現しましょう。',
     caution: '穏やかな流れなので、意識して変化を取り入れると充実します。',
+    importance: 5,
   },
   'uranus-uranus-hard': {
     title: '変化への揺さぶりの試練',
@@ -1342,6 +1443,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '揺さぶりは本当に望む自由を見つめ直す機会です。焦って人生を壊さず、変化の意味を考えましょう。',
     caution: '衝動的に環境や関係を変えると後悔しがちです。大きな決断ほど慎重になってください。',
+    importance: 8,
   },
 
   // ── 天王星 × 海王星 ─────────────────────────────────────────────
@@ -1357,6 +1459,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい理想や発想に心を開く好機です。直感を大切にしながら、地に足をつけて進めましょう。',
     caution: '理想と現実、変化と曖昧さが混ざり、方向が定まりにくい時期です。冷静さを保ちましょう。',
+    importance: 5,
   },
   'uranus-neptune-soft': {
     title: '創造的なひらめき',
@@ -1370,6 +1473,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '創造的な活動や新しい理想の実現に向く時期です。自由な発想を大切にしましょう。',
     caution: '穏やかな追い風なので、意識して形にすると成果につながります。',
+    importance: 4,
   },
   'uranus-neptune-hard': {
     title: '理想と変化の混乱の試練',
@@ -1383,6 +1487,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化と曖昧さが重なる時期です。焦らず心の軸を保ちながら流れを見極めましょう。',
     caution: '衝動的な決断や現実逃避に注意。確かなものを手放さないようにしましょう。',
+    importance: 5,
   },
 
   // ── 天王星 × 冥王星 ─────────────────────────────────────────────
@@ -1398,6 +1503,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化を恐れず、古い枠を壊して新しい自分へ生まれ変わる好機と捉えましょう。柔軟さが道を開きます。',
     caution: '急激な変化に振り回されやすい時期です。衝動的にすべてを壊さないよう冷静な判断を保ちましょう。',
+    importance: 7,
   },
   'uranus-pluto-soft': {
     title: '建設的な変革',
@@ -1411,6 +1517,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい試みや変化を前向きに取り入れる好機です。自分らしい変革を進めましょう。',
     caution: '穏やかな追い風なので、意識して行動すると変化を活かせます。',
+    importance: 5,
   },
   'uranus-pluto-hard': {
     title: '激変の試練',
@@ -1424,6 +1531,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化は避けられないものとして受け入れ、柔軟に対応することが鍵です。急な決断は一度立ち止まって見極めましょう。',
     caution: '衝動的・破壊的な行動に注意。焦って現状をすべて壊すと後悔につながります。',
+    importance: 7,
   },
 
   // ── 天王星 × ASC ─────────────────────────────────────────────
@@ -1439,6 +1547,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '本当の自分らしさを自由に表現する好機です。古い自己像にとらわれず、新しい自分を試しましょう。',
     caution: '急な変化や反抗的な態度が対人関係を不安定にしやすい時期です。変化のペースに注意しましょう。',
+    importance: 8,
   },
   'uranus-asc-soft': {
     title: '個性が輝く',
@@ -1452,6 +1561,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分らしさを自由に表現するほど良い縁に恵まれます。新しい環境や人に積極的に触れましょう。',
     caution: '穏やかな追い風なので、能動的に自己表現すると魅力が増します。',
+    importance: 5,
   },
   'uranus-asc-hard': {
     title: '対人関係の急変の試練',
@@ -1465,6 +1575,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化に柔軟に対応しつつ、自分の軸を保つことが大切です。衝動的に関係を断たないよう注意しましょう。',
     caution: '反抗的・衝動的な態度が対人トラブルを招きます。落ち着いて行動してください。',
+    importance: 6,
   },
 
   // ── 天王星 × MC ─────────────────────────────────────────────
@@ -1480,6 +1591,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '古い働き方を見直し、本当にやりたい方向へ舵を切る好機です。新しい挑戦を前向きに検討しましょう。',
     caution: '衝動的な退職や転職は後悔につながりやすい時期です。変化は十分に見極めてから決めましょう。',
+    importance: 8,
   },
   'uranus-mc-soft': {
     title: '新しい働き方の追い風',
@@ -1493,6 +1605,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい働き方や分野に挑戦する好機です。自分らしいキャリアを柔軟に追求しましょう。',
     caution: '穏やかな追い風なので、能動的に動くとチャンスをつかめます。',
+    importance: 6,
   },
   'uranus-mc-hard': {
     title: 'キャリアの動揺の試練',
@@ -1506,6 +1619,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '変化に柔軟に対応しつつ、衝動的な決断は避けましょう。この揺さぶりは働き方を見直す機会でもあります。',
     caution: '勢いでの退職や反抗的な態度に注意。大きな決断は冷静になってから下してください。',
+    importance: 8,
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -1525,6 +1639,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分の人生に責任を持って向き合う時期です。地に足をつけ、長期的な土台を着実に築きましょう。',
     caution: '重圧から自信を失ったり悲観的になったりしやすい時期です。焦らず一歩ずつ進んでください。',
+    importance: 8,
   },
   'saturn-sun-soft': {
     title: '着実な自己確立',
@@ -1538,6 +1653,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期的な目標に腰を据えて取り組む好機です。着実な積み重ねが確かな成果につながります。',
     caution: '成果が地味に見えても、この時期の努力は後で大きく実ります。継続を大切に。',
+    importance: 5,
   },
   'saturn-sun-hard': {
     title: '重圧と自己鍛錬の試練',
@@ -1551,6 +1667,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'この試練は本物の実力と忍耐力を育てます。焦らず、目の前の課題を一つずつ着実にこなしましょう。',
     caution: '無理を重ねて心身を消耗しないよう注意。悲観に飲まれず、休息も大切にしてください。',
+    importance: 7,
   },
 
   // ── 土星 × 月 ─────────────────────────────────────────────
@@ -1566,6 +1683,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '感情に流されず、心の土台を現実的に整える時期です。一人の時間を大切に、内面を見つめましょう。',
     caution: '孤独感や寂しさを感じやすい時期です。抱え込まず、信頼できる人とのつながりを保ちましょう。',
+    importance: 6,
   },
   'saturn-moon-soft': {
     title: '心の安定と基盤づくり',
@@ -1579,6 +1697,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '生活や心の基盤を着実に整える好機です。地道に環境を整えることで安心感が育ちます。',
     caution: '穏やかな流れなので、意識して基盤を固めるとより安定します。',
+    importance: 5,
   },
   'saturn-moon-hard': {
     title: '感情の重さの試練',
@@ -1592,6 +1711,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '気持ちが沈みやすい時期ですが、これは心を成熟させるプロセスです。無理せず自分をいたわりましょう。',
     caution: '孤立や抱え込みに注意。つらい時は一人で耐えず、周囲の支えを求めてください。',
+    importance: 7,
   },
 
   // ── 土星 × 水星 ─────────────────────────────────────────────
@@ -1607,6 +1727,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '腰を据えて学んだり計画を練ったりするのに最適な時期です。じっくり考え抜いて形にしましょう。',
     caution: '考えすぎて悲観的になったり、決断が遅くなったりしやすい時期です。完璧を求めすぎないように。',
+    importance: 6,
   },
   'saturn-mercury-soft': {
     title: '着実な思考力',
@@ -1620,6 +1741,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '計画立案や専門的な学びに向く好機です。じっくり取り組むほど確かな成果になります。',
     caution: '穏やかな流れなので、計画的に進めると実を結びやすくなります。',
+    importance: 4,
   },
   'saturn-mercury-hard': {
     title: '思考の停滞の試練',
@@ -1633,6 +1755,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '焦らず、一つずつ丁寧に考えを整理することが大切です。完璧を求めず、できる範囲で前に進みましょう。',
     caution: '悲観的になりすぎたり、大事な連絡を先延ばしにしたりしないよう注意しましょう。',
+    importance: 6,
   },
 
   // ── 土星 × 金星 ─────────────────────────────────────────────
@@ -1648,6 +1771,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '本当に大切な関係や価値を見極める時期です。誠実に向き合い、地に足のついた関係を築きましょう。',
     caution: '孤独感や愛情不足を感じやすい時期です。悲観せず、時間をかけて信頼を育てましょう。',
+    importance: 7,
   },
   'saturn-venus-soft': {
     title: '成熟した愛と安定',
@@ -1661,6 +1785,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '関係やお金の基盤を着実に固める好機です。誠実さを大切に、長期的な視点で育てましょう。',
     caution: '穏やかな流れなので、地道に関係や価値を育てると確かな実りになります。',
+    importance: 5,
   },
   'saturn-venus-hard': {
     title: '愛の試練と孤独',
@@ -1674,6 +1799,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'この試練は本物の関係や価値を見極める機会です。焦らず、誠実に向き合うことが後の実りにつながります。',
     caution: '孤独感から妥協したり自分を責めたりしないように。金銭的にも堅実に過ごしましょう。',
+    importance: 8,
   },
 
   // ── 土星 × 火星 ─────────────────────────────────────────────
@@ -1689,6 +1815,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思うように進まなくても、地道に努力を積み重ねる時期です。焦らず持続することが力になります。',
     caution: 'いら立ちや無理な頑張りが心身の消耗を招きます。ペース配分と安全に注意しましょう。',
+    importance: 6,
   },
   'saturn-mars-soft': {
     title: '粘り強い実行力',
@@ -1702,6 +1829,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期的な目標や困難な課題に粘り強く取り組む好機です。着実に積み重ねましょう。',
     caution: '穏やかな追い風なので、継続的に取り組むと大きな成果になります。',
+    importance: 5,
   },
   'saturn-mars-hard': {
     title: '行動の抑圧の試練',
@@ -1715,6 +1843,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '前に進めない時期こそ、力をためて準備する時間と捉えましょう。焦らず着実に進むことが後で活きます。',
     caution: 'いら立ちからの無理な行動や事故に注意。エネルギーの出し方と休息のバランスを取りましょう。',
+    importance: 7,
   },
 
   // ── 土星 × 木星 ─────────────────────────────────────────────
@@ -1730,6 +1859,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな夢を現実的な計画に落とし込む好機です。堅実さと前向きさのバランスを取りましょう。',
     caution: '慎重になりすぎて動けなくなったり、逆に無理に広げすぎたりしないよう、バランスを意識しましょう。',
+    importance: 6,
   },
   'saturn-jupiter-soft': {
     title: 'バランスの取れた成長',
@@ -1743,6 +1873,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '着実に発展を積み上げる好機です。現実性を保ちながら前向きに目標を追いましょう。',
     caution: '穏やかな流れなので、計画的に進めると確かな成果になります。',
+    importance: 6,
   },
   'saturn-jupiter-hard': {
     title: '拡大と制限の葛藤',
@@ -1756,6 +1887,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思うように広げられない時期は、計画を現実的に練り直す好機です。堅実さを土台に着実に進めましょう。',
     caution: '無理な拡大も過度な萎縮も禁物です。現実を見極めてバランスよく進んでください。',
+    importance: 6,
   },
 
   // ── 土星 × 土星 ─────────────────────────────────────────────
@@ -1771,6 +1903,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人生の節目として、これまでを振り返り本当に築きたい土台を見定める好機です。着実に再構築しましょう。',
     caution: '重圧やプレッシャーを感じやすい節目です。焦らず、一つずつ現実に向き合いましょう。',
+    importance: 8,
   },
   'saturn-saturn-soft': {
     title: '基盤の着実な充実',
@@ -1784,6 +1917,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '築いてきた基盤を固める好機です。地道な積み重ねを続けることで安定が深まります。',
     caution: '穏やかな流れなので、着実に努力を続けると確かな実りになります。',
+    importance: 5,
   },
   'saturn-saturn-hard': {
     title: '基盤を試される時',
@@ -1797,6 +1931,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'これまでの積み重ねが問われる時期です。逃げずに課題に向き合うことで、より強固な基盤が築かれます。',
     caution: '無理を重ねて消耗しないよう注意。悲観せず、一歩ずつ着実に進みましょう。',
+    importance: 8,
   },
 
   // ── 土星 × 天王星 ─────────────────────────────────────────────
@@ -1812,6 +1947,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '守るべきものと変えるべきものを見極める好機です。無理なく現実的に刷新を進めましょう。',
     caution: '変化への抵抗と衝動の間で揺れやすい時期です。急がず現実的なペースを保ちましょう。',
+    importance: 6,
   },
   'saturn-uranus-soft': {
     title: '着実な改革',
@@ -1825,6 +1961,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '現実に根ざした改革を進める好機です。着実に、しかし新しい発想を取り入れましょう。',
     caution: '穏やかな流れなので、計画的に変化を起こすと確かな成果になります。',
+    importance: 5,
   },
   'saturn-uranus-hard': {
     title: '変化と安定の葛藤',
@@ -1838,6 +1975,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '焦って壊すのでも我慢しすぎるのでもなく、内側から少しずつ変える姿勢が有効です。現実的に対処しましょう。',
     caution: '衝動的な反抗も頑なな抵抗も状況を悪化させます。冷静なバランスを保ってください。',
+    importance: 7,
   },
 
   // ── 土星 × 海王星 ─────────────────────────────────────────────
@@ -1853,6 +1991,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '理想を地道に形にしていく好機です。夢と現実の橋渡しを意識し、一歩ずつ具体化しましょう。',
     caution: '理想と現実のギャップに落胆しやすい時期です。悲観に傾かず、できることから進めましょう。',
+    importance: 6,
   },
   'saturn-neptune-soft': {
     title: '夢の着実な実現',
@@ -1866,6 +2005,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '夢を現実の計画に落とし込むのに向く時期です。焦らず着実に理想を築きましょう。',
     caution: '穏やかな流れなので、具体的な行動を重ねるほど夢が形になります。',
+    importance: 5,
   },
   'saturn-neptune-hard': {
     title: '幻想と現実の衝突',
@@ -1879,6 +2019,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '崩れる理想は、より現実的な形へ作り直すためのものです。悲観せず現実にできることを積みましょう。',
     caution: '無力感や逃避に飲まれないよう注意。曖昧な状況ほど事実を確認し地道に対処してください。',
+    importance: 7,
   },
 
   // ── 土星 × 冥王星 ─────────────────────────────────────────────
@@ -1894,6 +2035,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '簡単には動かない現実と粘り強く向き合う時期です。不要な構造を手放し、必要な土台を築き直しましょう。',
     caution: '重圧から孤立的・悲観的になりやすい時期です。一人で抱えず着実に進んでください。',
+    importance: 8,
   },
   'saturn-pluto-soft': {
     title: '着実な再構築',
@@ -1907,6 +2049,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期計画をじっくり進める好機です。時間をかけて築くものほど揺るがない財産になります。',
     caution: '成果が見えにくくても積み重ねが後で実ります。焦らず継続しましょう。',
+    importance: 6,
   },
   'saturn-pluto-hard': {
     title: '重圧と再生の試練',
@@ -1920,6 +2063,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'この試練は不要なものを崩し、より強固な土台を築くためのものです。逃げずに一つずつ向き合いましょう。',
     caution: '悲観や無力感に飲まれやすい時期です。無理を重ねて心身を壊さないよう支えを求めてください。',
+    importance: 9,
   },
 
   // ── 土星 × ASC ─────────────────────────────────────────────
@@ -1935,6 +2079,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分の在り方を真剣に見つめ、信頼される存在へ成長する好機です。誠実に自己を築きましょう。',
     caution: '自信のなさや孤独感を感じやすい時期です。焦らず、着実に自分を確立していきましょう。',
+    importance: 8,
   },
   'saturn-asc-soft': {
     title: '信頼される存在感',
@@ -1948,6 +2093,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '誠実な態度が信頼につながる時期です。着実に自分の在り方を固めましょう。',
     caution: '穏やかな流れなので、誠実さを積み重ねると信頼が深まります。',
+    importance: 5,
   },
   'saturn-asc-hard': {
     title: '自己と対人の試練',
@@ -1961,6 +2107,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '対人関係に距離を感じても、これは本当に必要な関係を見極める時期です。焦らず誠実に向き合いましょう。',
     caution: '孤立や自己否定に陥らないよう注意。一人で抱え込まず、信頼できる人とのつながりを保ちましょう。',
+    importance: 8,
   },
 
   // ── 土星 × MC ─────────────────────────────────────────────
@@ -1976,6 +2123,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'これまでの努力が実を結ぶかどうかの節目です。責任から逃げず、着実に成果を積み上げましょう。',
     caution: '重圧やプレッシャーが大きい時期です。無理を重ねず、長期的な視点で着実に進めましょう。',
+    importance: 8,
   },
   'saturn-mc-soft': {
     title: 'キャリアの着実な前進',
@@ -1989,6 +2137,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'キャリアの基盤を固める好機です。誠実な仕事ぶりを積み重ねることで信頼と実績が育ちます。',
     caution: '穏やかな流れなので、着実に努力を続けると確かな成果になります。',
+    importance: 5,
   },
   'saturn-mc-hard': {
     title: 'キャリアの重圧の試練',
@@ -2002,6 +2151,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思うように進まなくても、着実な努力は必ず後で実ります。焦らず目の前の責任を果たしましょう。',
     caution: '無理を重ねて燃え尽きないよう注意。悲観せず、長期的な視点を保ってください。',
+    importance: 8,
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -2021,6 +2171,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '前向きに新しいことへ挑戦する絶好の好機です。自信を持って行動範囲を広げましょう。',
     caution: '楽観から油断したり、手を広げすぎたりしやすい時期です。調子に乗りすぎに注意しましょう。',
+    importance: 6,
   },
   'jupiter-sun-soft': {
     title: '成長と好機の追い風',
@@ -2034,6 +2185,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい挑戦や学びに向く好機です。前向きに機会をつかみ、可能性を広げましょう。',
     caution: '穏やかな追い風なので、能動的に動くほどチャンスを活かせます。',
+    importance: 5,
   },
   'jupiter-sun-hard': {
     title: '拡大しすぎの注意期',
@@ -2047,6 +2199,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'チャンスは多いですが、欲張らず優先順位をつけることが大切です。地に足をつけて機会を選びましょう。',
     caution: '過信・拡大しすぎ・浪費に注意。うまい話や大きすぎる計画は慎重に見極めましょう。',
+    importance: 4,
   },
 
   // ── 木星 × 月 ─────────────────────────────────────────────
@@ -2062,6 +2215,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '家族や身近な人との時間を大切にする好機です。心が喜ぶことに素直に時間を使いましょう。',
     caution: '心地よさから食べすぎ・怠けすぎになりやすい時期です。ほどほどを意識しましょう。',
+    importance: 5,
   },
   'jupiter-moon-soft': {
     title: '穏やかな幸福',
@@ -2075,6 +2229,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心を癒し、人との縁を深める好機です。穏やかな幸福を味わいながら過ごしましょう。',
     caution: '穏やかな流れなので、感謝を意識するとより豊かな時期になります。',
+    importance: 4,
   },
   'jupiter-moon-hard': {
     title: '感情の膨らみすぎの注意期',
@@ -2088,6 +2243,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '心地よさに流されず、節度を意識することが大切です。感情も生活もほどよくコントロールしましょう。',
     caution: '食べすぎ・浪費・怠けに注意。期待しすぎてがっかりしないよう、現実的な目も持ちましょう。',
+    importance: 3,
   },
 
   // ── 木星 × 水星 ─────────────────────────────────────────────
@@ -2103,6 +2259,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '学び・発信・企画に最適な好機です。積極的に知識を広げ、人と交流しましょう。',
     caution: '話が大きくなりすぎたり、詰めが甘くなったりしやすい時期です。具体性も忘れずに。',
+    importance: 5,
   },
   'jupiter-mercury-soft': {
     title: '知性が広がる',
@@ -2116,6 +2273,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '学びや情報発信、交渉ごとに向く好機です。前向きに知識と人脈を広げましょう。',
     caution: '穏やかな追い風なので、能動的に学び発信すると成果につながります。',
+    importance: 4,
   },
   'jupiter-mercury-hard': {
     title: '楽観と詰めの甘さの注意期',
@@ -2129,6 +2287,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'アイデアは豊富ですが、現実性と具体性を確かめることが大切です。細部まで丁寧に詰めましょう。',
     caution: '誇張や安請け合い、詰めの甘さに注意。契約や約束は具体的に確認してください。',
+    importance: 3,
   },
 
   // ── 木星 × 金星 ─────────────────────────────────────────────
@@ -2144,6 +2303,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '恋愛・交流・美の活動を楽しむ絶好の好機です。人との縁や喜びを積極的に広げましょう。',
     caution: '楽しさから浪費や快楽に流されやすい時期です。ほどほどを意識しましょう。',
+    importance: 6,
   },
   'jupiter-venus-soft': {
     title: '愛と縁に恵まれる',
@@ -2157,6 +2317,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人との縁を深め、美や楽しみを味わう好機です。素直に喜びを受け取りましょう。',
     caution: '穏やかな流れなので、能動的に交流を広げると縁が増えます。',
+    importance: 5,
   },
   'jupiter-venus-hard': {
     title: '楽しみすぎの注意期',
@@ -2170,6 +2331,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '楽しみが多い時期ですが、お金や関係のけじめを意識することが大切です。節度を持って楽しみましょう。',
     caution: '浪費・食べすぎ・軽率な関係に注意。甘い話や誘惑には慎重になりましょう。',
+    importance: 4,
   },
 
   // ── 木星 × 火星 ─────────────────────────────────────────────
@@ -2185,6 +2347,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思い切った行動で成果を出せる絶好の好機です。目標に向かって積極的に挑戦しましょう。',
     caution: '勢いあまって無謀になりやすい時期です。過信や勇み足に注意しましょう。',
+    importance: 6,
   },
   'jupiter-mars-soft': {
     title: '前向きな行動力',
@@ -2198,6 +2361,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '挑戦や目標達成に向けて動く好機です。前向きな行動が良い結果につながります。',
     caution: '穏やかな追い風なので、積極的に動くほど成果が出ます。',
+    importance: 5,
   },
   'jupiter-mars-hard': {
     title: '勇み足の注意期',
@@ -2211,6 +2375,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'やる気は高いですが、リスクを見極めることが大切です。勢いだけで突っ走らず計画的に動きましょう。',
     caution: '過信・無謀・浪費に注意。大きな勝負ほど慎重に判断してください。',
+    importance: 4,
   },
 
   // ── 木星 × 木星 ─────────────────────────────────────────────
@@ -2226,6 +2391,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい12年のサイクルが始まる節目です。将来につながる種まきを積極的に行いましょう。',
     caution: '楽観から手を広げすぎないよう、優先順位を意識しましょう。',
+    importance: 6,
   },
   'jupiter-jupiter-soft': {
     title: '成長の追い風',
@@ -2239,6 +2405,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しいことに挑戦し、可能性を広げる好機です。前向きに機会をつかみましょう。',
     caution: '穏やかな追い風なので、能動的に動くとチャンスを活かせます。',
+    importance: 5,
   },
   'jupiter-jupiter-hard': {
     title: '拡大しすぎの注意期',
@@ -2252,6 +2419,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'チャンスは多いですが、欲張らず選ぶことが大切です。地に足をつけて機会を活かしましょう。',
     caution: '過信・拡大しすぎ・浪費に注意。大きすぎる計画は現実性を確かめましょう。',
+    importance: 4,
   },
 
   // ── 木星 × 土星 ─────────────────────────────────────────────
@@ -2267,6 +2435,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな夢を現実的な計画に落とし込む好機です。堅実さと前向きさのバランスを取りましょう。',
     caution: '慎重すぎて動けなくなったり、逆に広げすぎたりしないよう、バランスを意識しましょう。',
+    importance: 6,
   },
   'jupiter-saturn-soft': {
     title: 'バランスの取れた成長',
@@ -2280,6 +2449,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '着実に発展を積み上げる好機です。現実性を保ちながら前向きに目標を追いましょう。',
     caution: '穏やかな流れなので、計画的に進めると確かな成果になります。',
+    importance: 5,
   },
   'jupiter-saturn-hard': {
     title: '拡大と制限の葛藤',
@@ -2293,6 +2463,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思うように広げられない時期は、計画を現実的に練り直す好機です。堅実さを土台に着実に進めましょう。',
     caution: '無理な拡大も過度な萎縮も禁物です。現実を見極めてバランスよく進んでください。',
+    importance: 5,
   },
 
   // ── 木星 × 天王星 ─────────────────────────────────────────────
@@ -2308,6 +2479,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '思いがけない扉が開く好機です。新しいチャンスに柔軟に飛び込みましょう。',
     caution: '楽観から冒険しすぎたり、話が大きくなりすぎたりしやすい時期です。地に足をつけて判断しましょう。',
+    importance: 8,
   },
   'jupiter-uranus-soft': {
     title: '発展と自由の好機',
@@ -2321,6 +2493,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '新しい挑戦や学びに向く好機です。前向きに機会をつかみましょう。',
     caution: '穏やかな追い風なので、能動的にチャンスをつかむと発展につながります。',
+    importance: 5,
   },
   'jupiter-uranus-hard': {
     title: '変化と拡大の過剰の注意期',
@@ -2334,6 +2507,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'あれもこれもと動きたくなりますが、優先順位を絞ることが大切です。堅実さを保ちましょう。',
     caution: '過信・拡大しすぎ・無計画な変更に注意。急な誘いは慎重に見極めてください。',
+    importance: 4,
   },
 
   // ── 木星 × 海王星 ─────────────────────────────────────────────
@@ -2349,6 +2523,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな理想や精神的な学びに向かう好機です。心を広く持ち、意味あるものへ関心を広げましょう。',
     caution: '楽観や理想が過剰になりやすい時期です。うまい話や現実離れした計画に注意しましょう。',
+    importance: 5,
   },
   'jupiter-neptune-soft': {
     title: '理想が形になる',
@@ -2362,6 +2537,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '理想や精神性を現実に活かす好機です。学びや癒し、人助けに取り組みましょう。',
     caution: '穏やかな流れなので、理想を具体的な行動に落とし込むと実りが増します。',
+    importance: 4,
   },
   'jupiter-neptune-hard': {
     title: '理想の膨らみすぎの注意期',
@@ -2375,6 +2551,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きな夢を描くのは良いですが、現実性を確かめることが大切です。地に足をつけて進めましょう。',
     caution: '誇大な話・投資・うまい儲け話に注意。理想と現実を切り分けて判断しましょう。',
+    importance: 5,
   },
 
   // ── 木星 × 冥王星 ─────────────────────────────────────────────
@@ -2390,6 +2567,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '大きく飛躍できる力を持つ時期です。深い信念に基づいてスケールの大きな目標に挑みましょう。',
     caution: '力や成功への欲が過剰になりやすい面があります。傲慢さや極端さに注意しましょう。',
+    importance: 8,
   },
   'jupiter-pluto-soft': {
     title: '実り多い成長',
@@ -2403,6 +2581,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '長期的な目標に向けて基盤を固める好機です。焦らず本質的な成長を積み重ねましょう。',
     caution: '恵まれた流れを当然と思わず、謙虚に活かす姿勢が実りを大きくします。',
+    importance: 5,
   },
   'jupiter-pluto-hard': {
     title: '野心と変革のエネルギー期',
@@ -2416,6 +2595,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '湧き上がる大きなエネルギーを、身の丈と誠実さを保ちながら建設的に注ぎましょう。節度が飛躍を確かなものにします。',
     caution: '力が入りすぎると傲慢・独善・強引さに傾きがち。無理な拡大や強引な手段は避け、周囲への配慮を忘れずに。',
+    importance: 6,
   },
 
   // ── 木星 × ASC ─────────────────────────────────────────────
@@ -2431,6 +2611,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '自分を前向きに表現する絶好の好機です。自信を持って人と関わり、行動範囲を広げましょう。',
     caution: '自信過剰や大げさな振る舞いに注意。謙虚さも忘れずに。',
+    importance: 5,
   },
   'jupiter-asc-soft': {
     title: '好印象と良縁',
@@ -2444,6 +2625,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '人との縁を広げる好機です。自分らしさを前向きに表現しましょう。',
     caution: '穏やかな追い風なので、能動的に人と関わると縁が広がります。',
+    importance: 4,
   },
   'jupiter-asc-hard': {
     title: '自信過剰の注意期',
@@ -2457,6 +2639,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: '前向きさは良いですが、謙虚さと節度を意識することが大切です。地に足をつけて振る舞いましょう。',
     caution: '自信過剰・見栄・浪費に注意。周囲への配慮を忘れないようにしましょう。',
+    importance: 3,
   },
 
   // ── 木星 × MC ─────────────────────────────────────────────
@@ -2472,6 +2655,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'キャリアを大きく発展させる絶好の好機です。前向きにチャンスをつかみ、目標を高く持ちましょう。',
     caution: '楽観から手を広げすぎたり、実力以上に見せたりしないよう注意しましょう。',
+    importance: 8,
   },
   'jupiter-mc-soft': {
     title: 'キャリアの追い風',
@@ -2485,6 +2669,7 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'キャリアを前進させる好機です。前向きに機会をつかみ、役割を広げましょう。',
     caution: '穏やかな追い風なので、能動的に動くとチャンスを活かせます。',
+    importance: 5,
   },
   'jupiter-mc-hard': {
     title: '拡大しすぎの注意期',
@@ -2498,5 +2683,538 @@ export const TRANSIT_MASTER: Record<string, TransitMaster> = {
     ],
     howToSpend: 'チャンスは多いですが、身の丈に合った範囲で着実に進めることが大切です。優先順位を意識しましょう。',
     caution: '過信・引き受けすぎ・見栄に注意。現実的な計画で進めてください。',
+    importance: 4,
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  // トランシット火星（Mars）── 行動・情熱・衝動・スピード
+  // ══════════════════════════════════════════════════════════════════
+
+  // ── 火星 × 太陽 ─────────────────────────────────────────────
+  'mars-sun-conjunction': {
+    title: '活力みなぎる行動期',
+    summary: '火星が出生の太陽に重なり、前向きな活力と積極性に満ちる時期です。',
+    events: [
+      '新しいことに挑戦する意欲',
+      '仕事での積極的な取り組み',
+      '自分の考えが通りやすくなる',
+      '自信に満ちた振る舞い',
+      '目立つ行動や存在感',
+    ],
+    howToSpend: 'あふれるエネルギーを目標に向けて集中させる好機です。前向きな行動が結果につながりやすいときです。',
+    caution: '意見の食い違いから口論になりやすい時期でもあります。せっかちにならず、大切な約束や判断は慎重に進めましょう。',
+    importance: 6,
+  },
+  'mars-sun-soft': {
+    title: '自信に満ちた前進',
+    summary: '火星が出生の太陽と調和し、活力と自信を伴った前向きな行動ができる時期です。',
+    events: [
+      '積極的な挑戦の成功',
+      '周囲に好印象を与える行動力',
+      '仕事での努力が実る',
+      '自分らしさを発揮できる',
+      '健康的でエネルギッシュな日々',
+    ],
+    howToSpend: '思い切って行動することが良い結果を呼ぶ時期です。新しいことを始めるのにも向いています。',
+    caution: '穏やかな追い風なので、遠慮せず積極的に動くとより良い成果が得られます。',
+    importance: 5,
+  },
+  'mars-sun-hard': {
+    title: '衝突と焦りの試練',
+    summary: '火星が出生の太陽に緊張角をとり、自我がぶつかりやすく、焦りや対立が生じやすい試練期です。',
+    events: [
+      '意見の相違からの口論',
+      '周囲からの反発',
+      '性急な判断によるミス',
+      '短気からの早合点',
+      '心身のオーバーヒート',
+    ],
+    howToSpend: '意欲が高まる分、無理をしがちな時期です。大切な決断や約束ほど、一度立ち止まって冷静に進めましょう。',
+    caution: '感情的な対立や衝動的な行動は後々こじれます。怒りに任せた言動は控えてください。',
+    importance: 6,
+  },
+
+  // ── 火星 × 月 ─────────────────────────────────────────────
+  'mars-moon-conjunction': {
+    title: '感情が揺れ動く活性期',
+    summary: '火星が出生の月に重なり、感情が高ぶりやすく、気持ちが行動に直結しやすい時期です。',
+    events: [
+      '感情の高ぶりや興奮',
+      '身近な人との言い合い',
+      '家庭内でのいらだち',
+      '衝動的な行動',
+      '心身の消耗',
+    ],
+    howToSpend: '高ぶった感情はスポーツなど体を動かすことで上手に発散しましょう。無理を重ねず、休息もしっかり取ってください。',
+    caution: '身近な女性（母・妻・恋人など）との間で摩擦が起きやすい時期です。売り言葉に買い言葉にならないよう気をつけましょう。',
+    importance: 5,
+  },
+  'mars-moon-soft': {
+    title: '気持ちを行動に活かせる時',
+    summary: '火星が出生の月と調和し、感情のエネルギーを前向きな行動へ自然に活かせる時期です。',
+    events: [
+      '大切な人を守る行動力',
+      '家庭内での積極的な取り組み',
+      '気持ちのこもった働きかけ',
+      '素直な感情表現',
+      '心身ともに活動的',
+    ],
+    howToSpend: '湧き上がる気持ちを、身近な人のためのケアや家事、運動などに向けると充実感が得られます。',
+    caution: '穏やかな追い風なので、感じたことを素直に行動に移すとよい結果につながります。',
+    importance: 4,
+  },
+  'mars-moon-hard': {
+    title: '感情の摩擦と消耗の試練',
+    summary: '火星が出生の月に緊張角をとり、感情が不安定になり、身近な人との衝突や心身の消耗が生じやすい試練期です。',
+    events: [
+      '家庭内での言い争い',
+      '母・妻・恋人など身近な女性とのトラブル',
+      '焦りや不注意によるケガ',
+      'がんばりが空回りする',
+      '心身の疲労やダウン',
+    ],
+    howToSpend: 'この時期はがんばりすぎず、無理な予定は詰め込まないようにしましょう。感情が高ぶったときほど一呼吸おくことが大切です。',
+    caution: '接客や営業などで押しが強くなりすぎると裏目に出ます。足元にも注意し、体力の消耗に気を配ってください。',
+    importance: 6,
+  },
+
+  // ── 火星 × 水星 ─────────────────────────────────────────────
+  'mars-mercury-conjunction': {
+    title: '鋭い頭の回転と発言力',
+    summary: '火星が出生の水星に重なり、思考や言葉に勢いが増し、はきはきとした発言や決断ができる時期です。',
+    events: [
+      '素早い判断や決断',
+      '積極的な発言や交渉',
+      'ディベートや議論での活躍',
+      '新しいアイデアの発信',
+      '短気や口論のリスク',
+    ],
+    howToSpend: '頭の回転が速くなるこの時期は、企画や交渉ごとを進めるのに向いています。言葉選びには少し余裕を持たせましょう。',
+    caution: '思ったことをすぐ口にして、後で後悔しないよう注意してください。とくにメールや文書は送信前に見直しましょう。',
+    importance: 5,
+  },
+  'mars-mercury-soft': {
+    title: '説得力のあるコミュニケーション',
+    summary: '火星が出生の水星と調和し、歯切れの良い発言と行動力を伴った説得力が発揮される時期です。',
+    events: [
+      '交渉や商談の好結果',
+      '的確でスピーディーな判断',
+      '議論や会議での存在感',
+      '新しい企画の提案',
+      '活発な情報のやり取り',
+    ],
+    howToSpend: '考えをはっきり伝えることが評価される好機です。積極的に発言し、行動に移していきましょう。',
+    caution: '穏やかな追い風なので、遠慮せず自分の意見を伝えるとよい結果になります。',
+    importance: 4,
+  },
+  'mars-mercury-hard': {
+    title: '言葉の摩擦とトラブルの試練',
+    summary: '火星が出生の水星に緊張角をとり、辛辣な物言いや性急な判断からトラブルが生じやすい試練期です。',
+    events: [
+      '同僚や部下への厳しい態度',
+      '売り言葉に買い言葉の口論',
+      '性急な結論によるミス',
+      '異性関係のこじれ',
+      'メールや文書でのトラブル',
+    ],
+    howToSpend: '結論を急がず、一呼吸置いてから発言・送信することを心がけましょう。苛立ちを感じたら距離を置くのも一つの方法です。',
+    caution: '酒の席や気の緩んだ場での軽口が、思わぬトラブルに発展します。言葉選びには普段以上に注意してください。',
+    importance: 6,
+  },
+
+  // ── 火星 × 金星 ─────────────────────────────────────────────
+  'mars-venus-conjunction': {
+    title: '情熱と社交の高まり',
+    summary: 'トランシットの火星が出生の金星に重なり、恋愛や社交への意欲が一気に高まる時期です。',
+    events: [
+      '友人・仲間からの誘いの増加',
+      '夜の会食や交際の機会が増える',
+      '性的な魅力や情熱の高まり',
+      '衝動的な出会いや誘惑',
+      '積極的なアプローチが実る',
+    ],
+    howToSpend: '人づきあいや接待の場が仕事にも恋愛にもチャンスをもたらす時期です。積極的に人と会う予定を作ってみましょう。',
+    caution: '勢いに任せた一夜限りの関係やハラスメント関連のトラブルには要注意。衝動を自制する意識を持ちましょう。',
+    importance: 4,
+  },
+  'mars-venus-soft': {
+    title: '心地よい情熱の高まり',
+    summary: '火星と金星が調和し、恋愛や社交の場で自然な魅力と行動力が発揮される時期です。',
+    events: [
+      '自然な形での恋愛の進展',
+      '交友関係が心地よく広がる',
+      '仕事の接待や会食がうまくいく',
+      'パートナーとの愛情確認',
+      '魅力を素直に表現できる',
+    ],
+    howToSpend: 'デートや会食など、人と楽しく過ごす予定を積極的に入れると良い結果につながります。',
+    caution: '心地よい時期ですが、羽目を外しすぎないよう節度は保ちましょう。',
+    importance: 3,
+  },
+  'mars-venus-hard': {
+    title: '欲求と衝動のせめぎ合い',
+    summary: '火星と金星が緊張角を作り、恋愛・性的な衝動が強まり、トラブルを招きやすい時期です。',
+    events: [
+      '衝動的な浮気やアバンチュール',
+      'ワンナイトラブへの誘惑',
+      '嫉妬や独占欲によるもめごと',
+      'ハラスメント関連の問題',
+      '金銭・欲求のコントロール不足',
+    ],
+    howToSpend: '魅力や情熱が高まる時期ですが、一時の欲求に流されず、大切な関係を守る行動を優先しましょう。',
+    caution: '天王星・冥王星がからむ配置ではとくに、深みにはまる危険な関係に注意が必要です。',
+    importance: 6,
+  },
+
+  // ── 火星 × 火星（火星のリターン） ─────────────────────────────────────────────
+  'mars-mars-conjunction': {
+    title: '闘志とエネルギーの解放',
+    summary: '約2年に一度巡る火星のリターン。意欲や行動力が一気に高まり、自分の目標へ突き進みたくなる時期です。',
+    events: [
+      '仕事や競争での積極的な行動',
+      '肉体労働・スポーツでの好調',
+      'パートナーへの支配欲や嫉妬心',
+      '軽率な発言・行動によるトラブル',
+      'これまでの取り組みの仕切り直し',
+    ],
+    howToSpend: '有り余るエネルギーを仕事やスポーツなど建設的な方向に使うと良い結果を招きます。ここ数年の課題を見直す好機でもあります。',
+    caution: '暴言や無謀な行動、エネルギー消耗による体調不良には注意しましょう。冷静さと公正さを忘れないことが大切です。',
+    importance: 4,
+  },
+  'mars-mars-soft': {
+    title: '無理のない活力アップ',
+    summary: '火星のリターンが調和的に働き、行動力と体力が心地よく高まる時期です。',
+    events: [
+      '仕事の作業効率アップ',
+      '運動・スポーツでの好パフォーマンス',
+      '目標に向けた前向きな行動',
+      '健全な競争心の発揮',
+      '自分の意欲を素直に発信できる',
+    ],
+    howToSpend: '高まったエネルギーを運動や新しい挑戦に振り向けると、心身ともに充実します。',
+    caution: '好調な時期ですが、無理をしすぎて息切れしないようペース配分を意識しましょう。',
+    importance: 3,
+  },
+  'mars-mars-hard': {
+    title: '衝動と対立の試練',
+    summary: '火星のリターンが緊張角を作り、苛立ちや衝動的な行動、対人トラブルが起きやすい時期です。',
+    events: [
+      '暴言や軽率な行動によるトラブル',
+      '事故やけがのリスク上昇',
+      'パートナーとの主導権争い',
+      '仕事上の強引な進め方が反感を買う',
+      '体調不良やエネルギーの消耗',
+    ],
+    howToSpend: 'エネルギーが空回りしやすい時期なので、行動する前に一呼吸置く習慣を心がけましょう。',
+    caution: '事故・けが・暴言には特に注意。冷静さを欠いた判断は後で大きな代償を払うことになりかねません。',
+    importance: 6,
+  },
+
+  // ── 火星 × 木星 ─────────────────────────────────────────────
+  'mars-jupiter-conjunction': {
+    title: 'チャンスをつかむ好機',
+    summary: 'トランシットの火星が出生の木星に重なり、活気とチャンスに恵まれる勢いのある時期です。',
+    events: [
+      '停滞していた物事の進展',
+      '新規プロジェクトへの好機',
+      '自信に満ちた積極的な行動',
+      '見栄による金銭的な無駄遣い',
+      '恋愛やビジネスでの好都合な出会い',
+    ],
+    howToSpend: '普段なら躊躇するような場面でも大胆に動くと道が開けます。この勢いを新しい挑戦に活かしましょう。',
+    caution: '物事を楽観視しすぎてリスクを見落としたり、気前が良くなりすぎて散財したりしないよう注意しましょう。',
+    importance: 4,
+  },
+  'mars-jupiter-soft': {
+    title: '順調な追い風と拡大運',
+    summary: '火星と木星が調和し、行動が自然に結果へつながる、心地よい追い風の時期です。',
+    events: [
+      '努力が素直に成果に結びつく',
+      '新しい挑戦への後押し',
+      '人間関係の拡大',
+      '仕事での評価アップ',
+      '前向きな気持ちの高まり',
+    ],
+    howToSpend: 'この時期の勢いを活かして、先延ばしにしていた計画に着手すると良いでしょう。',
+    caution: '順調なぶん詰めが甘くなりがちなので、最低限の確認は怠らないようにしましょう。',
+    importance: 3,
+  },
+  'mars-jupiter-hard': {
+    title: '過信と空回りの試練',
+    summary: '火星と木星が緊張角を作り、勢いだけが先行し、過信や無謀な行動に走りやすい時期です。',
+    events: [
+      '見切り発車での失敗',
+      '過度な楽観による判断ミス',
+      '浪費や無理な投資',
+      '対人関係での摩擦',
+      '調子に乗った言動によるトラブル',
+    ],
+    howToSpend: '行動力はありますが、勢いに任せず一呼吸置いて計画を確認する姿勢が大切です。',
+    caution: '大きな話に飛びつく前に、リスクとリターンを冷静に見極めましょう。',
+    importance: 5,
+  },
+
+  // ── 火星 × 土星 ─────────────────────────────────────────────
+  'mars-saturn-conjunction': {
+    title: '停滞と忍耐の試練',
+    summary: 'トランシットの火星が出生の土星に重なり、物事が停滞し、制約や重圧を感じやすい時期です。',
+    events: [
+      '周囲からの冷淡な態度',
+      '成果を出すための大きな努力の必要性',
+      '嫉妬や陰口の対象になりやすい',
+      '事故・けが・盗難などへの注意',
+      '身近な人との緊張関係',
+    ],
+    howToSpend: '謙虚な姿勢でコツコツ取り組むことが結果的に近道になります。焦らず着実に進めましょう。',
+    caution: '身近な人からの攻撃や妨害に感情的に反応せず、冷静な対処を心がけてください。',
+    importance: 5,
+  },
+  'mars-saturn-soft': {
+    title: '着実な努力が実る',
+    summary: '火星と土星が調和し、忍耐強い努力が着実な成果に結びつく地に足のついた時期です。',
+    events: [
+      '地道な作業の効率アップ',
+      '責任ある仕事の完遂',
+      '長期的な計画の実行',
+      '周囲からの信頼獲得',
+      '自制心を伴った行動力',
+    ],
+    howToSpend: '一気に結果を求めず、コツコツ積み上げる意識で取り組むと着実な成果につながります。',
+    caution: '穏やかな時期ですが、慢心せず最後まで丁寧に仕上げることを心がけましょう。',
+    importance: 3,
+  },
+  'mars-saturn-hard': {
+    title: '重圧と摩擦の試練',
+    summary: '火星と土星が緊張角を作り、強い抑圧感や周囲との摩擦、事故のリスクが高まる厳しい時期です。',
+    events: [
+      '強い抑圧感やストレスの蓄積',
+      '目上・周囲との対立',
+      '努力してもすぐ結果が出ないもどかしさ',
+      '事故・けが・持病の悪化への注意',
+      '孤立感や気力の低下',
+    ],
+    howToSpend: '無理に事を急がず、体力を温存しながら守りの姿勢で乗り切ることを優先しましょう。',
+    caution: '事故やけが、持病の悪化には特に注意。無理な行動は大きな代償を招きやすい時期です。',
+    importance: 7,
+  },
+
+  // ── 火星 × 天王星 ─────────────────────────────────────────────
+  'mars-uranus-conjunction': {
+    title: '衝動的な自由への衝動',
+    summary: 'トランシット火星が出生の天王星に重なり、自由を求める衝動と大胆な行動力が一気に高まる、刺激的だが波乱含みの時期です。',
+    events: [
+      '突然の方針転換や思い切った決断',
+      '衝動的な転職・独立の願望',
+      '刺激を求めての大胆な行動',
+      '予期せぬ出会いや変化のきっかけ',
+      '感情の高ぶりによるトラブル',
+    ],
+    howToSpend: '新しい風を取り込む好機ですが、勢いだけで動くと後悔しがちです。一晩置いてから決断する癖をつけましょう。',
+    caution: '衝動的な浪費やギャンブル、暴言によるトラブルに注意してください。頭に血が上ったときほど一呼吸置くことが大切です。',
+    importance: 5,
+  },
+  'mars-uranus-soft': {
+    title: '刺激を力に変えるチャンス',
+    summary: '火星と天王星が調和し、新しいことへの意欲と行動力がうまくかみ合う、変化を楽しめる時期です。',
+    events: [
+      '新しい挑戦への積極的な一歩',
+      'ユニークなアイデアの実行',
+      '刺激的な出会いや交流',
+      '自由な発想を活かした行動',
+      '思い切った環境の変化',
+    ],
+    howToSpend: '好奇心の赴くままに動いてみるとよい結果につながりやすい時期です。新しいことに臆せず挑戦しましょう。',
+    caution: '穏やかな追い風ですが、気の緩みから詰めが甘くなることもあるので最後まで丁寧に取り組みましょう。',
+    importance: 4,
+  },
+  'mars-uranus-hard': {
+    title: '衝突と暴走の警戒期',
+    summary: '火星が天王星に緊張角をとり、苛立ちや反発心が高まって、衝動的な行動が周囲との摩擦を招きやすい時期です。',
+    events: [
+      '突発的な口論や対立',
+      '衝動的な転職・関係解消',
+      '事故やケガ、交通トラブル',
+      '無謀な浪費・ギャンブル',
+      '規則や権威への反発',
+    ],
+    howToSpend: '大きな決断はこの時期を過ぎてからにするのが賢明です。エネルギーは運動などで安全に発散しましょう。',
+    caution: '苛立ちに任せた行動は取り返しのつかない結果を招きます。特に事故・暴言・衝動買いに要注意です。',
+    importance: 7,
+  },
+
+  // ── 火星 × 海王星 ─────────────────────────────────────────────
+  'mars-neptune-conjunction': {
+    title: '感情の波に飲まれやすい時期',
+    summary: '火星が海王星に重なり、感情が高ぶりやすく、思い込みや誤解から気持ちが大きく揺れ動く時期です。',
+    events: [
+      '些細なことでの感情の爆発',
+      '過度な期待からくる失望',
+      '恋愛での疑心暗鬼や嫉妬',
+      '暴飲暴食やアレルギーの悪化',
+      '現実を見失いがちな衝動的行動',
+    ],
+    howToSpend: 'ストレスの少ない穏やかな環境を心がけ、思い込みで動く前に事実を確認する習慣を持ちましょう。',
+    caution: '薬物やアルコールへの依存、衝動的な行動に注意してください。感情的になったときほど一度立ち止まりましょう。',
+    importance: 5,
+  },
+  'mars-neptune-soft': {
+    title: '感受性を優しい行動力に',
+    summary: '火星と海王星が調和し、思いやりある行動や直感を活かした優しい働きかけがしやすい時期です。',
+    events: [
+      '人への思いやりある行動',
+      '直感を活かした選択',
+      '芸術・癒し系の活動への意欲',
+      '献身的なサポートや奉仕',
+      '穏やかな形での自己表現',
+    ],
+    howToSpend: '優しさと行動力を両立できる好機です。人の役に立つ活動やクリエイティブな取り組みに意欲を向けましょう。',
+    caution: '穏やかな時期ですが、現実的な判断力はやや鈍りがちなので、大事な決断は慎重に行いましょう。',
+    importance: 3,
+  },
+  'mars-neptune-hard': {
+    title: '思い込みが招くすれ違い',
+    summary: '火星が海王星に緊張角をとり、疑心暗鬼や思い込みから感情的なすれ違いが起きやすい試練期です。',
+    events: [
+      'パートナーへの不信感や嫉妬の暴走',
+      '被害妄想的な思考の高まり',
+      '身近な人間関係の摩擦',
+      '薬物・アルコールの乱用や誤飲',
+      'アレルギーや皮膚トラブルの悪化',
+    ],
+    howToSpend: '感じたことをすぐ真実だと決めつけず、まず事実を確認する冷静さが必要です。心身ともに休養を優先しましょう。',
+    caution: '思い込みによる衝動的な言動は関係を壊します。健康面でも無理をせず、依存的な行動を避けてください。',
+    importance: 6,
+  },
+
+  // ── 火星 × 冥王星 ─────────────────────────────────────────────
+  'mars-pluto-conjunction': {
+    title: '熱気と衝動が渦巻く時期',
+    summary: '火星が冥王星に重なり、抑えきれないほどの情熱と衝動が湧き上がり、行動が極端に振れやすい時期です。',
+    events: [
+      '目の前のことへの猛烈な没入',
+      '高圧的な態度や強引な行動',
+      '感情の暴走による激しい対立',
+      'ライバルへの強い敵愾心',
+      '事故やトラブルへの巻き込まれ',
+    ],
+    howToSpend: '解決できる問題はこの時期が深刻化する前に片づけ、厄介な事柄には新たに手をつけずに静かに過ごすのが賢明です。',
+    caution: '感情が高ぶると自制が難しくなります。特に合・矩・衝が重なるタイミングは、双方に大きな痛手となる衝突を招きやすいので要注意です。',
+    importance: 7,
+  },
+  'mars-pluto-soft': {
+    title: '情熱を推進力に変える好機',
+    summary: '火星と冥王星が調和し、強い意志とエネルギーを目標に向けて建設的に発揮できる時期です。',
+    events: [
+      '目標への熱心な取り組み',
+      '困難を乗り越える強い集中力',
+      'リーダーシップの発揮',
+      '徹底した努力による成果',
+      '心身のエネルギーの高まり',
+    ],
+    howToSpend: '情熱を注げる目標がある人にとっては大きく前進できる時期です。粘り強く取り組むほど手応えを感じられます。',
+    caution: 'エネルギーが有り余る時期なので、休息を怠らず、力の入れすぎにも注意しましょう。',
+    importance: 4,
+  },
+  'mars-pluto-hard': {
+    title: '衝突と暴走への警戒期',
+    summary: '火星が冥王星に緊張角をとり、冷静さを失いやすく、高圧的な態度や激しい対立を招きやすい試練期です。',
+    events: [
+      '感情的な激しい口論・対立',
+      '権力や名声をめぐる争い',
+      '自己制御が困難なほどの衝動',
+      '人間関係の修復困難な破壊',
+      '事故やケガ、無謀な行動',
+    ],
+    howToSpend: '厄介な事柄には新たに着手せず、できるだけ静かに過ごすことが被害を防ぎます。エネルギーは安全な形で発散しましょう。',
+    caution: '感情に任せた強引な行動は取り返しのつかない事態を招きます。とくに人間関係の決定的な決裂には注意してください。',
+    importance: 8,
+  },
+
+  // ── 火星 × ASC ─────────────────────────────────────────────
+  'mars-asc-conjunction': {
+    title: '自己主張のエネルギー全開',
+    summary: '火星がASCに重なり、行動力と自己主張が一気に高まる、意欲みなぎる時期です。',
+    events: [
+      '新しいことへの挑戦意欲の高まり',
+      '周囲から注目される行動',
+      'スポーツや活動的な予定',
+      '自信に満ちた振る舞い',
+      '決断力の高まり',
+    ],
+    howToSpend: '湧き上がるエネルギーを運動や新しい挑戦に向けると、良い形で発揮できます。決断力が増すこの機会に一歩踏み出しましょう。',
+    caution: '自己主張が強くなりすぎると周囲との摩擦を招きます。強引な態度にならないよう気を配りましょう。',
+    importance: 5,
+  },
+  'mars-asc-soft': {
+    title: '自信に満ちた行動力',
+    summary: '火星がASCと調和し、自然体で自信あふれる行動ができる時期です。',
+    events: [
+      '積極的な自己表現',
+      '新しい挑戦への好スタート',
+      '運動や活動的な予定の充実',
+      '周囲からの好意的な反応',
+      'すがすがしい決断力',
+    ],
+    howToSpend: '前向きな気持ちを行動に移す好機です。新しいことを始めたり、体を動かしたりするのに適しています。',
+    caution: '穏やかな追い風なので、遠慮せず一歩踏み出すことでより良い結果につながります。',
+    importance: 4,
+  },
+  'mars-asc-hard': {
+    title: '衝突と事故に注意な時期',
+    summary: '火星がASCに緊張角をとり、自己主張が強まりすぎて周囲との衝突や、事故のリスクが高まる時期です。',
+    events: [
+      '周囲との言い争いや対立',
+      '自己中心的な態度への反発',
+      '苛立ちからの衝動的な行動',
+      'ケガや交通事故のリスク',
+      '性急な判断によるミス',
+    ],
+    howToSpend: 'あり余るエネルギーはスポーツなど安全な方法で発散しましょう。フェアで紳士的な振る舞いを意識すると、周囲との摩擦を減らせます。',
+    caution: '感情的になった直後の運転や危険な作業は控えてください。カッとなって放った言葉や行動が後で響きます。',
+    importance: 6,
+  },
+
+  // ── 火星 × MC ─────────────────────────────────────────────
+  'mars-mc-conjunction': {
+    title: '野心に火がつく時',
+    summary: '火星がMCに重なり、目標を今すぐ実現したいという強い意欲が湧き上がる時期です。',
+    events: [
+      '仕事での主導権を握りたい衝動',
+      '新しい計画を即断で進める',
+      '上司や取引先への強気な態度',
+      '目標達成への強い推進力',
+      '衝動的なキャリアの決断',
+    ],
+    howToSpend: '行動力が高まるこの時期は、温めていた計画を動かす好機です。ただし勢いだけで突き進まず、一呼吸置いて進めましょう。',
+    caution: '性急な決断や高圧的な態度は、後々の人間関係に響きます。周囲の助言には耳を傾けましょう。',
+    importance: 6,
+  },
+  'mars-mc-soft': {
+    title: 'リーダーシップが輝く',
+    summary: '火星がMCと調和し、意欲的なリーダーシップが自然に発揮される時期です。',
+    events: [
+      '主導権を握る好機',
+      '新しいプロジェクトの始動',
+      '周囲に受け入れられる積極性',
+      '目標に向けた着実な行動',
+      '評価につながる働きかけ',
+    ],
+    howToSpend: '自分から動き出すことで、周囲の協力も得やすい時期です。積極的に手を挙げてみましょう。',
+    caution: '穏やかな追い風なので、遠慮せず行動に移すとより大きな成果が期待できます。',
+    importance: 5,
+  },
+  'mars-mc-hard': {
+    title: 'キャリアでの摩擦の試練',
+    summary: '火星がMCに緊張角をとり、仕事や社会的な立場で衝突や摩擦が生じやすい試練期です。',
+    events: [
+      '上司や取引先との対立',
+      '部下や後輩への高圧的な態度',
+      '周囲の助言に耳を貸せなくなる',
+      '独りよがりな判断でのトラブル',
+      '新しい出会いに与える強引な印象',
+    ],
+    howToSpend: 'わが道を貫くにも、多少の摩擦は覚悟が必要です。冷静さを保ち、周囲の声にも耳を傾けましょう。',
+    caution: '衝動的な決断や高圧的な言動は敵をつくります。感情的になったときほど一呼吸おいてください。',
+    importance: 8,
   },
 }

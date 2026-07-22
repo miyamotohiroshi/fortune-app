@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { signup } from '@/src/app/actions/auth'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 // ─── SVGアイコン ──────────────────────────────────────────────────────────────
 
@@ -178,7 +179,9 @@ function SignupForm() {
     'absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-all duration-150 peer-focus:top-3 peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:text-purple-400 peer-[&:not(:placeholder-shown)]:top-3 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:text-[10px] peer-[&:not(:placeholder-shown)]:text-slate-400'
 
   return (
-    <form action={action} className="space-y-4">
+    <>
+      {pending && <LoadingOverlay text="登録中" />}
+      <form action={action} className="space-y-4">
       <FormField icon={<PersonIcon />} label="名前（ニックネーム可）" error={state?.errors?.nickname?.[0]}>
         <input
           type="text"
@@ -334,7 +337,8 @@ function SignupForm() {
           ログイン
         </Link>
       </p>
-    </form>
+      </form>
+    </>
   )
 }
 

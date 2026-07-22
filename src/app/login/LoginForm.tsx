@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import { login } from '@/src/app/actions/auth'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 function EyeIcon() {
   return (
@@ -33,6 +34,7 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white flex flex-col items-center justify-center px-4">
+      {pending && <LoadingOverlay text="ログイン中" />}
 
       {/* 背景グロー */}
       <div className="fixed top-0 right-0 w-96 h-96 rounded-full bg-purple-900/10 blur-3xl pointer-events-none" />

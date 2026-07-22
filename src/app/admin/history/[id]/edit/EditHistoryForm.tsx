@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { updateHistoryEntry } from '@/src/app/actions/adminHistory'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 // ─── SVGアイコン ──────────────────────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ export function EditHistoryForm({ id, name, birthday, birthHour, birthMinute, bi
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
+      {pending && <LoadingOverlay text="更新中" />}
       <div className="max-w-md mx-auto">
 
         <section className="relative overflow-hidden px-6 pt-16 pb-12">

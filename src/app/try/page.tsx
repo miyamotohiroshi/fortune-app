@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { calculatePreview } from '@/src/app/actions/fortune'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 // ─── SVGアイコン ──────────────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ export default function TryPage() {
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
+      {pending && <LoadingOverlay text="計算中" />}
       <div className="max-w-md mx-auto">
 
         {/* ── ヒーローセクション ────────────────────────── */}

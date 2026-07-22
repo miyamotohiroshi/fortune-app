@@ -22,9 +22,9 @@ export function TransitSection({ birthday, birthTime, birthCity }: Props) {
   const yearThis = now.getFullYear()
   const todayISO = `${yearThis}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-  // 今年を含めた5年分（今年〜4年先）
-  const years = Array.from({ length: 5 }, (_, i) => {
-    const year = yearThis + i
+  // 過去2年〜今年〜4年先の7年分（デフォルト表示は今年）
+  const years = Array.from({ length: 7 }, (_, i) => {
+    const year = yearThis - 2 + i
     const bands = calculateTransitBands(natalPositions, year, hasTime)
     const triggerWindows = calculatePairTriggerWindows(natalPositions, pairAspects, bands, year, hasTime)
     return { year, bands, triggerWindows }

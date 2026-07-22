@@ -6,6 +6,7 @@ import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { runSynastry } from '@/src/app/actions/synastry'
 import { saveCompatHistory, deleteCompatHistory } from '@/src/app/actions/compatHistory'
 import type { SynResult, SynCategory } from '@/src/lib/astrology/synastry'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 
 /** 管理者が選べる登録済みの人 */
 export type RegisteredPerson = {
@@ -166,6 +167,7 @@ export function SynastryTab({
       className="rounded-2xl p-px"
       style={{ background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%)' }}
     >
+      {pending && <LoadingOverlay text="計算中" />}
       <div className="rounded-[15px] overflow-hidden" style={{ background: 'rgba(9, 9, 25, 0.98)' }}>
         <div className="p-6 space-y-5">
           {/* ヘッダー */}

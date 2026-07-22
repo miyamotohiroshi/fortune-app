@@ -209,26 +209,39 @@ function DetailCard({
 
   return (
     <div className="rounded-2xl border border-slate-700/60 p-5 space-y-5" style={{ background: 'rgba(20,20,40,0.95)' }}>
-      {/* トランシット発動期間（進行×トランシットの重なり） */}
-      {triggers.map(({ window, pattern }, i) => {
-        const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
-        return (
-        <div
-          key={i}
-          className={`rounded-xl border ${style.border} px-3.5 py-3`}
-          style={{ background: style.bg }}
-        >
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs">{style.icon}</span>
-            <span className={`text-[11px] font-bold ${style.text}`}>{pattern.title}</span>
-            <span className={`text-[11px] ml-auto opacity-80 ${style.text}`}>
-              {window.startDate.slice(5).replace('-', '/')} 〜 {window.endDate.slice(5).replace('-', '/')}
-            </span>
-          </div>
-          <p className="text-xs text-slate-300 leading-relaxed mt-1.5">{pattern.description}</p>
-        </div>
-        )
-      })}
+      {/* トランシット発動期間（進行×トランシットの重なり）。同じパターンが複数回発動する場合は1枚にまとめる */}
+      {(() => {
+        const grouped = new Map<string, { window: DirectionTriggerWindow; pattern: DirectionTriggerPattern }[]>()
+        for (const t of triggers) {
+          const arr = grouped.get(t.pattern.id) ?? []
+          arr.push(t)
+          grouped.set(t.pattern.id, arr)
+        }
+        return [...grouped.entries()].map(([patternId, group]) => {
+          const { pattern } = group[0]
+          const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
+          return (
+            <div
+              key={patternId}
+              className={`rounded-xl border ${style.border} px-3.5 py-3`}
+              style={{ background: style.bg }}
+            >
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs">{style.icon}</span>
+                <span className={`text-[11px] font-bold ${style.text}`}>{pattern.title}</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed mt-1.5">{pattern.description}</p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
+                {group.map(({ window }, i) => (
+                  <span key={i} className={`text-[11px] opacity-80 ${style.text}`}>
+                    {window.startDate.slice(5).replace('-', '/')}〜{window.endDate.slice(5).replace('-', '/')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })
+      })()}
 
       {/* Header */}
       <div className="flex items-start justify-between gap-2">

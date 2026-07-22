@@ -24,3 +24,58 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* LoadingOverlay（src/components/ui/LoadingOverlay.tsx）用のアニメーション */
+@keyframes loaderCircle {
+  0% {
+    transform: rotate(90deg);
+    box-shadow:
+      0 6px 12px 0 #a78bfa inset,
+      0 12px 18px 0 #7c3aed inset,
+      0 36px 36px 0 #4338ca inset,
+      0 0 3px 1.2px rgba(139, 92, 246, 0.3),
+      0 0 6px 1.8px rgba(79, 70, 229, 0.2);
+  }
+  50% {
+    transform: rotate(270deg);
+    box-shadow:
+      0 6px 12px 0 #c084fc inset,
+      0 12px 6px 0 #9333ea inset,
+      0 24px 36px 0 #4f46e5 inset,
+      0 0 3px 1.2px rgba(139, 92, 246, 0.3),
+      0 0 6px 1.8px rgba(79, 70, 229, 0.2);
+  }
+  100% {
+    transform: rotate(450deg);
+    box-shadow:
+      0 6px 12px 0 #d8b4fe inset,
+      0 12px 18px 0 #7c3aed inset,
+      0 36px 36px 0 #4338ca inset,
+      0 0 3px 1.2px rgba(139, 92, 246, 0.3),
+      0 0 6px 1.8px rgba(79, 70, 229, 0.2);
+  }
+}
+
+@keyframes loaderLetter {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateY(0);
+  }
+}
+
+.animate-loader-circle {
+  animation: loaderCircle 5s linear infinite;
+}
+
+.animate-loader-letter {
+  animation: loaderLetter 3s infinite;
+}
