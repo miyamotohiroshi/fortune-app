@@ -28,7 +28,7 @@ export default async function AdminHistoryPage() {
     return {
       id: h.id,
       name: h.name,
-      birthdayLabel: h.birthday.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+      birthdayLabel: h.birthday.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' }) + (h.birthTime ? ` ${h.birthTime}` : ''),
       total: r.total,
       love: r.categories.恋愛,
       work: r.categories.仕事,

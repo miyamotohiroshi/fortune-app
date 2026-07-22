@@ -25,7 +25,7 @@ const CATEGORY_WEIGHT: Record<SynCategory, number> = { 恋愛: 3, 夫婦家庭: 
  *   最高(干合)=9点／よい(相生)=8点／普通(比和)=6点／合わない(相剋)=3点、重みは共通4
  */
 const FOUR_PILLARS_BONUS_WEIGHT = 4
-const STEM_TIER_SCORE: Record<StemCompatTier, number> = { best: 9, good: 8, normal: 6, bad: 3 }
+const STEM_TIER_SCORE: Record<StemCompatTier, number> = { best: 9.5, good: 8, normal: 6, bad: 3 }
 /** 支合（日支同士）が効くカテゴリ＝夫婦家庭（結婚）・友人・仕事。恋愛は日干の4段階評価を使うため対象外 */
 const SHIGOU_CATEGORIES: SynCategory[] = ['夫婦家庭', '友人', '仕事']
 
