@@ -2,8 +2,13 @@ import { prisma } from '@/src/lib/prisma'
 import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { detectPairAspects, detectTripleAspects, tripleComboKey, pairComboKey } from '@/src/lib/astrology/aspects'
 import { calculateHouseCusps, assignPlanetsToHouses } from '@/src/lib/astrology/houses'
+import { calculateTransitBands } from '@/src/lib/astrology/transit'
+import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-triggers'
+import type { PairTriggerWindow } from '@/src/lib/astrology/pair-aspect-triggers'
+import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
+import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
 import { HouseList } from './HouseList'
-import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_SYMBOLS } from '@/src/lib/astrology/constants'
+import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_SYMBOLS, HARD_ASPECT_TYPES } from '@/src/lib/astrology/constants'
 import type { PlanetKey } from '@/src/lib/astrology/constants'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 
@@ -30,6 +35,11 @@ function toDegMin(lon: number): string {
   return `${deg}°${String(min).padStart(2, '0')}'`
 }
 
+function fmtDateJa(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${y}/${m}/${d}`
+}
+
 const PLANET_SYMBOLS: Record<PlanetKey, string> = {
   sun: '☉', moon: '☽', mercury: '☿', venus: '♀', mars: '♂',
   jupiter: '♃', saturn: '♄', uranus: '♅', neptune: '♆', pluto: '♇',
@@ -37,7 +47,7 @@ const PLANET_SYMBOLS: Record<PlanetKey, string> = {
 }
 
 // 0°(合)・90°(矩)・180°(衝) は緊張・葛藤が強く出るハードアスペクト
-const HARD_ASPECTS = new Set(['conjunction', 'square', 'opposition'])
+const HARD_ASPECTS = new Set(HARD_ASPECT_TYPES)
 
 export async function WesternAstrologySection({ birthday, birthTime, birthCity }: Props) {
   const cityCoords = birthCity ? (CITY_COORDS[birthCity] ?? null) : null
@@ -46,6 +56,21 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
   const positions = calculatePlanetPositions(birthday, birthTime, cityCoords)
 
   const rawPairAspects = detectPairAspects(positions, hasTime)
+
+  // 出生ペアアスペクトに進行木星などが関与する「チャンス期間」（今年〜4年先で直近1件のみ）
+  const now = new Date()
+  const yearThis = now.getFullYear()
+  const todayISO = `${yearThis}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const nearestTriggerWindow = new Map<string, PairTriggerWindow>()
+  for (let i = 0; i < 5; i++) {
+    const year = yearThis + i
+    const yearBands = calculateTransitBands(positions, year, hasTime)
+    const windows = calculatePairTriggerWindows(positions, rawPairAspects, yearBands, year, hasTime)
+    for (const w of windows) {
+      if (w.endDate < todayISO) continue
+      if (!nearestTriggerWindow.has(w.patternId)) nearestTriggerWindow.set(w.patternId, w)
+    }
+  }
 
   const ASPECT_SORT_ORDER: Record<string, number> = {
     conjunction: 0, opposition: 1, square: 2,
@@ -162,6 +187,12 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
               const data = pairDataMap.get(key)
               // 0°(合)・90°(矩)・180°(衝) は影響が強く出るハードアスペクト。温度感を強めて表示する
               const isHard = HARD_ASPECTS.has(pa.aspect)
+              const triggerPattern = PAIR_TRIGGER_PATTERNS.find(
+                p =>
+                  (p.planets[0] === pa.planet1 && p.planets[1] === pa.planet2) ||
+                  (p.planets[0] === pa.planet2 && p.planets[1] === pa.planet1)
+              )
+              const triggerWindow = triggerPattern ? nearestTriggerWindow.get(triggerPattern.id) : undefined
               return (
                 <div
                   key={key}
@@ -195,6 +226,24 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                   ) : (
                     <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
                   )}
+                  {triggerWindow && triggerPattern && (() => {
+                    const style = TRIGGER_POLARITY_STYLE[triggerPattern.polarity]
+                    return (
+                      <div
+                        className={`mt-2.5 rounded-lg border ${style.border} px-3 py-2`}
+                        style={{ background: style.bg }}
+                      >
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs">{style.icon}</span>
+                          <span className={`text-[11px] font-bold ${style.text}`}>{triggerPattern.title}</span>
+                          <span className={`text-[11px] ml-auto opacity-80 ${style.text}`}>
+                            {fmtDateJa(triggerWindow.startDate)} 〜 {fmtDateJa(triggerWindow.endDate)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed mt-1">{triggerPattern.description}</p>
+                      </div>
+                    )
+                  })()}
                 </div>
               )
             })}

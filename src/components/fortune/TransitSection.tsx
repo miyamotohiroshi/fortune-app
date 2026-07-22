@@ -1,5 +1,7 @@
 import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { calculateTransitBands } from '@/src/lib/astrology/transit'
+import { detectPairAspects } from '@/src/lib/astrology/aspects'
+import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { TransitTimeline } from './TransitTimeline'
 
@@ -14,6 +16,7 @@ export function TransitSection({ birthday, birthTime, birthCity }: Props) {
   const hasTime = !!birthTime && !!cityCoords
 
   const natalPositions = calculatePlanetPositions(birthday, birthTime, cityCoords)
+  const pairAspects = detectPairAspects(natalPositions, hasTime)
 
   const now = new Date()
   const yearThis = now.getFullYear()
@@ -22,7 +25,9 @@ export function TransitSection({ birthday, birthTime, birthCity }: Props) {
   // 今年を含めた5年分（今年〜4年先）
   const years = Array.from({ length: 5 }, (_, i) => {
     const year = yearThis + i
-    return { year, bands: calculateTransitBands(natalPositions, year, hasTime) }
+    const bands = calculateTransitBands(natalPositions, year, hasTime)
+    const triggerWindows = calculatePairTriggerWindows(natalPositions, pairAspects, bands, year, hasTime)
+    return { year, bands, triggerWindows }
   })
 
   return (

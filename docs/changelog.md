@@ -1,5 +1,47 @@
 # Changelog
 
+## 2026-07-22 「西洋_トランシット法.pdf」を全ページ調査し、出生ペア+トランシット発動パターンを14件・ダイレクション+トランシット発動パターンを3件追加
+
+### 新規ファイル
+- `src/data/direction-trigger-patterns.ts` — ダイレクション（進行）で発動中の出生アスペクトに、さらにトランシット天体が重なる「発動パターン」定義。冥王星×D太陽+T太陽（不倫・仕事の激変の表面化）、冥王星×D太陽+T木星（年上の有力者・財産、ただし木星通過後に喪失の可能性）、太陽×D冥王星+T水星（人生の大転換・要注意）の3件
+- `src/lib/astrology/direction-aspect-triggers.ts` — `calculateDirectionTriggerWindows()`。指定年にダイレクションが該当アスペクトを形成しており、かつ指定のトランシット天体が該当出生点にアスペクトしている期間を発動期間として返す
+- `src/lib/astrology/trigger-polarity.ts` — 発動パターンが「良い運（lucky）」か「注意すべき運（caution）」かを表す共通の型とスタイル（アイコン✨/⚠️、色は相性判定と同じエメラルド/ローズ）
+
+### 修正ファイル
+- `src/lib/astrology/constants.ts` — `HARD_ASPECT_TYPES`（合・矩・衝）を共通定数として追加
+- `src/lib/astrology/transit.ts` — `ExtendedTransitPlanetKey` に `sun`/`moon`/`mercury`/`venus` を追加（トリガー天体・除外天体チェック用）。太陽は出生計算と同じ`SunPosition`を使用
+- `src/data/pair-aspect-triggers.ts` — `PairTriggerPattern` に `natalAspectTypes`/`triggerAspectTypes`（出生・トランシット双方のアスペクト角度を合/矩/衝などに限定するオプション）と `polarity`（lucky/caution）を追加。「西洋_トランシット法.pdf」全60ページを調査して見つかった、出生ペア+単一トランシットが発動条件になっている重要な吉凶パターンを14件追加（ASC×冥王星+T土星、MC×土星+T木星、月×ASC/MC+T土星、月×金星+T海王星、太陽×火星+T天王星、土星×ASC/MC/太陽/月+T冥王星、天王星×金星/太陽/月+T太陽、海王星×月+T太陽）
+- `src/lib/astrology/pair-aspect-triggers.ts` — 上記フィルタに対応するロジックを追加（natalAspectTypes/triggerAspectTypesが指定された場合のみアスペクト角度を絞り込み、省略時は従来通り任意のアスペクトで成立）
+- `src/data/direction-trigger-patterns.ts` — `DirectionTriggerPattern` にも `polarity` を追加
+- `src/components/fortune/WesternAstrologySection.tsx` — ローカル定義していた`HARD_ASPECTS`を共通定数`HARD_ASPECT_TYPES`に統一（挙動は変更なし）。発動期間カードの色・アイコンを`polarity`に応じて出し分け（lucky=エメラルド✨／caution=ローズ⚠️）
+- `src/components/fortune/TransitTimeline.tsx` — トランシットタブの発動期間ハイライトも同様に`polarity`で色・アイコンを出し分け
+- `src/components/fortune/DirectionLifeSection.tsx` — 人生年表の表示範囲（出生〜100年）を対象に`calculateDirectionTriggerWindows`を実行し、`DirectionLifeTab`へ`directionTriggerWindows`を渡す
+- `src/components/fortune/DirectionLifeTab.tsx` — 該当する年×進行天体×出生天体の組み合わせに発動期間があれば、年表のボタンに`polarity`に応じたバッジ・色（lucky=エメラルド✨／caution=ローズ⚠️）を表示。選択中の詳細カードにも該当パターンのタイトル・期間・説明を同配色で表示
+
+### フロー・補足
+- 調査方法: 60ページを4分割し並列エージェントで画像を読ませ「出生ペア+トランシット」「トランシット同士の同時発生」の2パターンで重要度の高い記述を抽出。その後、候補は自分でソース画像を再確認して正確な天体・アスペクト角度・トリガー条件を確定
+- 「西洋_出生.pdf」（第4章、性格診断の3天体アスペクト解説）にはタイミング要素がなく対象外
+- 見つかったが今回見送ったもの: 「トランシット2天体が同時発生」パターン（出生ペア不要、本内では18件程度でパターンAより件数が多い）。出生ペアではなくトランシット同士の重なりを起点にする別エンジンが必要なため次フェーズで対応
+- 検証: 自作スクリプトで多数の生年月日×出生時刻ありなしを組み合わせて広く走査し、追加した14+3パターン全てが実際に発火することを確認。tsc/eslintも通過
+- ダイレクション（進行）は`src/lib/astrology/directions.ts`の`calculateDirectionAspects`（ソーラーアーク法）で既に実装済みだった。当初「ディレクション未実装」と誤って回答したがユーザーの指摘で訂正し対応
+
+## 2026-07-22 出生ペアアスペクト×進行木星の「チャンス期間」を汎用エンジンで算出・表示
+
+### 新規ファイル
+- `src/data/pair-aspect-triggers.ts` — 出生の2天体アスペクトに進行天体が関与すると意味が強まる/打ち消される「発動パターン」定義。第1弾として「金星×冥王星＋進行木星（火星・土星が絡まなければ仕事・恋愛にビッグチャンス）」を登録。今後同種のパターンをここに追加するだけで対応可能。タイトル表記は「出生 金星×冥王星 に T木星が関与」のように、出生点をペア前に1回だけ・トランシット天体は既存のタイムライン行と同じ「T」接頭辞で統一（ユーザーからのフィードバックで、出生かトランシットか紛らわしいとの指摘を受け調整）
+- `src/lib/astrology/pair-aspect-triggers.ts` — `calculatePairTriggerWindows()`。出生ペアアスペクトが実在し、指定トランシット天体が両方の出生点に同時にアスペクトしている期間（重なり区間）を求め、除外天体（火星・土星など）が同時にアスペクトしていない区間だけを「発動期間」として返す汎用判定エンジン
+
+### 修正ファイル
+- `src/lib/astrology/transit.ts` — 単一天体分のバンド計算を `calculateBandsForPlanet()` として切り出し、`calculateTransitBands()` はこれをトランシット5天体分ループする形にリファクタリング。除外天体チェック用に火星も計算できるよう `ExtendedTransitPlanetKey`（`TransitPlanetKey | 'mars'`）を追加し、`getTransitOrb`/`BODY_MAP` を拡張
+- `src/components/fortune/TransitSection.tsx` — 出生ペアアスペクトを検出し、表示年（今年〜4年先）ごとに `calculatePairTriggerWindows` を実行、`TransitTimeline` へ `triggerWindows` を渡す
+- `src/components/fortune/TransitTimeline.tsx` — 選択中の年に発動期間があれば、年タブの下にアンバー枠のハイライトカードとして「✨ パターン名／期間（最接近日）／説明文」を表示
+- `src/components/fortune/WesternAstrologySection.tsx` — 出生ペアアスペクトカードに、該当パターンの直近の発動期間（今年〜4年先で一番近い1件、開始日が過去のものは除外）があればカード内に同じハイライトを表示
+
+### フロー・補足
+- 判定ロジック: 進行木星が出生の金星・冥王星それぞれにアスペクトする期間の重なりを取り、その重なり区間に火星・土星のアスペクト期間が被っていなければ「発動期間」とする（自作テストスクリプトで1987-08-05生まれ・金星□冥王星のチャートに対し2026年と2029年に発動期間を検出し、除外天体の判定が効いていることを確認）
+- 表示は西洋占星術タブのペアアスペクトカード（該当天体の説明文の直下）とトランシットタブの両方（ユーザー確定）
+- 汎用エンジンとして設計済みのため、本にある他の出生ペア×トランシット天体の組み合わせも `pair-aspect-triggers.ts` にパターンを追加するだけで対応可能
+
 ## 2026-07-17 トランシット木星×冥王星（ハード）の文言をバランス調整
 
 ### 修正ファイル

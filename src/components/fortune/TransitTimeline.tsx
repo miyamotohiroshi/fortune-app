@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import type { TransitBand, TransitPlanetKey } from '@/src/lib/astrology/transit'
+import type { PairTriggerWindow } from '@/src/lib/astrology/pair-aspect-triggers'
 import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_ANGLES } from '@/src/lib/astrology/constants'
 import { TRANSIT_MASTER, aspectCategory } from '@/src/data/transit-master'
+import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
+import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
 
-type YearData = { year: number; bands: TransitBand[] }
+type YearData = { year: number; bands: TransitBand[]; triggerWindows: PairTriggerWindow[] }
 
 type Props = {
   years: YearData[]
@@ -50,7 +53,7 @@ export function TransitTimeline({ years, todayISO }: Props) {
   const [yearIdx, setYearIdx] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
 
-  const { year, bands } = years[yearIdx]
+  const { year, bands, triggerWindows } = years[yearIdx]
   const totalDays = isLeapYear(year) ? 366 : 365
   const todayYear = Number(todayISO.slice(0, 4))
   const showToday = year === todayYear
@@ -81,6 +84,33 @@ export function TransitTimeline({ years, todayISO }: Props) {
           </button>
         ))}
       </div>
+
+      {/* 特別なチャンス期間（出生ペアアスペクト × トランシット発動） */}
+      {triggerWindows.length > 0 && (
+        <div className="space-y-2">
+          {triggerWindows.map((tw, i) => {
+            const pattern = PAIR_TRIGGER_PATTERNS.find(p => p.id === tw.patternId)
+            if (!pattern) return null
+            const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
+            return (
+              <div
+                key={i}
+                className={`rounded-xl border ${style.border} p-3.5`}
+                style={{ background: style.bg }}
+              >
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-sm">{style.icon}</span>
+                  <span className={`text-xs font-bold ${style.text}`}>{pattern.title}</span>
+                  <span className={`text-xs ml-auto opacity-80 ${style.text}`}>
+                    {fmtDate(tw.startDate)} 〜 {fmtDate(tw.endDate)}（最接近 {fmtDate(tw.exactDate)}）
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed mt-1.5">{pattern.description}</p>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {bands.length === 0 ? (
         <div

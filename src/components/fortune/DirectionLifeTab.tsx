@@ -5,6 +5,11 @@ import type { DirectionAspectResult } from '@/src/lib/astrology/directions'
 import { DIRECTION_IMPORTANCE_THRESHOLD } from '@/src/lib/astrology/directions'
 import type { DirectionMaster } from '@/src/data/direction-master'
 import { DIRECTION_MASTER_MAP } from '@/src/data/direction-master'
+import type { DirectionTriggerWindow } from '@/src/lib/astrology/direction-aspect-triggers'
+import { DIRECTION_TRIGGER_PATTERNS } from '@/src/data/direction-trigger-patterns'
+import type { DirectionTriggerPattern } from '@/src/data/direction-trigger-patterns'
+import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
+import type { TriggerPolarity } from '@/src/lib/astrology/trigger-polarity'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
 import { computeYearFortune, branchRelations, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
@@ -21,6 +26,7 @@ const AISHO_TONE_STYLE: Record<string, { color: string; bg: string }> = {
 
 type Props = {
   aspects: DirectionAspectResult[]
+  directionTriggerWindows: DirectionTriggerWindow[]
   startYear: number
   endYear: number
   currentYear: number
@@ -57,6 +63,7 @@ function YearColumn({
   aisho,
   onSelectAisho,
   isAishoSelected,
+  triggerPolarityByKey,
 }: {
   year: number
   age: number
@@ -70,6 +77,7 @@ function YearColumn({
   aisho: BranchRelation[] | null
   onSelectAisho: (year: number) => void
   isAishoSelected: boolean
+  triggerPolarityByKey: Map<string, TriggerPolarity>
 }) {
   return (
     <div className={[
@@ -157,6 +165,8 @@ function YearColumn({
               const master = DIRECTION_MASTER_MAP.get(asp.masterKey)
               const icon = master?.mainIcon ?? ''
               const isSelected = selectedKey === key
+              const triggerPolarity = triggerPolarityByKey.get(`${asp.year}-${asp.directedPlanet}-${asp.natalPlanet}`)
+              const triggerStyle = triggerPolarity ? TRIGGER_POLARITY_STYLE[triggerPolarity] : null
               return (
                 <button
                   key={idx}
@@ -165,9 +175,13 @@ function YearColumn({
                     'w-full text-left px-1 py-0.5 rounded text-[9px] leading-tight mb-0.5 transition-colors',
                     isSelected
                       ? 'bg-purple-700/60 text-white'
-                      : 'hover:bg-slate-700/60 text-slate-300',
+                      : triggerStyle
+                        ? `ring-1 ring-inset ${triggerStyle.ring} hover:brightness-125 text-slate-200`
+                        : 'hover:bg-slate-700/60 text-slate-300',
                   ].join(' ')}
+                  style={triggerStyle && !isSelected ? { background: triggerStyle.bg } : undefined}
                 >
+                  {triggerStyle && <span className="mr-0.5">{triggerStyle.icon}</span>}
                   <span className="mr-0.5">{icon}</span>
                   <span>{PLANET_SHORT[asp.directedPlanet]}×{PLANET_SHORT[asp.natalPlanet]}</span>
                   <span className="text-slate-500 ml-0.5">{asp.aspectAngle}°</span>
@@ -184,15 +198,38 @@ function YearColumn({
 function DetailCard({
   selected,
   onClose,
+  triggers,
 }: {
   selected: SelectedAspect
   onClose: () => void
+  triggers: { window: DirectionTriggerWindow; pattern: DirectionTriggerPattern }[]
 }) {
   const { result, master } = selected
   const aspectLabel = ASPECT_NAMES_JA[result.aspectType as AspectType] ?? `${result.aspectAngle}°`
 
   return (
     <div className="rounded-2xl border border-slate-700/60 p-5 space-y-5" style={{ background: 'rgba(20,20,40,0.95)' }}>
+      {/* トランシット発動期間（進行×トランシットの重なり） */}
+      {triggers.map(({ window, pattern }, i) => {
+        const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
+        return (
+        <div
+          key={i}
+          className={`rounded-xl border ${style.border} px-3.5 py-3`}
+          style={{ background: style.bg }}
+        >
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs">{style.icon}</span>
+            <span className={`text-[11px] font-bold ${style.text}`}>{pattern.title}</span>
+            <span className={`text-[11px] ml-auto opacity-80 ${style.text}`}>
+              {window.startDate.slice(5).replace('-', '/')} 〜 {window.endDate.slice(5).replace('-', '/')}
+            </span>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed mt-1.5">{pattern.description}</p>
+        </div>
+        )
+      })}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -337,7 +374,7 @@ function DetailCard({
   )
 }
 
-export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, birthday, dayStem, dayBranch, genmei }: Props) {
+export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, endYear, currentYear, birthday, dayStem, dayBranch, genmei }: Props) {
   const [selected, setSelected] = useState<SelectedAspect | null>(null)
   const [filterMode, setFilterMode] = useState<'all' | 'important'>('important')
   const [orb, setOrb] = useState<number>(0.5)
@@ -347,6 +384,21 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
 
   const toggleNenun = (year: number) => setNenunYear((cur) => (cur === year ? null : year))
   const toggleAisho = (year: number) => setAishoYear((cur) => (cur === year ? null : year))
+
+  // ダイレクション発動年×トランシット重なりのルックアップ（年-進行天体-出生天体をキーに）
+  const triggerLookup = new Map<string, { window: DirectionTriggerWindow; pattern: DirectionTriggerPattern }[]>()
+  for (const window of directionTriggerWindows) {
+    const pattern = DIRECTION_TRIGGER_PATTERNS.find(p => p.id === window.patternId)
+    if (!pattern) continue
+    const key = `${window.directionYear}-${pattern.directedPlanet}-${pattern.natalPlanet}`
+    const arr = triggerLookup.get(key) ?? []
+    arr.push({ window, pattern })
+    triggerLookup.set(key, arr)
+  }
+  const triggerPolarityByKey = new Map<string, TriggerPolarity>()
+  for (const [key, arr] of triggerLookup) {
+    triggerPolarityByKey.set(key, arr[0].pattern.polarity)
+  }
 
   // Filter by importance threshold and orb
   const filtered = aspects.filter(a => {
@@ -508,6 +560,7 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
                   aisho={aisho}
                   onSelectAisho={toggleAisho}
                   isAishoSelected={aishoYear === year}
+                  triggerPolarityByKey={triggerPolarityByKey}
                 />
               )
             })}
@@ -629,7 +682,11 @@ export function DirectionLifeTab({ aspects, startYear, endYear, currentYear, bir
 
       {/* Detail card */}
       {selected && (
-        <DetailCard selected={selected} onClose={() => setSelected(null)} />
+        <DetailCard
+          selected={selected}
+          onClose={() => setSelected(null)}
+          triggers={triggerLookup.get(`${selected.result.year}-${selected.result.directedPlanet}-${selected.result.natalPlanet}`) ?? []}
+        />
       )}
 
       {filtered.length === 0 && (

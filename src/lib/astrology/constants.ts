@@ -44,6 +44,9 @@ export const ASPECT_SYMBOLS: Record<AspectType, string> = {
   sesquiquadrate: '⊼',
 }
 
+// 0°(合)・90°(矩)・180°(衝) は影響が強く出るハードアスペクト
+export const HARD_ASPECT_TYPES: AspectType[] = ['conjunction', 'square', 'opposition']
+
 // オーブの基準（天体の重要度）
 export const PLANET_ORB_WEIGHT: Record<PlanetKey, number> = {
   asc: 10, mc: 10, desc: 10,

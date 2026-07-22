@@ -1,5 +1,8 @@
 import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { calculateDirectionAspects } from '@/src/lib/astrology/directions'
+import { calculateTransitBands } from '@/src/lib/astrology/transit'
+import { calculateDirectionTriggerWindows } from '@/src/lib/astrology/direction-aspect-triggers'
+import type { DirectionTriggerWindow } from '@/src/lib/astrology/direction-aspect-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 import { DirectionLifeTab } from './DirectionLifeTab'
@@ -32,6 +35,15 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
     endYear,
   )
 
+  // ダイレクション発動年に、トランシット天体が重なる「発動期間」（出生ペアの発動パターンと同じ考え方）
+  const directionTriggerWindows: DirectionTriggerWindow[] = []
+  for (let year = startYear; year <= endYear; year++) {
+    const yearBands = calculateTransitBands(natalPositions, year, hasTime)
+    directionTriggerWindows.push(
+      ...calculateDirectionTriggerWindows(birthday, natalPositions, hasTime, year, yearBands)
+    )
+  }
+
   // 四柱推命の年運（流年）用に日柱（日干・日支）と元命（月支本気の通変星）を算出
   const meishiki = computeMeishikiFromBirth(birthday, birthTime)
   const dayStem = meishiki.pillars[2].stem
@@ -51,6 +63,7 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
       </div>
       <DirectionLifeTab
         aspects={aspects}
+        directionTriggerWindows={directionTriggerWindows}
         startYear={startYear}
         endYear={endYear}
         currentYear={currentYear}

@@ -141,7 +141,7 @@ export default function TryPage() {
         </section>
 
         {/* ── フォームカード ────────────────────────────── */}
-        <section className="px-4 pb-8">
+        <section className="px-4 pb-16">
           <div
             className="rounded-3xl border border-purple-900/30 p-6"
             style={{ background: 'rgba(12,12,34,0.97)', backdropFilter: 'blur(12px)', boxShadow: '0 0 60px rgba(90,50,180,0.12)' }}
@@ -263,7 +263,7 @@ export default function TryPage() {
                 </Link>
                 {' '}がおすすめです
               </p>
-              <Link href="/login" className="block text-xs text-slate-600 hover:text-slate-400 transition-colors">
+              <Link href="/login" className="inline-block py-2 px-4 text-sm text-slate-500 hover:text-slate-300 transition-colors">
                 ログインはこちら
               </Link>
             </div>
