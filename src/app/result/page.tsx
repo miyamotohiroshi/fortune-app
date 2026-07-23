@@ -121,7 +121,8 @@ export default async function ResultPage({
 
   const genmeiId =
     user.genmeiId ??
-    calculateGenmeiId(user.birthday.toISOString().split('T')[0]);
+    // birthdayはJST深夜0時で保存されるため、toISOString()だと前日にズレる。JSTの暦日で解釈する
+    calculateGenmeiId(user.birthday.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }));
 
   const genmei = await prisma.genmeiData.findUnique({ where: { id: genmeiId } });
 

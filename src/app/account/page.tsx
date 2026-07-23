@@ -10,7 +10,8 @@ export default async function AccountPage() {
   const user = await prisma.user.findUnique({ where: { id: session.userId as string } })
   if (!user) redirect('/login')
 
-  const iso = user.birthday.toISOString().split('T')[0] // "YYYY-MM-DD"
+  // birthdayはJST深夜0時で保存されるため、toISOString()だと前日にズレる。JSTの暦日で解釈する
+  const iso = user.birthday.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) // "YYYY-MM-DD"
   const birthday = iso.replace(/-/g, '') // "YYYYMMDD"
 
   const [birthHour, birthMinute] = user.birthTime ? user.birthTime.split(':') : ['', '']

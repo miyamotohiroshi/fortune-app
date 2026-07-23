@@ -16,11 +16,11 @@ export default async function EditHistoryPage({
     notFound()
   }
 
-  // toISOString()はUTC変換されるためタイムゾーンによって日付がずれる。ローカルの年月日から直接組み立てる
-  const y = history.birthday.getFullYear()
-  const m = String(history.birthday.getMonth() + 1).padStart(2, '0')
-  const d = String(history.birthday.getDate()).padStart(2, '0')
-  const birthday = `${y}${m}${d}`
+  // birthdayはJST深夜0時で保存される。getFullYear()等はサーバーのローカルタイムゾーン依存で
+  // 本番(Vercel)はUTCがデフォルトのためズレる。明示的にJSTの暦日として解釈する
+  const birthday = history.birthday
+    .toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' })
+    .replace(/-/g, '')
   const [birthHour, birthMinute] = history.birthTime ? history.birthTime.split(':') : ['', '']
 
   return (

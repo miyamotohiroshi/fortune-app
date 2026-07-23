@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-24 元命の表示ズレ（DBのgenmeiIdがJST変換ミスで前日の値になっていた）を修正
+
+### 修正ファイル
+- `src/app/result/page.tsx` — `genmeiId`の未保存時フォールバック計算が`user.birthday.toISOString().split('T')[0]`（UTC）を使っており、JST深夜0時保存のbirthdayだと前日にズレていたのを`toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' })`に修正
+- `src/app/account/page.tsx` — 会員情報編集フォームの生年月日プリフィルが同じUTCズレのパターンだったため同様に修正
+- `src/app/admin/history/[id]/edit/page.tsx` — 編集フォームの生年月日プリフィルが`getFullYear()`等のサーバーのローカルタイムゾーン依存の書き方（本番Vercelはデフォルト UTC のためズレる）だったのを、明示的にJSTの暦日として解釈する書き方に修正
+
+### フロー・補足
+- 背景: 前回（2026-07-23〜24）の蔵干バグ修正後、ユーザーから「宮本光子さんの命式図（月柱の通変星＝比肩）と、ページ上部の元命カード（傷官）が食い違っている」と報告
+- 原因究明: 命式図側は`computeMeishikiFromBirth()`（+9時間してJSTの暦日に変換）を使っており正しかった一方、前回実施したDBの`genmeiId`一括更新（バックフィル）が`birthday.toISOString().split('T')[0]`でUTCの日付をそのまま使っており、JST深夜0時保存のbirthdayだと1日前の日付で再計算してDBに書き込んでしまっていた（例: 1957-05-18が1957-05-17としてズレて計算・保存された）。既存コードの`src/app/result/page.tsx`・`src/app/account/page.tsx`・`src/app/admin/history/[id]/edit/page.tsx`にも同種のズレが以前から存在していたため合わせて修正
+- 検証: 1957-05-18を正しくJST変換すると比肩、誤ってUTC変換すると傷官になることを確認し、バグの再現に成功
+- DBの再修正: JSTで正しく変換した日付で全レコード（User・FortuneHistory）を再計算し直し、不一致だった9件（FortuneHistory、宮本光子さん含む）の`genmeiId`を実際の値に再更新。Userは前回の修正が結果的に正しかった4件のみで不一致なし（更新不要）。再々監査で全件一致を確認
+- なお本作業中にDBの`User`件数が前回セッション時の22件から4件に減っていることを確認したが、`FortuneHistory`の`adminUserId`に孤立レコードは無く、削除されたのはテストアカウント含む一般会員のみだったため、意図的なアカウント整理と判断し処理を続行した
+- tsc通過、開発サーバー再起動・動作確認済み
+
 ## 2026-07-24 蔵干（元命）が節入りからの日数を無視して常に本気を使っていたバグを修正
 
 ### 新規ファイル
