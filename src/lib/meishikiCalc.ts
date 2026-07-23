@@ -1,5 +1,6 @@
 import { calculateZodiacId } from './zodiacCalc'
 import { getMonthBranchBySetsuiri, dateToJD, findSolarTermJD } from './solarTerms'
+import { HIDDEN_STEMS, getMonthHiddenStemIdx } from './hiddenStems'
 
 // ─── 基本定数 ────────────────────────────────────────────────────────────────
 
@@ -29,25 +30,6 @@ const BRANCH_POLARITY = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
 
 // 相克: CONTROLS[i] = 五行 i が克する五行
 const CONTROLS = [2, 3, 4, 0, 1] // 木克土, 火克金, 土克水, 金克木, 水克火
-
-/**
- * 蔵干テーブル。各地支に対し [余気, (中気), 本気] の順で十干インデックスを並べる。
- * 本気（性格・通変星の判定に用いる主星）は配列の末尾。
- */
-const HIDDEN_STEMS: number[][] = [
-  [8, 9],       // 子: 壬・癸        本気=癸
-  [9, 7, 5],    // 丑: 癸・辛・己    本気=己
-  [4, 2, 0],    // 寅: 戊・丙・甲    本気=甲
-  [0, 1],       // 卯: 甲・乙        本気=乙
-  [1, 9, 4],    // 辰: 乙・癸・戊    本気=戊
-  [4, 6, 2],    // 巳: 戊・庚・丙    本気=丙
-  [2, 5, 3],    // 午: 丙・己・丁    本気=丁
-  [3, 1, 5],    // 未: 丁・乙・己    本気=己
-  [4, 8, 6],    // 申: 戊・壬・庚    本気=庚
-  [6, 7],       // 酉: 庚・辛        本気=辛
-  [7, 3, 4],    // 戌: 辛・丁・戊    本気=戊
-  [4, 0, 8],    // 亥: 戊・甲・壬    本気=壬
-]
 
 // 日干ごとの「長生」の地支インデックス
 const CHOSEI_BRANCH = [11, 6, 2, 9, 2, 9, 5, 0, 8, 3] // 甲乙丙丁戊己庚辛壬癸
@@ -172,6 +154,8 @@ export function computeMeishiki(
   // ── 月柱 ── 月支は節入り、月干は五虎遁（年干から導出）
   const monthBranch = getMonthBranchBySetsuiri(refDate)
   const monthStem = ((yearStem % 5) * 2 + 2 + ((monthBranch - 2 + 12) % 12)) % 10
+  // 元命（月柱の蔵干）は節入りからの経過日数で初蔵・中蔵・本蔵が切り替わる
+  const monthHiddenStemIdx = getMonthHiddenStemIdx(refDate)
 
   // ── 時柱 ── 時支は2時間区切り、時干は五鼠遁（日干から導出）
   let hourStem: number | null = null
@@ -195,7 +179,9 @@ export function computeMeishiki(
     isDayPillar: boolean
   ): Pillar => {
     const hidden = branch !== null ? HIDDEN_STEMS[branch] : []
-    const mainHidden = hidden.length ? hidden[hidden.length - 1] : null
+    // 月柱のみ節入りからの経過日数で選んだ蔵干（初蔵/中蔵/本蔵）を使う。
+    // 年・日・時柱は従来通り本気（末尾）を使う
+    const mainHidden = !hidden.length ? null : label === '月' ? monthHiddenStemIdx : hidden[hidden.length - 1]
     return {
       label,
       stem,

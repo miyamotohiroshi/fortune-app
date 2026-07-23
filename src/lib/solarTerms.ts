@@ -181,6 +181,14 @@ function buildYearTerms(year: number): { jd: number; branchIndex: number }[] {
  * Date から月支インデックス (0=子 … 11=亥) を返す
  */
 export function getMonthBranchBySetsuiri(date: Date): number {
+  return getMonthBranchInfo(date).branchIndex
+}
+
+/**
+ * Date から月支インデックス (0=子 … 11=亥) と、その節入り日からの経過日数
+ * （節入り当日を1日目とする）を返す。蔵干の初蔵・中蔵・本蔵の切り替え判定に使う
+ */
+export function getMonthBranchInfo(date: Date): { branchIndex: number; elapsedDays: number } {
   const year  = date.getUTCFullYear()
   const month = date.getUTCMonth() + 1
   const day   = date.getUTCDate()
@@ -193,7 +201,7 @@ export function getMonthBranchBySetsuiri(date: Date): number {
   // birthJD 以下の最後の節入りを探す（降順スキャン）
   for (let i = terms.length - 1; i >= 0; i--) {
     if (terms[i].jd <= birthJD) {
-      return terms[i].branchIndex
+      return { branchIndex: terms[i].branchIndex, elapsedDays: Math.floor(birthJD - terms[i].jd) + 1 }
     }
   }
 
@@ -201,9 +209,9 @@ export function getMonthBranchBySetsuiri(date: Date): number {
   const prevTerms = cache.get(year - 1) ?? buildYearTerms(year - 1)
   for (let i = prevTerms.length - 1; i >= 0; i--) {
     if (prevTerms[i].jd <= birthJD) {
-      return prevTerms[i].branchIndex
+      return { branchIndex: prevTerms[i].branchIndex, elapsedDays: Math.floor(birthJD - prevTerms[i].jd) + 1 }
     }
   }
 
-  return 11 // 亥月（フォールバック）
+  return { branchIndex: 11, elapsedDays: 1 } // 亥月（フォールバック）
 }

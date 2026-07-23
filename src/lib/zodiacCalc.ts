@@ -1,4 +1,4 @@
-import { getMonthBranchBySetsuiri } from './solarTerms'
+import { getMonthHiddenStemIdx } from './hiddenStems'
 
 /**
  * 生年月日から干支ID(1-60)を算出する
@@ -32,13 +32,6 @@ const STEM_POLARITY = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0] // 甲乙丙丁戊己庚辛
 // 木(0)克土(2), 火(1)克金(3), 土(2)克水(4), 金(3)克木(0), 水(4)克火(1)
 const CONTROLS = [2, 3, 4, 0, 1]
 
-// 月支の本気（天干インデックス）
-// 子(0)=壬(8), 丑(1)=己(5), 寅(2)=甲(0), 卯(3)=乙(1), 辰(4)=戊(4),
-// 巳(5)=丙(2), 午(6)=丁(3), 未(7)=己(5), 申(8)=庚(6), 酉(9)=辛(7),
-// 戌(10)=戊(4), 亥(11)=壬(8)
-const MONTH_BRANCH_MAIN_STEM = [8, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8]
-
-
 /**
  * 日干と月支本気の関係から通変星ID(1-10)を算出する
  * 1=比肩, 2=劫財, 3=食神, 4=傷官, 5=偏財, 6=正財, 7=偏官, 8=正官, 9=偏印, 10=印綬
@@ -60,7 +53,7 @@ function calcTsuhensei(dayStemIdx: number, targetStemIdx: number): number {
 
 /**
  * 生年月日から元命ID(1-10)を算出する
- * 月柱の地支通変星（中心星）を返す
+ * 月柱の蔵干（節入りからの経過日数で初蔵・中蔵・本蔵が切り替わる）と日干の関係から求める
  */
 export function calculateGenmeiId(birthDate: string): number {
   const date = new Date(birthDate)
@@ -69,11 +62,8 @@ export function calculateGenmeiId(birthDate: string): number {
   // 日干インデックス (0-9): 甲=0, 乙=1, ... 癸=9
   const dayStemIdx = (zodiacId - 1) % 10
 
-  // 月支インデックス (0-11)
-  const monthBranchIdx = getMonthBranchBySetsuiri(date)
-
-  // 月支の本気（天干インデックス）
-  const targetStemIdx = MONTH_BRANCH_MAIN_STEM[monthBranchIdx]
+  // 月柱の蔵干（十干インデックス）
+  const targetStemIdx = getMonthHiddenStemIdx(date)
 
   return calcTsuhensei(dayStemIdx, targetStemIdx)
 }
