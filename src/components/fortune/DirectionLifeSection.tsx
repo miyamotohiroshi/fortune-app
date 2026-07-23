@@ -5,6 +5,7 @@ import { calculateDirectionTriggerWindows } from '@/src/lib/astrology/direction-
 import type { DirectionTriggerWindow } from '@/src/lib/astrology/direction-aspect-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
+import { yieldToClient } from '@/src/lib/asyncYield'
 import { DirectionLifeTab } from './DirectionLifeTab'
 
 type Props = {
@@ -17,6 +18,8 @@ const DISPLAY_START_OFFSET = 0   // years from birth
 const DISPLAY_END_OFFSET = 100   // years from birth
 
 export async function DirectionLifeSection({ birthday, birthTime, birthCity }: Props) {
+  await yieldToClient()
+
   const cityCoords = birthCity ? (CITY_COORDS[birthCity] ?? null) : null
   const hasTime = !!birthTime && !!cityCoords
 

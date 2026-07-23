@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { prisma } from '@/src/lib/prisma'
 import { getCurrentUser } from '@/src/lib/session'
 import { notFound } from 'next/navigation'
@@ -10,6 +11,45 @@ import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { SynastryTab } from '@/src/components/fortune/SynastryTab'
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
+
+/** 相性タブ: 管理者は登録済みの人（この人以外の占断履歴）から相手を選べる。Suspenseで他セクションと切り離す */
+async function CompatSection({
+  adminUserId,
+  excludeId,
+  selfBirthday,
+  selfBirthTime,
+  selfBirthCity,
+}: {
+  adminUserId: string
+  excludeId: string
+  selfBirthday: Date
+  selfBirthTime: string | null
+  selfBirthCity: string | null
+}) {
+  const compatPeople = (
+    await prisma.fortuneHistory.findMany({
+      where: { adminUserId, id: { not: excludeId } },
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true, name: true, birthday: true, birthTime: true, birthCity: true },
+    })
+  ).map((h) => ({
+    id: h.id,
+    name: h.name,
+    birthday: h.birthday.toISOString(),
+    birthTime: h.birthTime,
+    birthCity: h.birthCity,
+  }))
+
+  return (
+    <SynastryTab
+      selfBirthday={selfBirthday.toISOString()}
+      selfBirthTime={selfBirthTime}
+      selfBirthCity={selfBirthCity}
+      people={compatPeople}
+    />
+  )
+}
 
 export default async function AdminHistoryDetailPage({
   params,
@@ -30,21 +70,6 @@ export default async function AdminHistoryDetailPage({
   ])
 
   if (!zodiac) notFound()
-
-  // 相性タブ: 管理者は登録済みの人（この人以外の占断履歴）から相手を選べる
-  const compatPeople = (
-    await prisma.fortuneHistory.findMany({
-      where: { adminUserId: user!.id, id: { not: id } },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true, name: true, birthday: true, birthTime: true, birthCity: true },
-    })
-  ).map((h) => ({
-    id: h.id,
-    name: h.name,
-    birthday: h.birthday.toISOString(),
-    birthTime: h.birthTime,
-    birthCity: h.birthCity,
-  }))
 
   // 命式図（四柱）— 生年月日はJSTの暦日で解釈（保存済みの日柱・元命と一致させる）
   const meishiki = computeMeishikiFromBirth(history.birthday, history.birthTime)
@@ -74,33 +99,42 @@ export default async function AdminHistoryDetailPage({
             />
           }
           western={
-            <WesternAstrologySection
-              birthday={history.birthday}
-              birthTime={history.birthTime}
-              birthCity={history.birthCity}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="性格占断（西洋）を計算中" />}>
+              <WesternAstrologySection
+                birthday={history.birthday}
+                birthTime={history.birthTime}
+                birthCity={history.birthCity}
+              />
+            </Suspense>
           }
           life={
-            <DirectionLifeSection
-              birthday={history.birthday}
-              birthTime={history.birthTime}
-              birthCity={history.birthCity}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="人生年表を計算中" />}>
+              <DirectionLifeSection
+                birthday={history.birthday}
+                birthTime={history.birthTime}
+                birthCity={history.birthCity}
+              />
+            </Suspense>
           }
           transit={
-            <TransitSection
-              birthday={history.birthday}
-              birthTime={history.birthTime}
-              birthCity={history.birthCity}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="運気を計算中" />}>
+              <TransitSection
+                birthday={history.birthday}
+                birthTime={history.birthTime}
+                birthCity={history.birthCity}
+              />
+            </Suspense>
           }
           compat={
-            <SynastryTab
-              selfBirthday={history.birthday.toISOString()}
-              selfBirthTime={history.birthTime}
-              selfBirthCity={history.birthCity}
-              people={compatPeople}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="相性を計算中" />}>
+              <CompatSection
+                adminUserId={user!.id}
+                excludeId={id}
+                selfBirthday={history.birthday}
+                selfBirthTime={history.birthTime}
+                selfBirthCity={history.birthCity}
+              />
+            </Suspense>
           }
         />
 

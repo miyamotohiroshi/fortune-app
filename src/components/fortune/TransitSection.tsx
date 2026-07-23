@@ -3,6 +3,7 @@ import { calculateTransitBands } from '@/src/lib/astrology/transit'
 import { detectPairAspects } from '@/src/lib/astrology/aspects'
 import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
+import { yieldToClient } from '@/src/lib/asyncYield'
 import { TransitTimeline } from './TransitTimeline'
 
 type Props = {
@@ -11,7 +12,9 @@ type Props = {
   birthCity: string | null
 }
 
-export function TransitSection({ birthday, birthTime, birthCity }: Props) {
+export async function TransitSection({ birthday, birthTime, birthCity }: Props) {
+  await yieldToClient()
+
   const cityCoords = birthCity ? (CITY_COORDS[birthCity] ?? null) : null
   const hasTime = !!birthTime && !!cityCoords
 

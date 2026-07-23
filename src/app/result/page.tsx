@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { prisma } from '@/src/lib/prisma';
 import { getSession } from '@/src/lib/session';
 import { calculateGenmeiId } from '@/src/lib/zodiacCalc';
@@ -13,6 +14,84 @@ import { TransitSection } from '@/src/components/fortune/TransitSection';
 import { SynastryTab } from '@/src/components/fortune/SynastryTab';
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav';
 import { synastryFromBirth } from '@/src/lib/astrology/synastry-server';
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay';
+import type { User } from '@prisma/client';
+
+/**
+ * 相性タブのデータ準備（管理者=登録済みの人一覧／会員=相性履歴の再計算）。
+ * 会員は最大10件のsynastryFromBirth計算が走るため、他セクションと切り離して
+ * Suspenseの外に出し、性格占断の初回表示をブロックしないようにする。
+ */
+async function CompatSection({
+  user,
+  compatPartnerId,
+}: {
+  user: User;
+  compatPartnerId?: string;
+}) {
+  const compatPeople =
+    user.role === 'admin'
+      ? (
+          await prisma.fortuneHistory.findMany({
+            where: { adminUserId: user.id },
+            orderBy: { updatedAt: 'desc' },
+            select: { id: true, name: true, birthday: true, birthTime: true, birthCity: true },
+          })
+        ).map((h) => ({
+          id: h.id,
+          name: h.name,
+          birthday: h.birthday.toISOString(),
+          birthTime: h.birthTime,
+          birthCity: h.birthCity,
+        }))
+      : undefined;
+
+  const selfBirth = {
+    birthday: user.birthday.toISOString(),
+    birthTime: user.birthTime,
+    birthCity: user.birthCity,
+  };
+  const compatHistoryItems =
+    user.role !== 'admin'
+      ? (
+          await prisma.compatHistory.findMany({
+            where: { userId: user.id },
+            orderBy: { updatedAt: 'desc' },
+            take: 10,
+          })
+        ).map((h) => {
+          const r = synastryFromBirth(selfBirth, {
+            birthday: h.birthday.toISOString(),
+            birthTime: h.birthTime,
+            birthCity: h.birthCity,
+          });
+          return {
+            id: h.id,
+            name: h.name,
+            birthday: h.birthday.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }), // YYYY-MM-DD
+            birthdayLabel: h.birthday.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+            birthTime: h.birthTime,
+            birthCity: h.birthCity,
+            total: r.total,
+            love: r.categories.恋愛,
+            work: r.categories.仕事,
+            friend: r.categories.友人,
+          };
+        })
+      : undefined;
+
+  return (
+    <SynastryTab
+      selfBirthday={user.birthday.toISOString()}
+      selfBirthTime={user.birthTime}
+      selfBirthCity={user.birthCity}
+      people={compatPeople}
+      preselectId={compatPartnerId}
+      isAdmin={user.role === 'admin'}
+      historyItems={compatHistoryItems}
+    />
+  );
+}
 
 export default async function ResultPage({
   searchParams,
@@ -48,59 +127,6 @@ export default async function ResultPage({
 
   // 命式図（四柱）— 生年月日はJSTの暦日で解釈（保存済みの日柱・元命と一致させる）
   const meishiki = computeMeishikiFromBirth(user.birthday, user.birthTime);
-
-  // 相性タブ: 管理者は登録済みの人（占断履歴）から相手を選べる
-  const compatPeople =
-    user.role === 'admin'
-      ? (
-          await prisma.fortuneHistory.findMany({
-            where: { adminUserId: user.id },
-            orderBy: { updatedAt: 'desc' },
-            select: { id: true, name: true, birthday: true, birthTime: true, birthCity: true },
-          })
-        ).map((h) => ({
-          id: h.id,
-          name: h.name,
-          birthday: h.birthday.toISOString(),
-          birthTime: h.birthTime,
-          birthCity: h.birthCity,
-        }))
-      : undefined;
-
-  // 相性タブ: 会員（管理者以外）は自分の相性履歴（最大10件、点数つき）を見られる
-  const selfBirth = {
-    birthday: user.birthday.toISOString(),
-    birthTime: user.birthTime,
-    birthCity: user.birthCity,
-  };
-  const compatHistoryItems =
-    user.role !== 'admin'
-      ? (
-          await prisma.compatHistory.findMany({
-            where: { userId: user.id },
-            orderBy: { updatedAt: 'desc' },
-            take: 10,
-          })
-        ).map((h) => {
-          const r = synastryFromBirth(selfBirth, {
-            birthday: h.birthday.toISOString(),
-            birthTime: h.birthTime,
-            birthCity: h.birthCity,
-          });
-          return {
-            id: h.id,
-            name: h.name,
-            birthday: h.birthday.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }), // YYYY-MM-DD
-            birthdayLabel: h.birthday.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' }),
-            birthTime: h.birthTime,
-            birthCity: h.birthCity,
-            total: r.total,
-            love: r.categories.恋愛,
-            work: r.categories.仕事,
-            friend: r.categories.友人,
-          };
-        })
-      : undefined;
 
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
@@ -144,36 +170,36 @@ export default async function ResultPage({
             />
           }
           western={
-            <WesternAstrologySection
-              birthday={user.birthday}
-              birthTime={user.birthTime}
-              birthCity={user.birthCity}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="性格占断（西洋）を計算中" />}>
+              <WesternAstrologySection
+                birthday={user.birthday}
+                birthTime={user.birthTime}
+                birthCity={user.birthCity}
+              />
+            </Suspense>
           }
           life={
-            <DirectionLifeSection
-              birthday={user.birthday}
-              birthTime={user.birthTime}
-              birthCity={user.birthCity}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="人生年表を計算中" />}>
+              <DirectionLifeSection
+                birthday={user.birthday}
+                birthTime={user.birthTime}
+                birthCity={user.birthCity}
+              />
+            </Suspense>
           }
           transit={
-            <TransitSection
-              birthday={user.birthday}
-              birthTime={user.birthTime}
-              birthCity={user.birthCity}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="運気を計算中" />}>
+              <TransitSection
+                birthday={user.birthday}
+                birthTime={user.birthTime}
+                birthCity={user.birthCity}
+              />
+            </Suspense>
           }
           compat={
-            <SynastryTab
-              selfBirthday={user.birthday.toISOString()}
-              selfBirthTime={user.birthTime}
-              selfBirthCity={user.birthCity}
-              people={compatPeople}
-              preselectId={compatPartnerId}
-              isAdmin={user.role === 'admin'}
-              historyItems={compatHistoryItems}
-            />
+            <Suspense fallback={<LoadingOverlay fullScreen={false} text="相性を計算中" />}>
+              <CompatSection user={user} compatPartnerId={compatPartnerId} />
+            </Suspense>
           }
         />
 

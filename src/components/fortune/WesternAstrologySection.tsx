@@ -12,6 +12,7 @@ import { HouseList } from './HouseList'
 import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_SYMBOLS, HARD_ASPECT_TYPES } from '@/src/lib/astrology/constants'
 import type { PlanetKey } from '@/src/lib/astrology/constants'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
+import { yieldToClient } from '@/src/lib/asyncYield'
 
 type Props = {
   birthday: Date
@@ -51,6 +52,8 @@ const PLANET_SYMBOLS: Record<PlanetKey, string> = {
 const HARD_ASPECTS = new Set(HARD_ASPECT_TYPES)
 
 export async function WesternAstrologySection({ birthday, birthTime, birthCity }: Props) {
+  await yieldToClient()
+
   const cityCoords = birthCity ? (CITY_COORDS[birthCity] ?? null) : null
   const hasTime = !!birthTime && !!cityCoords
 
