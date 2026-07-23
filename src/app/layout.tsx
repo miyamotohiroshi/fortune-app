@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,21 @@ export const metadata: Metadata = {
     icon: '/icon.png',
     apple: '/icon.png',
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black',
+    title: '占い',
+  },
+  other: {
+    // Next.jsの`appleWebApp.capable`は標準の`mobile-web-app-capable`のみ出力するため、
+    // 古いiOS/Safariでもホーム画面追加時にスタンドアロン表示になるよう旧タグも明示的に追加
+    'apple-mobile-web-app-capable': 'yes',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#07071A',
 };
 
 export default function RootLayout({

@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-07-23 PWA（ホーム画面追加）のスタンドアロン表示・ステータスバー色・遷移時の白画面フラッシュを修正
+
+### 新規ファイル
+- `public/manifest.json` — Web App Manifest。`display: standalone`、背景色・テーマカラーを`#07071A`に統一、アイコン（192px・320px）を登録
+- `public/icon-192.png` — 既存の`public/icon.png`（320×320）をsharpで192×192にリサイズしたもの（manifestのicons用）
+
+### 修正ファイル
+- `src/app/layout.tsx` — `metadata.manifest`でmanifest.jsonを紐付け。`metadata.appleWebApp`（`capable: true`, `statusBarStyle: 'black'`, `title: '占い'`）を追加。このNext.jsのバージョンは`appleWebApp.capable`が標準の`mobile-web-app-capable`タグしか出力しないため、`metadata.other`で古いiOS/Safari向けの`apple-mobile-web-app-capable`タグも明示的に追加。`viewport`エクスポートで`themeColor: '#07071A'`を設定
+- `src/app/globals.css` — `--background`の既定値を`#ffffff`（ライトモード時は白）から`#07071A`に固定。従来はシステムがライトモードだとbodyの背景が白のままで、アプリ本体（各ページの`bg-[#07071A]`のdiv）が乗る前の一瞬（特にログイン後のページ遷移中）に白画面がちらつく原因になっていたため、システム設定に関わらず常にアプリのダーク背景に統一
+
+### フロー・補足
+- 背景: ユーザーがiPhoneでホーム画面に追加して使っていたページが、ログイン後にSafariのURLバー・戻る/共有/更新ボタンなどのブラウザUIが表示されてしまう（スタンドアロン表示から外れる）現象と、ステータスバー領域が常に白く表示される現象、ログイン後の画面遷移中に真っ白な画面が一瞬表示される現象の3点を報告
+- 調査の結果、このプロジェクトには元々`manifest.json`も`apple-mobile-web-app-capable`等のメタタグも一切存在せず、正式なスタンドアロンPWAとして構成されていなかったことが判明（「ホーム画面に追加」しても通常のSafari内ブラウザ扱いになっていた可能性が高い）
+- **重要:** 今回の修正はコードの変更のみなので、既にホーム画面に追加済みのアイコンには反映されない。デプロイ後、一度ホーム画面のアイコンを削除し、`/try`または`/login`など任意のページから改めて「ホーム画面に追加」をやり直す必要がある
+- ステータスバーは`black-translucent`（コンテンツと重なる半透明）ではなく`black`（不透明な単色）を採用。アプリの背景色`#07071A`とほぼ同化して見えつつ、全ページでセーフエリア対応の余白調整が不要なため
+- tsc通過、開発サーバーでmanifest.json配信・メタタグ出力（`mobile-web-app-capable`・`apple-mobile-web-app-capable`両方・`apple-mobile-web-app-status-bar-style`・`theme-color`・manifestのlink）を確認済み。Vercel本番へのデプロイ後、実機での再確認が必要
+
+## 2026-07-23 占断結果ページを性格占断（四柱推命）から先行表示するストリーミング化
+
+### 新規ファイル
+- `src/lib/asyncYield.ts` — `yieldToClient()`。重いCPU計算の直前で`await`し、ストリーミングSSR時に先に確定したチャンクを先にクライアントへflushさせるためのユーティリティ
+
+### 修正ファイル
+- `src/app/result/page.tsx` — `western`・`life`・`transit`・`compat`の各セクションを個別の`<Suspense>`でラップ。相性タブのデータ準備（管理者=登録済みの人一覧取得／会員=相性履歴の再計算、最大10件の`synastryFromBirth`呼び出し）をpage.tsx本体から`CompatSection`という新しいasyncコンポーネントに切り出し、Suspense内に隔離。従来はこの相性データ準備がreturn文より前でawaitされており、性格占断を含むページ全体の初回表示をブロックしていた
+- `src/app/admin/history/[id]/page.tsx` — 同様に`western`・`life`・`transit`・`compat`をSuspenseでラップし、相性タブ用の`compatPeople`取得を`CompatSection`に切り出し
+- `src/components/fortune/TransitSection.tsx` — 非同期関数(`async function`)に変更し、冒頭で`await yieldToClient()`。従来は同期関数のままヘビーな7年分のトランシット計算を行っており、Suspenseでラップしても実行がブロッキングのままだとイベントループが先行チャンクのflushより先にこの計算を最後まで実行してしまうため
+- `src/components/fortune/DirectionLifeSection.tsx` / `src/components/fortune/WesternAstrologySection.tsx` — 既に`async function`だが実質的な`await`が計算より後（DBアクセス）にしかなかったため、冒頭に`await yieldToClient()`を追加し、重い計算を始める前に確実にイベントループへ制御を返すようにした
+
+### フロー・補足
+- `ShichusuimeiSection`（性格占断＝四柱推命部分）はDBアクセス済みのpropsのみを受け取る同期コンポーネントで、そもそも重い処理をしていない。今回は「性格占断だけ先に計算する」のではなく、性格占断の表示に必要な最低限の処理（ユーザー・命式データ取得）だけをSuspenseの外に残し、西洋占星術・人生年表・運気（トランシット）・相性という重い残り4セクションをそれぞれ独立したSuspense境界で包んで、性格占断タブの初回ペイントをブロックしないようにした
+- `ResultTabs`はクライアントコンポーネントで`shichu`等をReactNode propとして受け取るだけだが、Suspense境界はReact要素ツリー上の構造なので、page.tsx側で各セクションをSuspenseで包んでから渡せば、クライアントコンポーネントを経由してもストリーミングは機能する
+- 各セクションのSuspense fallbackには既存の`LoadingOverlay`（`fullScreen={false}`）を再利用し、セクションごとに文言を変えて表示（例：「運気を計算中」）
+- 各タブの中身は積極的に（クリックされるまで待たず）バックグラウンドでストリーミングされる。「タブを開いたときだけ計算する」という遅延評価ではなく、ユーザーの要望通り「性格占断を先に表示しつつ、残りはこのページを表示中に計算する」という動作
+- tsc通過、開発サーバー再起動済み。実ブラウザでの再読み込みでも200応答・エラーなしを確認
+
+## 2026-07-23 占断結果ページの遷移中にローディングアニメーションを表示
+
+### 新規ファイル
+- `src/app/result/loading.tsx` — 「自分の結果」（`/result`）遷移中のローディング表示。既存の`LoadingOverlay`を使用
+- `src/app/admin/history/[id]/loading.tsx` — 占断履歴一覧から他の人の結果（`/admin/history/[id]`）を開いた時のローディング表示
+
+### フロー・補足
+- Next.jsのApp Router標準機能`loading.tsx`を利用。ルートセグメントを自動的にSuspense境界でラップし、ページの非同期処理（命式計算・アスペクト計算・シナストリー計算など）が完了するまでフォールバックUIを表示する仕組みで、フォーム送信中に使っている`{pending && <LoadingOverlay/>}`方式とは別の仕組み（ページ遷移そのものが対象なので`pending`state化できないため）
+- `/result?compat=id`（相性表示）も同じ`/result`セグメントなので同じloading.tsxが自動的に適用される
+- 編集ページ（`/admin/history/[id]/edit`）は今回対象外（フォーム表示のみで比較的軽いため）。必要であれば追加可能
+- tsc/eslint通過、開発サーバー再起動済み
+
+### 追加調整（同日）: ローディングを切り替えタブより下のコンテンツ領域だけに限定
+- `src/components/ui/LoadingOverlay.tsx` — `fullScreen`propを追加（既定true=従来通り画面全体を覆う固定オーバーレイ／false=呼び出し元のコンテナに収まるインライン表示）。既存のフォーム送信中の使用箇所は無変更
+- `src/app/result/loading.tsx` — ユーザーから「切り替えタブ（自分の結果／占断履歴）は変わらないのに画面全体が覆われる」と指摘を受け修正。`page.tsx`と同じ背景・コンテナ・`AdminTabNav`を再現して上部タブを維持したまま、その下のコンテンツ領域だけに`fullScreen={false}`のローディングを表示。管理者かどうかは`getCurrentUser()`で軽量に判定（画面全体の命式・アスペクト計算より大幅に速い）
+- `src/app/admin/history/[id]/loading.tsx` — 同様に`AdminTabNav`を維持したままコンテンツ領域のみローディング表示（このルートは常に管理者専用なのでロール判定不要）
+
+### 追加調整（同日）: コンテンツ領域を囲んでいた枠を削除
+- `src/app/result/loading.tsx` / `src/app/admin/history/[id]/loading.tsx` — ローディング表示を囲んでいた`rounded-2xl border`のカード枠をトルツメし、ローディングサークルのみをそのまま表示するように変更
+
 ## 2026-07-23 相性診断：干合・支合ボーナスの重みを4→5に調整
 
 ### 修正ファイル
