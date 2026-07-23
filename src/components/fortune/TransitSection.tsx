@@ -2,6 +2,7 @@ import { calculatePlanetPositions } from '@/src/lib/astrology/planets'
 import { calculateTransitBands } from '@/src/lib/astrology/transit'
 import { detectPairAspects } from '@/src/lib/astrology/aspects'
 import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-triggers'
+import { calculateTransitOverlapTriggerWindows } from '@/src/lib/astrology/transit-overlap-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { yieldToClient } from '@/src/lib/asyncYield'
 import { TransitTimeline } from './TransitTimeline'
@@ -29,7 +30,10 @@ export async function TransitSection({ birthday, birthTime, birthCity }: Props) 
   const years = Array.from({ length: 7 }, (_, i) => {
     const year = yearThis - 2 + i
     const bands = calculateTransitBands(natalPositions, year, hasTime)
-    const triggerWindows = calculatePairTriggerWindows(natalPositions, pairAspects, bands, year, hasTime)
+    const triggerWindows = [
+      ...calculatePairTriggerWindows(natalPositions, pairAspects, bands, year, hasTime),
+      ...calculateTransitOverlapTriggerWindows(natalPositions, bands, year, hasTime),
+    ]
     return { year, bands, triggerWindows }
   })
 

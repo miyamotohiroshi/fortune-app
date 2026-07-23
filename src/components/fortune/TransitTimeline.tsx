@@ -6,6 +6,7 @@ import type { PairTriggerWindow } from '@/src/lib/astrology/pair-aspect-triggers
 import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_ANGLES } from '@/src/lib/astrology/constants'
 import { TRANSIT_MASTER, TRANSIT_IMPORTANCE_THRESHOLD, aspectCategory } from '@/src/data/transit-master'
 import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
+import { TRANSIT_OVERLAP_TRIGGER_PATTERNS } from '@/src/data/transit-overlap-triggers'
 import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
 
 type YearData = { year: number; bands: TransitBand[]; triggerWindows: PairTriggerWindow[] }
@@ -141,6 +142,7 @@ export function TransitTimeline({ years, todayISO }: Props) {
           <div className="space-y-2">
             {[...grouped.entries()].map(([patternId, windows]) => {
               const pattern = PAIR_TRIGGER_PATTERNS.find(p => p.id === patternId)
+                ?? TRANSIT_OVERLAP_TRIGGER_PATTERNS.find(p => p.id === patternId)
               if (!pattern) return null
               const style = TRIGGER_POLARITY_STYLE[pattern.polarity]
               return (

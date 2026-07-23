@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-07-23 運気（トランシット）に「出生×トランシット＋トランシット」の発動パターンを追加
+
+### 新規ファイル
+- `src/data/transit-overlap-triggers.ts` — `TransitOverlapTriggerPattern`型・`TRANSIT_OVERLAP_TRIGGER_PATTERNS`。出生の1天体に対するベースのトランシットに、別のトランシット天体が重なることで意味が強まる発動パターンの定義。`overlap-sun-uranus-mars`（出生 太陽×Tハード天王星 に T火星が関与＝事故・トラブルへの注意）に加え、`overlap-sun-pluto-saturn`（出生 太陽×T冥王星 に T土星が関与＝仕事の権力闘争・離別・離婚リスクだが出直しも可能）、`overlap-sun-pluto-mars`（出生 太陽×T冥王星 に T火星が関与＝過労ダウンへの注意）を追加
+- `src/lib/astrology/transit-overlap-triggers.ts` — `calculateTransitOverlapTriggerWindows()`。既存の`calculateBandsForPlanet`を再利用し、ベース天体のバンドと重なる天体のバンドの重複区間を「発動期間」として算出（`pair-aspect-triggers.ts`と同じ設計）
+
+### 修正ファイル
+- `src/components/fortune/TransitSection.tsx` — 年ごとに`calculateTransitOverlapTriggerWindows()`も呼び出し、既存の出生ペア発動（`calculatePairTriggerWindows`）と同じ`triggerWindows`配列にまとめて`TransitTimeline`に渡す（戻り値の形が同じなので配列を単純に結合できる）
+- `src/components/fortune/TransitTimeline.tsx` — 発動カードのパターン検索を`PAIR_TRIGGER_PATTERNS`だけでなく`TRANSIT_OVERLAP_TRIGGER_PATTERNS`も見るように変更。表示・グルーピングのロジックはpatternId単位のままなので変更不要
+
+### フロー・補足
+- 従来の発動パターンは「出生×出生アスペクト＋トランシット」（`pair-aspect-triggers.ts`）と「出生×ダイレクション＋トランシット」（`direction-trigger-patterns.ts`）の2種類のみだった。今回、ユーザーが所有する書籍（「決定版 西洋占星術 実修」トランシット太陽×天王星のページ）の「トランシットの火星がアスペクトを形成したときには、極度の興奮に襲われ、事故やトラブルが発生する」という記述をもとに、「出生1天体×ベースのトランシット＋別のトランシットが重なる」という3つ目のパターン種別を追加した
+- ベース側の角度限定は書籍の記述に忠実に対応：太陽×天王星は「0度・90度・180度の場合には」という前置きがあったためハードアスペクト限定、太陽×冥王星は角度の限定記載がなかったため任意アスペクトで発動する仕様にした
+- 太陽×冥王星のページには「トランシットの土星が同時にアスペクトを形成すれば」「トランシットの火星が同時にアスペクトを形成したときは」という2つの重なりパターンが書かれていたため、両方とも追加した
+- 表示は運気（トランシット）タブの「特別なチャンス期間」カード欄に、出生ペア発動と同じ見た目・同じグルーピングロジックでそのまま並ぶ
+- tsc通過、開発サーバー再起動・動作確認済み
+
 ## 2026-07-23 PWA（ホーム画面追加）のスタンドアロン表示・ステータスバー色・遷移時の白画面フラッシュを修正
 
 ### 新規ファイル
