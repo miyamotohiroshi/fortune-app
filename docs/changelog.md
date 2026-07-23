@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-23 出生天体側の前提条件つき発動パターン（天王星×冥王星＋火星）を追加
+
+### 修正ファイル
+- `src/data/transit-overlap-triggers.ts` — `TransitOverlapTriggerPattern`型に`requiresNatalAspectWith?: PlanetKey[]`を追加（出生図上でnatalPointがこの候補天体のいずれかとアスペクトを持っていないと発動しない前提条件）。`overlap-uranus-pluto-mars`（出生 天王星×T冥王星 に T火星が関与＝突発的な事故に注意。ただし出生の天王星がASC・MC・太陽・月のいずれかとアスペクトしている人のみ）を追加
+- `src/lib/astrology/transit-overlap-triggers.ts` — `calculateTransitOverlapTriggerWindows()`に`pairAspects: PairAspect[]`引数を追加し、`requiresNatalAspectWith`が指定されたパターンは出生ペアアスペクトの中に該当する組み合わせがあるかを事前チェックしてから発動判定するように変更
+- `src/components/fortune/TransitSection.tsx` — 呼び出し側で既に計算済みの`pairAspects`（`detectPairAspects`の結果）をそのまま渡すよう変更
+
+### フロー・補足
+- 書籍の「天王星―冥王星」のページに「出生の天王星とASC・MC・太陽・月のいずれかがアスペクトを形成していなければ、人生を揺り動かすほど大きな影響力はありません」という前提条件付きの記述があったため、既存の`TransitOverlapTriggerPattern`に前提条件（出生図上の別アスペクトの有無）を追加できるよう拡張した
+- 前提条件を満たさない人にはこの発動パターン自体が出現しない（該当するトランシット単体の記述は引き続き運気タブの通常の行に表示される）
+- tsc通過、開発サーバー再起動・動作確認済み
+
 ## 2026-07-23 運気（トランシット）に「出生×トランシット＋トランシット」の発動パターンを追加
 
 ### 新規ファイル

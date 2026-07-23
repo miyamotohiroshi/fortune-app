@@ -17,6 +17,8 @@ export type TransitOverlapTriggerPattern = {
   overlapAspectTypes?: AspectType[]
   // このトランシット天体が同時に絡んでいる間は発動しない（除外条件）
   excludePlanets: ExtendedTransitPlanetKey[]
+  // natalPointが出生図上でこの候補天体のいずれかとアスペクトを持っていないと発動しない（省略時は制限なし）
+  requiresNatalAspectWith?: PlanetKey[]
   // 良い運（lucky）か、注意すべき運（caution）か。UIの色分け・アイコンに使用
   polarity: TriggerPolarity
   title: string
@@ -57,5 +59,17 @@ export const TRANSIT_OVERLAP_TRIGGER_PATTERNS: TransitOverlapTriggerPattern[] = 
     title: '出生 太陽×T冥王星 に T火星が関与',
     description:
       '出生の太陽にトランシットの冥王星がアスペクトを形成し、人生の根底から生き方の変動を迫られている時期に、さらにトランシットの火星が重なる期間です。過労によって体調を崩し、ダウンしやすいタイミングとされています。無理を重ねず、休息を優先しましょう。',
+  },
+  {
+    id: 'overlap-uranus-pluto-mars',
+    natalPoint: 'uranus',
+    baseTransitPlanet: 'pluto',
+    overlapTransitPlanet: 'mars',
+    excludePlanets: [],
+    requiresNatalAspectWith: ['asc', 'mc', 'sun', 'moon'],
+    polarity: 'caution',
+    title: '出生 天王星×T冥王星 に T火星が関与',
+    description:
+      '出生の天王星がASC・MC・太陽・月のいずれかとアスペクトを持つ人が、トランシットの冥王星から働きかけを受けている（人生の次のステージに向けた準備期間・自己管理が必要な時期）中に、さらにトランシットの火星が重なる期間です。突発的な事故に気をつけてください。',
   },
 ]

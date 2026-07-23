@@ -2,6 +2,7 @@ import type { PlanetKey } from './constants'
 import type { PlanetPositions } from './planets'
 import { calculateBandsForPlanet, TRANSIT_PLANETS } from './transit'
 import type { TransitBand, ExtendedTransitPlanetKey } from './transit'
+import type { PairAspect } from './aspects'
 import { TRANSIT_OVERLAP_TRIGGER_PATTERNS } from '@/src/data/transit-overlap-triggers'
 
 export type TransitOverlapTriggerWindow = {
@@ -47,6 +48,7 @@ function bandsFor(
 // かつ除外天体が絡んでいない「発動期間」を算出する。1年分（precomputedBandsと同じ年）を対象とする
 export function calculateTransitOverlapTriggerWindows(
   natalPositions: PlanetPositions,
+  pairAspects: PairAspect[],
   precomputedBands: TransitBand[],
   year: number,
   hasTime: boolean,
@@ -56,6 +58,17 @@ export function calculateTransitOverlapTriggerWindows(
   for (const pattern of TRANSIT_OVERLAP_TRIGGER_PATTERNS) {
     const needsTime = pattern.natalPoint === 'asc' || pattern.natalPoint === 'mc'
     if (needsTime && !hasTime) continue
+
+    if (pattern.requiresNatalAspectWith) {
+      const hasPrecondition = pattern.requiresNatalAspectWith.some(cand =>
+        pairAspects.some(
+          pa =>
+            (pa.planet1 === pattern.natalPoint && pa.planet2 === cand) ||
+            (pa.planet2 === pattern.natalPoint && pa.planet1 === cand)
+        )
+      )
+      if (!hasPrecondition) continue
+    }
 
     let baseBands = bandsFor(natalPositions, pattern.baseTransitPlanet, pattern.natalPoint, year, precomputedBands)
     if (pattern.baseAspectTypes) {

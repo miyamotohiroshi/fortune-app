@@ -32,7 +32,7 @@ export async function TransitSection({ birthday, birthTime, birthCity }: Props) 
     const bands = calculateTransitBands(natalPositions, year, hasTime)
     const triggerWindows = [
       ...calculatePairTriggerWindows(natalPositions, pairAspects, bands, year, hasTime),
-      ...calculateTransitOverlapTriggerWindows(natalPositions, bands, year, hasTime),
+      ...calculateTransitOverlapTriggerWindows(natalPositions, pairAspects, bands, year, hasTime),
     ]
     return { year, bands, triggerWindows }
   })
