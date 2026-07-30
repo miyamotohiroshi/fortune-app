@@ -8,6 +8,7 @@ import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-tri
 import type { PairTriggerWindow } from '@/src/lib/astrology/pair-aspect-triggers'
 import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
 import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
+import { LUCKY_PAIR_KEYS, LUCKY_TRIPLE_KEYS, LUCKY_ASPECT_NOTES } from '@/src/data/lucky-aspects'
 import { HouseList } from './HouseList'
 import { PLANET_NAMES_JA, ASPECT_NAMES_JA, ASPECT_SYMBOLS, HARD_ASPECT_TYPES } from '@/src/lib/astrology/constants'
 import type { PlanetKey } from '@/src/lib/astrology/constants'
@@ -195,6 +196,9 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
               const data = pairDataMap.get(key)
               // 0°(合)・90°(矩)・180°(衝) は影響が強く出るハードアスペクト。温度感を強めて表示する
               const isHard = HARD_ASPECTS.has(pa.aspect)
+              // 本に「特にラッキーな組み合わせ」と明記されているペア（角度は問わない）
+              const luckyKey = key.split('|').slice(0, 2).join('|')
+              const isLucky = LUCKY_PAIR_KEYS.has(luckyKey)
               const triggerPattern = PAIR_TRIGGER_PATTERNS.find(
                 p =>
                   (p.planets[0] === pa.planet1 && p.planets[1] === pa.planet2) ||
@@ -205,16 +209,21 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                 <div
                   key={key}
                   className={`border-b border-slate-800/60 pb-4 last:border-0 last:pb-0${
-                    isHard ? ' border-l-2 border-l-amber-500/50 pl-3' : ''
+                    isLucky ? ' border-l-2 border-l-yellow-400/60 pl-3' : isHard ? ' border-l-2 border-l-amber-500/50 pl-3' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className={`text-lg ${isHard ? 'text-amber-300' : 'text-purple-300'}`}>
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span className={`text-lg ${isLucky ? 'text-yellow-300' : isHard ? 'text-amber-300' : 'text-purple-300'}`}>
                       {ASPECT_SYMBOLS[pa.aspect]}
                     </span>
                     <span className="text-sm font-semibold text-white">
                       {PLANET_NAMES_JA[pa.planet1]} × {PLANET_NAMES_JA[pa.planet2]}
                     </span>
+                    {isLucky && (
+                      <span className="text-[10px] font-bold text-yellow-200 border border-yellow-400/50 bg-yellow-500/15 rounded px-1 leading-tight">
+                        🍀特にラッキー
+                      </span>
+                    )}
                     {isHard && (
                       <span className="text-[10px] font-bold text-amber-300 border border-amber-500/40 bg-amber-500/10 rounded px-1 leading-tight">
                         強
@@ -233,6 +242,17 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                     <p className="text-sm text-slate-300 leading-relaxed">{data.description}</p>
                   ) : (
                     <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
+                  )}
+                  {isLucky && LUCKY_ASPECT_NOTES[luckyKey] && (
+                    <div
+                      className="mt-2.5 rounded-lg border border-yellow-400/30 px-3 py-2"
+                      style={{ background: 'rgba(234,179,8,0.08)' }}
+                    >
+                      <p className="text-xs text-yellow-100/90 leading-relaxed flex gap-1.5">
+                        <span className="shrink-0">✨</span>
+                        <span>{LUCKY_ASPECT_NOTES[luckyKey]}</span>
+                      </p>
+                    </div>
                   )}
                   {triggerWindow && triggerPattern && (() => {
                     const style = TRIGGER_POLARITY_STYLE[triggerPattern.polarity]
@@ -280,13 +300,21 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                   const key = tripleComboKey(ta.planets)
                   const data = tripleDataMap.get(key)
                   const names = ta.planets.map(p => PLANET_NAMES_JA[p]).join(' × ')
+                  const isLucky = LUCKY_TRIPLE_KEYS.has(key)
                   return (
                     <div
                       key={key}
-                      className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0 border-l-2 border-l-amber-500/50 pl-3"
+                      className={`border-b border-slate-800/60 pb-4 last:border-0 last:pb-0 border-l-2 pl-3 ${
+                        isLucky ? 'border-l-yellow-400/60' : 'border-l-amber-500/50'
+                      }`}
                     >
-                      <div className="flex items-center gap-2 mb-1.5">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                         <p className="text-sm font-semibold text-white">{names}</p>
+                        {isLucky && (
+                          <span className="text-[10px] font-bold text-yellow-200 border border-yellow-400/50 bg-yellow-500/15 rounded px-1 leading-tight">
+                            🍀特にラッキー
+                          </span>
+                        )}
                         <span className="text-[10px] font-bold text-amber-300 border border-amber-500/40 bg-amber-500/10 rounded px-1 leading-tight">
                           強
                         </span>
@@ -295,6 +323,17 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                         <p className="text-sm text-slate-300 leading-relaxed">{data.description}</p>
                       ) : (
                         <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
+                      )}
+                      {isLucky && LUCKY_ASPECT_NOTES[key] && (
+                        <div
+                          className="mt-2.5 rounded-lg border border-yellow-400/30 px-3 py-2"
+                          style={{ background: 'rgba(234,179,8,0.08)' }}
+                        >
+                          <p className="text-xs text-yellow-100/90 leading-relaxed flex gap-1.5">
+                            <span className="shrink-0">✨</span>
+                            <span>{LUCKY_ASPECT_NOTES[key]}</span>
+                          </p>
+                        </div>
                       )}
                     </div>
                   )
@@ -315,13 +354,37 @@ export async function WesternAstrologySection({ birthday, birthTime, birthCity }
                   const key = tripleComboKey(ta.planets)
                   const data = tripleDataMap.get(key)
                   const names = ta.planets.map(p => PLANET_NAMES_JA[p]).join(' × ')
+                  const isLucky = LUCKY_TRIPLE_KEYS.has(key)
                   return (
-                    <div key={key} className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0">
-                      <p className="text-sm font-semibold text-white mb-1.5">{names}</p>
+                    <div
+                      key={key}
+                      className={`border-b border-slate-800/60 pb-4 last:border-0 last:pb-0${
+                        isLucky ? ' border-l-2 border-l-yellow-400/60 pl-3' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <p className="text-sm font-semibold text-white">{names}</p>
+                        {isLucky && (
+                          <span className="text-[10px] font-bold text-yellow-200 border border-yellow-400/50 bg-yellow-500/15 rounded px-1 leading-tight">
+                            🍀特にラッキー
+                          </span>
+                        )}
+                      </div>
                       {data ? (
                         <p className="text-sm text-slate-300 leading-relaxed">{data.description}</p>
                       ) : (
                         <p className="text-xs text-slate-600 italic">（説明データを準備中）</p>
+                      )}
+                      {isLucky && LUCKY_ASPECT_NOTES[key] && (
+                        <div
+                          className="mt-2.5 rounded-lg border border-yellow-400/30 px-3 py-2"
+                          style={{ background: 'rgba(234,179,8,0.08)' }}
+                        >
+                          <p className="text-xs text-yellow-100/90 leading-relaxed flex gap-1.5">
+                            <span className="shrink-0">✨</span>
+                            <span>{LUCKY_ASPECT_NOTES[key]}</span>
+                          </p>
+                        </div>
                       )}
                     </div>
                   )
