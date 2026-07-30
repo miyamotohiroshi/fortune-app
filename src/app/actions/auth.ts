@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/src/lib/prisma'
@@ -107,6 +108,9 @@ export async function signup(
     // セッション作成
     await createSession(user.id)
 
+    // 認証前の画面データを新しいユーザーのセッションへ持ち越さない
+    revalidatePath('/', 'layout')
+
     // 結果ページへリダイレクト
     redirect('/result')
   } catch (e: unknown) {
@@ -144,6 +148,9 @@ export async function login(
     // セッション作成
     await createSession(user.id)
 
+    // 別アカウントの管理者履歴など、以前のClient Cacheを破棄する
+    revalidatePath('/', 'layout')
+
     // 結果ページへリダイレクト
     redirect('/result')
   } catch (e: unknown) {
@@ -155,5 +162,7 @@ export async function login(
 
 export async function logout() {
   await deleteSession()
+  // ログアウトしたユーザー固有の画面データをClient Cacheに残さない
+  revalidatePath('/', 'layout')
   redirect('/')
 }
