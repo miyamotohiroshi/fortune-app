@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { prisma } from '@/src/lib/prisma'
 import { getSession } from '@/src/lib/session'
@@ -66,6 +67,11 @@ export async function updateProfile(
       where: { id: session.userId as string },
       data: { nickname, birthday: birthdayDate!, birthTime, birthCity, zodiacDayId, genmeiId },
     })
+
+    // Server Action 成功後にフォームが初期値へリセットされるため、
+    // 最新の会員情報で画面を再描画する。
+    revalidatePath('/account')
+    revalidatePath('/result')
 
     return { success: true }
   } catch (e: unknown) {
