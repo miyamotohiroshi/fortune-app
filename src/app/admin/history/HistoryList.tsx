@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { DeleteHistoryButton } from './DeleteHistoryButton'
+import { LinkPendingSpinner } from '@/src/components/ui/LinkPendingBar'
 
 export type HistoryItem = {
   id: string
@@ -100,7 +101,10 @@ function HistoryRow({ it }: { it: HistoryItem }) {
       style={{ background: 'rgba(12,12,34,0.95)' }}
     >
       <Link href={`/admin/history/${it.id}`} className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{it.name}</p>
+        <p className="flex items-center gap-2 text-sm font-medium text-white">
+          <span className="truncate">{it.name}</span>
+          <LinkPendingSpinner />
+        </p>
         <p className="text-xs text-slate-500 mt-0.5">{it.birthdayLabel}</p>
       </Link>
 

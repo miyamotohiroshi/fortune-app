@@ -16,6 +16,23 @@
 - 名前は入れない。AIの過去データ・メモリを加味しないよう指示。出生時刻・出生地がない場合は月・ASC・MCが絡む配置を除外
 - 例（1990年生まれ・時刻あり）で、これまで約1.2万字、これから約2万字
 
+## 2026-11-28 占断履歴の切り替え時に画面が固まったように見える問題を改善
+
+### 新規ファイル
+- `src/components/ui/LinkPendingBar.tsx` — `NavigationProgress`：ページ内の内部リンクのクリックを拾い、パスが切り替わるまで画面最上部に進行バーを出す。`LinkPendingSpinner`：`useLinkStatus` による行内スピナー
+- `src/app/admin/history/loading.tsx` — 「自分の結果」など別の階層から占断履歴一覧へ移る時のフォールバック
+
+### 修正ファイル
+- `src/app/admin/history/page.tsx` — 履歴取得と全員分の相性スコア計算（重い）を `HistoryListSection` に切り出して `Suspense` で包み、タブ・見出しを先に表示するようにした
+- `src/components/admin/AdminTabNav.tsx` — `NavigationProgress` を設置（管理者ページ全体のリンクに効く）
+- `src/app/admin/history/HistoryList.tsx` — 名前リンクに `LinkPendingSpinner` を追加
+- `src/app/globals.css` — 進行バー用のアニメーション `animate-link-pending` を追加
+
+### フロー・補足
+- 原因：詳細ページ（`/admin/history/[id]`）から「占断履歴」タブを押すと、`/admin/history` の階層は変わらないため `loading.tsx` が出ず、一覧の相性計算が全部終わるまで画面が一切変わらなかった。また `useLinkStatus` はプリフェッチ済みだと pending を飛ばすため、進行バーもそれだけでは出なかった
+- 現在はクリック直後に上部の進行バーが流れ、すぐにタブと見出しが表示され、一覧部分には「占断履歴を読み込み中」のアニメーションが出てから中身に置き換わる
+- パスが変わらないリンク（クエリだけの変更など）では進行バーは出さない
+
 ## 2026-11-28 運気のAIプロンプトに四柱推命の年運・地支相性・天徳を追加
 
 ### 修正ファイル
