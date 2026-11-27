@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection'
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
+import { PersonalityPromptSection } from '@/src/components/fortune/PersonalityPromptSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { SynastryTab } from '@/src/components/fortune/SynastryTab'
@@ -13,6 +14,8 @@ import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine'
+import { KyuseiSection } from '@/src/components/fortune/KyuseiSection'
+import { toJstYmd } from '@/src/lib/kyuseiCalc'
 
 /** 相性タブ: 管理者は登録済みの人（この人以外の占断履歴）から相手を選べる。Suspenseで他セクションと切り離す */
 async function CompatSection({
@@ -99,6 +102,20 @@ export default async function AdminHistoryDetailPage({
               genmei={genmei}
               meishiki={meishiki}
             />
+          }
+          kyusei={<KyuseiSection nickname={history.name} birth={toJstYmd(history.birthday)} />}
+          personalityPrompt={
+            <Suspense fallback={null}>
+              <PersonalityPromptSection
+                birth={toJstYmd(history.birthday)}
+                birthday={history.birthday}
+                birthTime={history.birthTime}
+                birthCity={history.birthCity}
+                zodiac={zodiac}
+                genmei={genmei}
+                meishiki={meishiki}
+              />
+            </Suspense>
           }
           western={
             <Suspense fallback={<LoadingOverlay fullScreen={false} text="性格占断（西洋）を計算中" />}>

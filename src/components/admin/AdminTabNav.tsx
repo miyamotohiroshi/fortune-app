@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { AdminMenu } from './AdminMenu'
+import { NavigationProgress } from '@/src/components/ui/LinkPendingBar'
 
 type Props = {
   /** 省略時はどちらのタブも非選択（資料ページなど） */
@@ -17,6 +18,8 @@ export function AdminTabNav({ active }: Props) {
   return (
     // 左右に同幅の列を取り、中央のタブとハンバーガーが狭い画面でも重ならないようにする
     <div className="grid grid-cols-[2.75rem_1fr_2.75rem] items-center mb-6">
+      {/* 管理者ページ内のリンククリック〜遷移完了まで画面上部に進行バーを出す */}
+      <NavigationProgress />
       <div />
       <div className="flex justify-center">
       <div

@@ -1,11 +1,17 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { prisma } from '@/src/lib/prisma'
 import { getCurrentUser } from '@/src/lib/session'
 import { synastryFromBirth } from '@/src/lib/astrology/synastry-server'
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
+import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
 import { HistoryList, type HistoryItem } from './HistoryList'
 
-export default async function AdminHistoryPage() {
+/**
+ * 履歴の取得と全員分の相性スコア計算（重い）。Suspenseで切り離し、上部のタブや見出しを先に表示する。
+ * これが無いと、詳細ページから「占断履歴」タブを押した時に計算が終わるまで画面が一切変わらず固まって見える
+ */
+async function HistoryListSection() {
   const user = await getCurrentUser()
 
   const histories = await prisma.fortuneHistory.findMany({
@@ -36,6 +42,20 @@ export default async function AdminHistoryPage() {
     }
   })
 
+  if (items.length === 0) {
+    return (
+      <div
+        className="rounded-2xl border border-purple-900/30 p-8 text-center"
+        style={{ background: 'rgba(12,12,34,0.95)' }}
+      >
+        <p className="text-sm text-slate-400">まだ履歴がありません</p>
+      </div>
+    )
+  }
+  return <HistoryList items={items} />
+}
+
+export default function AdminHistoryPage() {
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
       <div className="fixed top-0 right-0 w-96 h-96 rounded-full bg-purple-900/10 blur-3xl pointer-events-none" />
@@ -64,16 +84,9 @@ export default async function AdminHistoryPage() {
           </div>
         </div>
 
-        {items.length === 0 ? (
-          <div
-            className="rounded-2xl border border-purple-900/30 p-8 text-center"
-            style={{ background: 'rgba(12,12,34,0.95)' }}
-          >
-            <p className="text-sm text-slate-400">まだ履歴がありません</p>
-          </div>
-        ) : (
-          <HistoryList items={items} />
-        )}
+        <Suspense fallback={<LoadingOverlay text="占断履歴を読み込み中" fullScreen={false} />}>
+          <HistoryListSection />
+        </Suspense>
 
       </div>
     </div>

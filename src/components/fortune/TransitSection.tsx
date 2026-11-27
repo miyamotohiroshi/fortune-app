@@ -3,8 +3,11 @@ import { calculateTransitBands } from '@/src/lib/astrology/transit'
 import { detectPairAspects } from '@/src/lib/astrology/aspects'
 import { calculatePairTriggerWindows } from '@/src/lib/astrology/pair-aspect-triggers'
 import { calculateTransitOverlapTriggerWindows } from '@/src/lib/astrology/transit-overlap-triggers'
+import { calculateDirectionAspects } from '@/src/lib/astrology/directions'
+import { calculateDirectionTriggerWindows } from '@/src/lib/astrology/direction-aspect-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { yieldToClient } from '@/src/lib/asyncYield'
+import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 import { TransitTimeline } from './TransitTimeline'
 
 type Props = {
@@ -34,8 +37,22 @@ export async function TransitSection({ birthday, birthTime, birthCity }: Props) 
       ...calculatePairTriggerWindows(natalPositions, pairAspects, bands, year, hasTime),
       ...calculateTransitOverlapTriggerWindows(natalPositions, pairAspects, bands, year, hasTime),
     ]
-    return { year, bands, triggerWindows }
+    // AIプロンプト用：その年のダイレクション（ソーラーアーク）と、その発動期間
+    const directions = calculateDirectionAspects(birthday, natalPositions, hasTime, year, year)
+    const directionTriggerWindows = calculateDirectionTriggerWindows(birthday, natalPositions, hasTime, year, bands)
+    return { year, bands, triggerWindows, directions, directionTriggerWindows }
   })
+
+  const birthdayISO = `${birthday.getFullYear()}-${String(birthday.getMonth() + 1).padStart(2, '0')}-${String(birthday.getDate()).padStart(2, '0')}`
+  // 四柱推命の年運用（人生年表と同じく日柱・月支・元命を使う）
+  const meishiki = computeMeishikiFromBirth(birthday, birthTime)
+  const dayStem = meishiki.pillars[2].stem
+  const dayBranch = meishiki.pillars[2].branch
+  const monthBranch = meishiki.pillars[1].branch
+  const shichu = dayStem !== null && dayBranch !== null && monthBranch !== null
+    ? { dayStem, dayBranch, monthBranch, genmei: meishiki.pillars[1].tsuhenBranch }
+    : null
+  const promptContext = { birthdayISO, birthTime, birthCity, hasTime, natalPositions, shichu }
 
   return (
     <div className="space-y-3">
@@ -51,7 +68,7 @@ export async function TransitSection({ birthday, birthTime, birthCity }: Props) 
           </p>
         )}
       </div>
-      <TransitTimeline years={years} todayISO={todayISO} />
+      <TransitTimeline years={years} todayISO={todayISO} promptContext={promptContext} />
     </div>
   )
 }

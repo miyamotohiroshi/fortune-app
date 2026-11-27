@@ -8,12 +8,32 @@ import { TRANSIT_MASTER, TRANSIT_IMPORTANCE_THRESHOLD, aspectCategory } from '@/
 import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
 import { TRANSIT_OVERLAP_TRIGGER_PATTERNS } from '@/src/data/transit-overlap-triggers'
 import { TRIGGER_POLARITY_STYLE } from '@/src/lib/astrology/trigger-polarity'
+import type { PlanetPositions } from '@/src/lib/astrology/planets'
+import type { DirectionAspectResult } from '@/src/lib/astrology/directions'
+import type { DirectionTriggerWindow } from '@/src/lib/astrology/direction-aspect-triggers'
+import { YearFortunePromptButton } from './YearFortunePromptButton'
 
-type YearData = { year: number; bands: TransitBand[]; triggerWindows: PairTriggerWindow[] }
+type YearData = {
+  year: number
+  bands: TransitBand[]
+  triggerWindows: PairTriggerWindow[]
+  directions: DirectionAspectResult[]
+  directionTriggerWindows: DirectionTriggerWindow[]
+}
+
+type PromptContext = {
+  birthdayISO: string
+  birthTime: string | null
+  birthCity: string | null
+  hasTime: boolean
+  natalPositions: PlanetPositions
+  shichu: { dayStem: number; dayBranch: number; monthBranch: number; genmei: number | null } | null
+}
 
 type Props = {
   years: YearData[]
   todayISO: string
+  promptContext: PromptContext
 }
 
 // トランシット天体ごとの色（冥王星→木星→火星）
@@ -51,7 +71,7 @@ function fmtDate(iso: string): string {
 
 const LABEL_W = 150
 
-export function TransitTimeline({ years, todayISO }: Props) {
+export function TransitTimeline({ years, todayISO, promptContext }: Props) {
   const todayYear = Number(todayISO.slice(0, 4))
   const defaultYearIdx = Math.max(0, years.findIndex(y => y.year === todayYear))
   const [yearIdx, setYearIdx] = useState(defaultYearIdx)
@@ -59,7 +79,7 @@ export function TransitTimeline({ years, todayISO }: Props) {
   const [filterMode, setFilterMode] = useState<'all' | 'important' | 'today'>('important')
   const [sortMode, setSortMode] = useState<'planet' | 'date'>('planet')
 
-  const { year, bands: allBands, triggerWindows } = years[yearIdx]
+  const { year, bands: allBands, triggerWindows, directions, directionTriggerWindows } = years[yearIdx]
   const filteredBands = filterMode === 'important'
     ? allBands.filter(b => {
         const master = TRANSIT_MASTER[`${b.transitPlanet}-${b.natalPoint}-${aspectCategory(b.aspect)}`]
@@ -348,6 +368,18 @@ export function TransitTimeline({ years, todayISO }: Props) {
         {showToday && <span className="flex items-center gap-1"><span className="inline-block w-2 h-px bg-rose-400" />今日</span>}
         <span>●＝最接近（正確になる）日</span>
       </div>
+
+      {/* 選択中の年のトランシット・ダイレクションをまとめたAI用プロンプト（表示レベルに関係なく全件を含める） */}
+      <YearFortunePromptButton
+        input={{
+          year,
+          ...promptContext,
+          transitBands: allBands,
+          transitTriggerWindows: triggerWindows,
+          directions,
+          directionTriggerWindows,
+        }}
+      />
     </div>
   )
 }

@@ -10,13 +10,27 @@ const ALL_TABS = [
   { label: '相性', sub: '2人の相性' },
 ]
 
+/** 東洋タブ内の占術ごとの見出し */
+function EasternHeading({ title }: { title: string }) {
+  return (
+    <h2 className="flex items-center gap-3 mb-3 text-base font-bold text-white tracking-wide">
+      {title}
+      <span className="flex-1 h-px bg-gradient-to-r from-purple-500/50 to-transparent" aria-hidden />
+    </h2>
+  )
+}
+
 type Props = {
   /** 性格占断・東洋（四柱推命） */
   shichu: React.ReactNode
+  /** 性格占断・東洋（九星気学）。四柱推命の下に表示する */
+  kyusei?: React.ReactNode
   /** 性格占断・西洋（西洋占星術） */
   western: React.ReactNode
   /** 人生（西洋占星術） */
   life: React.ReactNode
+  /** 性格をAIでまとめて読むプロンプトボタン。東洋・西洋の両方の一番下に表示する */
+  personalityPrompt?: React.ReactNode
   /** 運気（今年） */
   transit?: React.ReactNode
   /** 相性（2人のシナストリー） */
@@ -25,9 +39,32 @@ type Props = {
   openCompat?: boolean
 }
 
-export function ResultTabs({ shichu, western, life, transit, compat, openCompat }: Props) {
+export function ResultTabs({ shichu, kyusei, western, personalityPrompt, life, transit, compat, openCompat }: Props) {
   const panels = [
-    <PersonalityTabs key="personality" eastern={shichu} western={western} />,
+    <PersonalityTabs
+      key="personality"
+      eastern={
+        <div className="space-y-8">
+          <div>
+            <EasternHeading title="四柱推命" />
+            {shichu}
+          </div>
+          {kyusei !== undefined && (
+            <div>
+              <EasternHeading title="九星気学" />
+              {kyusei}
+            </div>
+          )}
+          {personalityPrompt}
+        </div>
+      }
+      western={
+        <>
+          {western}
+          {personalityPrompt}
+        </>
+      }
+    />,
     life,
     ...(transit !== undefined ? [transit] : []),
     ...(compat !== undefined ? [compat] : []),

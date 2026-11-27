@@ -1,6 +1,11 @@
+import { CharacterFigure } from './CharacterFigure'
+import { getTsuhenseiCharacter } from '@/src/data/character-master'
+
 type GenmeiSectionProps = {
   nickname: string
   genmei: {
+    /** 通変星ID 1〜10（キャラの取得に使う） */
+    id: number
     name: string
     title: string
     description: string[]
@@ -8,6 +13,8 @@ type GenmeiSectionProps = {
 }
 
 export function GenmeiSection({ nickname, genmei }: GenmeiSectionProps) {
+  const character = getTsuhenseiCharacter(genmei.id)
+
   return (
     <div className="p-6">
       {/* 一般の人向けの見出しと説明を先に、専門用語はおまけで小さく */}
@@ -25,6 +32,7 @@ export function GenmeiSection({ nickname, genmei }: GenmeiSectionProps) {
         <p className="text-slate-500 text-xs mb-2">あなたの中心にある星は…?</p>
         <h2 className="text-3xl font-bold text-white mb-3">{genmei.name}</h2>
         <p className="text-violet-300 text-sm font-medium">{genmei.title}</p>
+        {character && <CharacterFigure character={character} glow="rgba(139, 92, 246, 0.35)" />}
       </div>
       <div>
         <p className="text-xs text-slate-600 mb-3">{nickname}さんの芯にある性格の特徴</p>

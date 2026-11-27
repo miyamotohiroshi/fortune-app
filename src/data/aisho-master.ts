@@ -63,3 +63,11 @@ export function aishoVerdict(rels: BranchRelation[]): {
   if (hasBad) return { label: '注意', tone: 'bad' }
   return { label: '穏やか', tone: 'none' }
 }
+
+/** 天剋地冲（日柱×その年の干支が天地ともにぶつかる）の説明 */
+export const TENKOKU_CHICHU_TEXT =
+  '日柱とその年の干支が、天干は同じ陰陽で相剋、地支は冲となる「天と地の両方でぶつかる」組み合わせです。変化・衝突・トラブルが通常の冲よりも強く出やすい、注意が必要な年です。無理な決断は避け、変化を落ち着いて受け止めましょう。'
+
+/** 日支とその年の年支に特別な関係がないときの説明 */
+export const AISHO_NONE_TEXT =
+  'この年は、あなたの日支と特に強い相性（支合・三合・冲・刑・害・破）は結びません。良くも悪くも大きな相性の影響が少ない、穏やかな年といえます。'

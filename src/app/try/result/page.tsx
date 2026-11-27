@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection'
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
+import { PersonalityPromptSection } from '@/src/components/fortune/PersonalityPromptSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { SynastryTab } from '@/src/components/fortune/SynastryTab'
 import { computeMeishiki } from '@/src/lib/meishikiCalc'
 import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine'
+import { KyuseiSection } from '@/src/components/fortune/KyuseiSection'
 
 export default async function TryResultPage({
   searchParams,
@@ -79,6 +81,18 @@ export default async function TryResultPage({
           shichu={
             <ShichusuimeiSection
               nickname={displayName}
+              zodiac={zodiac}
+              genmei={genmei}
+              meishiki={meishiki}
+            />
+          }
+          kyusei={<KyuseiSection nickname={displayName} birth={{ year: y, month: m + 1, day: d }} />}
+          personalityPrompt={
+            <PersonalityPromptSection
+              birth={{ year: y, month: m + 1, day: d }}
+              birthday={birthday}
+              birthTime={birthTime ?? null}
+              birthCity={birthCity ?? null}
               zodiac={zodiac}
               genmei={genmei}
               meishiki={meishiki}

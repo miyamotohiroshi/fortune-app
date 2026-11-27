@@ -9,6 +9,7 @@ import { logout } from '@/src/app/actions/auth';
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection';
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection';
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection';
+import { PersonalityPromptSection } from '@/src/components/fortune/PersonalityPromptSection';
 import { ResultTabs } from '@/src/components/fortune/ResultTabs';
 import { TransitSection } from '@/src/components/fortune/TransitSection';
 import { SynastryTab } from '@/src/components/fortune/SynastryTab';
@@ -16,6 +17,8 @@ import { AdminTabNav } from '@/src/components/admin/AdminTabNav';
 import { synastryFromBirth } from '@/src/lib/astrology/synastry-server';
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay';
 import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine';
+import { KyuseiSection } from '@/src/components/fortune/KyuseiSection';
+import { toJstYmd } from '@/src/lib/kyuseiCalc';
 import type { User } from '@prisma/client';
 
 /**
@@ -171,6 +174,20 @@ export default async function ResultPage({
               genmei={genmei}
               meishiki={meishiki}
             />
+          }
+          kyusei={<KyuseiSection nickname={user.nickname} birth={toJstYmd(user.birthday)} />}
+          personalityPrompt={
+            <Suspense fallback={null}>
+              <PersonalityPromptSection
+                birth={toJstYmd(user.birthday)}
+                birthday={user.birthday}
+                birthTime={user.birthTime}
+                birthCity={user.birthCity}
+                zodiac={zodiac}
+                genmei={genmei}
+                meishiki={meishiki}
+              />
+            </Suspense>
           }
           western={
             <Suspense fallback={<LoadingOverlay fullScreen={false} text="性格占断（西洋）を計算中" />}>
