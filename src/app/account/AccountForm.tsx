@@ -4,18 +4,8 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { updateProfile } from '@/src/app/actions/account'
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
+import { CITY_REGIONS } from '@/src/lib/astrology/cities'
 
-const CITY_REGIONS = [
-  { label: '北海道', cities: ['札幌', '函館', '旭川'] },
-  { label: '東北', cities: ['青森', '盛岡', '仙台', '秋田', '山形', '福島'] },
-  { label: '関東', cities: ['東京', '横浜', 'さいたま', '千葉', '水戸', '宇都宮', '前橋'] },
-  { label: '中部', cities: ['新潟', '富山', '金沢', '福井', '甲府', '長野', '岐阜', '静岡', '浜松', '名古屋', '津'] },
-  { label: '近畿', cities: ['大津', '京都', '大阪', '堺', '神戸', '奈良', '和歌山'] },
-  { label: '中国', cities: ['鳥取', '松江', '岡山', '広島', '山口'] },
-  { label: '四国', cities: ['徳島', '高松', '松山', '高知'] },
-  { label: '九州・沖縄', cities: ['福岡', '佐賀', '長崎', '熊本', '大分', '宮崎', '鹿児島', '那覇'] },
-  { label: '海外', cities: ['ニューヨーク', 'ロサンゼルス', 'ロンドン', 'パリ', 'ベルリン', 'ソウル', '北京', '上海', '台北', '香港', 'バンコク', 'シンガポール', 'シドニー', 'ムンバイ'] },
-]
 
 type Props = {
   nickname: string
