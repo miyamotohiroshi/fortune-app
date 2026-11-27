@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-11-28 運気のAIプロンプトに四柱推命の年運・地支相性・天徳を追加
+
+### 修正ファイル
+- `src/lib/astrology/year-fortune-prompt.ts` — 選択中の年の四柱推命の年運（年運星・元命別の解説・十二運・天中殺）、地支相性（日支×年支、天剋地冲を含む）、天徳（天徳貴人・天徳合）を解説文つきで追加。出力指示も西洋と東洋を統合して読む形に変更
+- `src/components/fortune/TransitSection.tsx` — 人生年表と同じく命式から日干・日支・月支・元命を出し、プロンプト用に渡す
+- `src/components/fortune/TransitTimeline.tsx` — プロンプト用データの型に四柱推命の要素を追加
+- `src/components/fortune/YearFortunePromptButton.tsx` — ボタンの説明文に東洋の内容を追記
+- `src/data/nenun-master.ts`・`src/data/aisho-master.ts` — 人生年表の画面に直書きしていた天中殺・天剋地冲・相性なし・天徳の説明文を定数として切り出し（文言は変更なし）
+- `src/components/fortune/DirectionLifeTab.tsx` — 切り出した定数を使うように変更（表示は従来どおり）
+
+### フロー・補足
+- 四柱推命の年は立春で切り替わる旨をプロンプトに明記している
+- 九星気学は年運の解説データがないため、今回は入れていない
+
 ## 2026-11-28 性格タブに「東洋と西洋の性格をAIでまとめて読むプロンプト」作成ボタンを追加
 
 ### 新規ファイル

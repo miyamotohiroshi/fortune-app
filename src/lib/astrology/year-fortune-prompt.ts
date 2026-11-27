@@ -10,6 +10,12 @@ import { DIRECTION_MASTER_MAP } from '@/src/data/direction-master'
 import { PAIR_TRIGGER_PATTERNS } from '@/src/data/pair-aspect-triggers'
 import { TRANSIT_OVERLAP_TRIGGER_PATTERNS } from '@/src/data/transit-overlap-triggers'
 import { DIRECTION_TRIGGER_PATTERNS } from '@/src/data/direction-trigger-patterns'
+import { computeYearFortune, branchRelations, STEMS, BRANCHES, TSUHENSEI, JUNI_UN } from '@/src/lib/meishikiCalc'
+import {
+  NENUN_COMMON, NENUN_BY_GENMEI, NENUN_JUNIUN, NENUN_KUBOU_NOTE,
+  TENTOKU_INTRO, TENTOKU_HIT_TEXT, TENTOKU_NONE_TEXT,
+} from '@/src/data/nenun-master'
+import { AISHO_TEXT, aishoVerdict, TENKOKU_CHICHU_TEXT, AISHO_NONE_TEXT } from '@/src/data/aisho-master'
 
 // 「運気（今年）」の下に置く「AIで年運を読むためのプロンプト」を組み立てる。
 // ユーザーが自分のAI（ChatGPT・Claude等）に貼り付けて使う前提。名前などの個人情報は含めない。
@@ -25,6 +31,13 @@ export type YearFortunePromptInput = {
   transitTriggerWindows: PairTriggerWindow[] // 出生ペア／トランシット重なりの発動期間
   directions: DirectionAspectResult[]
   directionTriggerWindows: DirectionTriggerWindow[]
+  /** 四柱推命の年運（年運星・十二運・天中殺／地支相性／天徳）の計算に使う命式の要素。人生年表と同じ値 */
+  shichu: {
+    dayStem: number
+    dayBranch: number
+    monthBranch: number
+    genmei: number | null // 元命（通変星ID 1-10）
+  } | null
 }
 
 const SIGNS_JA = [
@@ -63,7 +76,7 @@ export function buildYearFortunePrompt(input: YearFortunePromptInput): string {
 
   // ── 前提・指示 ──
   push(
-    `あなたは経験豊富な西洋占星術師です。以下のデータだけを根拠に、${year}年の運勢を詳しく鑑定してください。`,
+    `あなたは西洋占星術と四柱推命の両方に精通した経験豊富な鑑定師です。以下のデータだけを根拠に、${year}年の運勢を詳しく鑑定してください。`,
     '',
     '## 重要な前提',
     '- このチャットより前の会話履歴、あなたが保存しているメモリ、私（ユーザー）について把握している情報や過去のデータは一切参照・加味しないでください。',
@@ -187,12 +200,61 @@ export function buildYearFortunePrompt(input: YearFortunePromptInput): string {
   }
   push('')
 
+  // ── 四柱推命の年運 ──
+  if (input.shichu) {
+    const { dayStem, dayBranch, monthBranch, genmei } = input.shichu
+    const f = computeYearFortune(dayStem, dayBranch, year, monthBranch)
+    const nenunName = TSUHENSEI[f.tsuhen]
+    const juniunName = JUNI_UN[f.juniUn]
+    const genmeiName = genmei ? TSUHENSEI[genmei] : null
+    const personal = genmeiName ? NENUN_BY_GENMEI[genmeiName]?.[nenunName] : null
+    push(
+      `## ${year}年の四柱推命（年運・相性・天徳）`,
+      `四柱推命の一年は立春（2月4日頃）から翌年の立春までです。${year}年の干支は${STEMS[f.stem]}${BRANCHES[f.branch]}、あなたの日柱は${STEMS[dayStem]}${BRANCHES[dayBranch]}です。`,
+      '',
+      '### 年運',
+      `- 年運星：${nenunName}${f.isKubou ? '／天中殺の年' : ''}`,
+      `  - この年のテーマ（${nenunName}の年）：${NENUN_COMMON[nenunName] ?? ''}`,
+    )
+    if (personal) push(`  - あなた（元命「${genmeiName}」）の場合：${personal}`)
+    push(
+      `- 十二運：${juniunName}`,
+      `  - その年の勢い：${NENUN_JUNIUN[juniunName] ?? ''}`,
+    )
+    if (f.isKubou) push(`- 天中殺：${NENUN_KUBOU_NOTE}`)
+
+    const rels = branchRelations(dayBranch, f.branch)
+    push(
+      '',
+      '### 地支相性（あなたの日支 × その年の年支）',
+      `- ${BRANCHES[dayBranch]} × ${BRANCHES[f.branch]}：${rels.length ? rels.join('・') : '特になし'}（${f.isTenkokuChichu ? '天剋地冲' : aishoVerdict(rels).label}）`,
+    )
+    if (f.isTenkokuChichu) push(`  - 天剋地冲（特に強い凶意）：${TENKOKU_CHICHU_TEXT}`)
+    if (rels.length === 0) push(`  - ${AISHO_NONE_TEXT}`)
+    for (const r of rels) {
+      const info = AISHO_TEXT[r]
+      push(`  - ${r}（${info.good ? '良い運' : '注意'}）— ${info.short}：${info.desc}`)
+    }
+
+    const { tentoku } = f
+    const fmtT = (v: { type: 'stem' | 'branch'; value: number }) => (v.type === 'stem' ? STEMS[v.value] : BRANCHES[v.value])
+    const hit = tentoku.hasKijin ? '天徳貴人' : tentoku.hasGou ? '天徳合' : null
+    push(
+      '',
+      '### 天徳（天徳貴人・天徳合）',
+      `- あなたの天徳貴人は「${fmtT(tentoku.kijin)}」・天徳合は「${fmtT(tentoku.gou)}」：${year}年は${hit ?? '該当なし'}`,
+      `  - ${TENTOKU_INTRO}`,
+      `  - ${hit ? TENTOKU_HIT_TEXT : TENTOKU_NONE_TEXT}`,
+      '',
+    )
+  }
+
   // ── 出力指示 ──
   push(
     '## 出力してほしい内容',
     '以下の構成で、日本語で3000〜4000字程度にまとめてください。',
-    `1. ${year}年の総合運：ダイレクションが示す長期テーマと、重要度の高いトランシットを統合した一年の全体像`,
-    '2. 時期別の流れ：1〜3月／4〜6月／7〜9月／10〜12月の四半期ごとに、どの配置が効いているかを根拠に解説',
+    `1. ${year}年の総合運：ダイレクションが示す長期テーマ、重要度の高いトランシット、四柱推命の年運（年運星・十二運・相性・天徳）を統合した一年の全体像。西洋と東洋で一致する点・食い違う点にも触れてください`,
+    '2. 時期別の流れ：1〜3月／4〜6月／7〜9月／10〜12月の四半期ごとに、どの配置が効いているかを根拠に解説（四柱推命の年の切り替わりは立春）',
     '3. 分野別の運勢：仕事・キャリア／恋愛・結婚／人間関係／お金／健康',
     '4. 特に注目すべき時期：好機と注意期を日付つきで箇条書き',
     '5. この一年を活かすためのアドバイス',

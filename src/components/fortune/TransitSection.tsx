@@ -7,6 +7,7 @@ import { calculateDirectionAspects } from '@/src/lib/astrology/directions'
 import { calculateDirectionTriggerWindows } from '@/src/lib/astrology/direction-aspect-triggers'
 import { CITY_COORDS } from '@/src/lib/astrology/cities'
 import { yieldToClient } from '@/src/lib/asyncYield'
+import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 import { TransitTimeline } from './TransitTimeline'
 
 type Props = {
@@ -43,7 +44,15 @@ export async function TransitSection({ birthday, birthTime, birthCity }: Props) 
   })
 
   const birthdayISO = `${birthday.getFullYear()}-${String(birthday.getMonth() + 1).padStart(2, '0')}-${String(birthday.getDate()).padStart(2, '0')}`
-  const promptContext = { birthdayISO, birthTime, birthCity, hasTime, natalPositions }
+  // 四柱推命の年運用（人生年表と同じく日柱・月支・元命を使う）
+  const meishiki = computeMeishikiFromBirth(birthday, birthTime)
+  const dayStem = meishiki.pillars[2].stem
+  const dayBranch = meishiki.pillars[2].branch
+  const monthBranch = meishiki.pillars[1].branch
+  const shichu = dayStem !== null && dayBranch !== null && monthBranch !== null
+    ? { dayStem, dayBranch, monthBranch, genmei: meishiki.pillars[1].tsuhenBranch }
+    : null
+  const promptContext = { birthdayISO, birthTime, birthCity, hasTime, natalPositions, shichu }
 
   return (
     <div className="space-y-3">

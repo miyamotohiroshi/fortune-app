@@ -27,6 +27,7 @@ type PromptContext = {
   birthCity: string | null
   hasTime: boolean
   natalPositions: PlanetPositions
+  shichu: { dayStem: number; dayBranch: number; monthBranch: number; genmei: number | null } | null
 }
 
 type Props = {

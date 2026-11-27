@@ -13,8 +13,8 @@ import type { TriggerPolarity } from '@/src/lib/astrology/trigger-polarity'
 import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
 import { computeYearFortune, branchRelations, STEMS, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
-import { NENUN_COMMON, NENUN_BY_GENMEI, NENUN_JUNIUN } from '@/src/data/nenun-master'
-import { AISHO_TEXT, aishoVerdict } from '@/src/data/aisho-master'
+import { NENUN_COMMON, NENUN_BY_GENMEI, NENUN_JUNIUN, NENUN_KUBOU_NOTE, TENTOKU_INTRO, TENTOKU_HIT_TEXT, TENTOKU_NONE_TEXT } from '@/src/data/nenun-master'
+import { AISHO_TEXT, aishoVerdict, TENKOKU_CHICHU_TEXT, AISHO_NONE_TEXT } from '@/src/data/aisho-master'
 
 // 相性トーン → 配色
 const AISHO_TONE_STYLE: Record<string, { color: string; bg: string }> = {
@@ -690,7 +690,7 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
 
             {f.isKubou && (
               <p className="text-[11px] text-rose-300/90 leading-relaxed">
-                ※ この年は天中殺（空亡）にあたります。運気の変わり目で、新規の大きな決断や無理な勝負は控えめにし、守りと充電を意識すると穏やかに過ごせます。
+                ※ {NENUN_KUBOU_NOTE}
               </p>
             )}
           </div>
@@ -732,7 +732,7 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
                   天剋地冲（特に強い凶意）
                 </p>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  日柱とその年の干支が、天干は同じ陰陽で相剋、地支は冲となる「天と地の両方でぶつかる」組み合わせです。変化・衝突・トラブルが通常の冲よりも強く出やすい、注意が必要な年です。無理な決断は避け、変化を落ち着いて受け止めましょう。
+                  {TENKOKU_CHICHU_TEXT}
                 </p>
               </div>
             )}
@@ -753,7 +753,7 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
               </div>
             ) : (
               <p className="text-sm text-slate-400 leading-relaxed">
-                この年は、あなたの日支と特に強い相性（支合・三合・冲・刑・害・破）は結びません。良くも悪くも大きな相性の影響が少ない、穏やかな年といえます。
+                {AISHO_NONE_TEXT}
               </p>
             )}
           </div>
@@ -791,7 +791,7 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
             </div>
 
             <p className="text-xs text-slate-500 leading-relaxed">
-              天徳貴人・天徳合は、あなたの月支から決まる「守護の干支」です。その年の干支がこの干支と一致すると、災いを軽減し、物事が穏やかに収まりやすいとされる吉神の年になります。
+              {TENTOKU_INTRO}
             </p>
 
             {hit ? (
@@ -800,12 +800,12 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
                   {hit}の年
                 </p>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  この年は、あなたの天徳（守護の干支）とその年の干支が一致する、災いが軽くなりやすい年です。トラブルが起きても大事に至りにくく、周囲の助けを得やすいタイミングとされています。ただし油断せず、日頃の行いを大切にすることが吉を活かす鍵です。
+                  {TENTOKU_HIT_TEXT}
                 </p>
               </div>
             ) : (
               <p className="text-sm text-slate-400 leading-relaxed">
-                この年は、天徳貴人・天徳合のどちらにも該当しません。特別な後押しはありませんが、悪い意味を持つものでもないので、他の運気を参考にしてください。
+                {TENTOKU_NONE_TEXT}
               </p>
             )}
           </div>
