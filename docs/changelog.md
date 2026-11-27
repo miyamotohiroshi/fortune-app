@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-11-28 60干支・10通変星のオリジナルキャラを結果ページに表示
+
+### 新規ファイル
+- `src/data/character-master.ts` — 60干支（干支ID 1〜60）と10通変星（通変星ID 1〜10）のキャラ名・ひとこと・画像パス。干支キャラのひとことは十干の衣装×十二支の動物から組み立てる
+- `src/components/fortune/CharacterFigure.tsx` — キャラ画像（next/image）の表示コンポーネント。キャラ名・ひとことはユーザー向けには出さない（管理者用のキャラ一覧で表示する予定。alt には入れている）
+- `public/images/characters/kanshi/01.webp`〜`60.webp` — 60干支キャラ画像（512px WebP）
+- `public/images/characters/tsuhensei/01.webp`〜`10.webp` — 10通変星キャラ画像（512px WebP）
+
+### 修正ファイル
+- `src/components/fortune/ZodiacSection.tsx` — 日柱の干支名・タイトルの下に60干支キャラを表示。「あなたの性格は…?」の前置き文は削除。props に干支ID（`id`）を追加
+- `src/components/fortune/GenmeiSection.tsx` — 元命の通変星名・タイトルの下に通変星キャラを表示。props に通変星ID（`id`）を追加
+- `src/components/fortune/ShichusuimeiSection.tsx` — `zodiac`・`genmei` の型に `id` を追加（ZodiacSection・GenmeiSection へそのまま渡すため）
+
+### フロー・補足
+- キャラは Figma「占いアプリ」の Page 1（60干支一覧・10通変星一覧ボード）で Figma AI により生成。テイストは「ふわもち絵本タッチ」
+- 60干支: 十二支＝動物の体、十干＝衣装・持ち物（甲 葉っぱフード／乙 花かんむり／丙 太陽ポンチョ／丁 ちょうちん／戊 山の帽子／己 麦わら帽と苗／庚 銀のかぶと／辛 宝石ティアラ／壬 波のマント／癸 雨がっぱと傘）
+- 10通変星: 頭に星をつけた「星の精霊」。体の色＝五行（比劫＝木・食傷＝火・財＝土・官＝金・印＝水）、職業の衣装＝星の性質
+- 結果ページ・お試し結果ページ・管理画面の履歴詳細で、ShichusuimeiSection 経由で自動的に表示される。IDが範囲外ならキャラは出さない
+
 ## 2026-11-27 性格占断（東洋）の見出しを一般向けの表現に変更
 
 ### 修正ファイル

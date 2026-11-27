@@ -6,11 +6,15 @@ import type { Meishiki } from '@/src/lib/meishikiCalc'
 type ShichusuimeiSectionProps = {
   nickname: string
   zodiac: {
+    /** 干支ID 1〜60（キャラの取得に使う） */
+    id: number
     name: string
     title: string
     description: string[]
   }
   genmei: {
+    /** 通変星ID 1〜10（キャラの取得に使う） */
+    id: number
     name: string
     title: string
     description: string[]
