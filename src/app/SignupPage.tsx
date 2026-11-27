@@ -420,82 +420,44 @@ const FEATURES = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#07071A] text-white">
-      <div className="max-w-md mx-auto">
 
-      {/* ── ヒーローセクション ────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pt-16 pb-12">
-
-        {/* 背景グロー */}
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-purple-700/15 blur-3xl pointer-events-none" />
-        <div className="absolute top-8 right-8 w-48 h-48 rounded-full bg-blue-700/10 blur-2xl pointer-events-none" />
-        <div className="absolute -top-10 left-1/4 w-64 h-64 rounded-full bg-indigo-900/20 blur-3xl pointer-events-none" />
-
-        {/* 星（小さな白い点） */}
-        {[
-          [8,10],[20,6],[38,17],[62,4],[78,13],[14,28],[88,22],[52,8],[34,24],[73,18],[90,8],[5,40]
-        ].map(([x, y], i) => (
+      {/* ── ヒーローセクション（全幅・背景画像） ─────────── */}
+      <section className="relative overflow-hidden">
+        {/* 背景画像：中央寄せ・端を背景色にフェード */}
+        <div className="absolute inset-0 flex justify-center pointer-events-none">
           <div
-            key={i}
-            className="absolute rounded-full bg-white pointer-events-none"
-            style={{ left: `${x}%`, top: `${y}%`, width: i % 3 === 0 ? '2px' : '1px', height: i % 3 === 0 ? '2px' : '1px', opacity: 0.5 + (i % 3) * 0.15 }}
-          />
-        ))}
-
-        {/* 月 */}
-        <div
-          className="absolute top-6 right-6 w-28 h-28 rounded-full bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 pointer-events-none"
-          style={{ boxShadow: '0 0 50px 12px rgba(110, 60, 220, 0.4), 0 0 100px 30px rgba(80, 40, 180, 0.15)' }}
-        />
-
-        {/* 星座の幾何学線 */}
-        <svg className="absolute top-0 right-0 w-72 h-72 opacity-20 pointer-events-none" viewBox="0 0 288 288">
-          <line x1="195" y1="18" x2="238" y2="78" stroke="white" strokeWidth="0.5" />
-          <line x1="238" y1="78" x2="195" y2="128" stroke="white" strokeWidth="0.5" />
-          <line x1="195" y1="18" x2="258" y2="38" stroke="white" strokeWidth="0.5" />
-          <line x1="258" y1="38" x2="268" y2="98" stroke="white" strokeWidth="0.5" />
-          <line x1="268" y1="98" x2="238" y2="78" stroke="white" strokeWidth="0.5" />
-          <line x1="195" y1="128" x2="225" y2="160" stroke="white" strokeWidth="0.5" />
-          <circle cx="195" cy="18" r="2" fill="white" opacity="0.9" />
-          <circle cx="238" cy="78" r="2.5" fill="white" opacity="0.9" />
-          <circle cx="195" cy="128" r="1.5" fill="white" opacity="0.7" />
-          <circle cx="258" cy="38" r="1.5" fill="white" opacity="0.6" />
-          <circle cx="268" cy="98" r="1" fill="white" opacity="0.5" />
-          <circle cx="225" cy="160" r="1" fill="white" opacity="0.4" />
-        </svg>
-
-        {/* テキスト */}
-        <div className="relative z-10 mt-6">
-          <h1 className="text-4xl font-bold tracking-[0.15em] leading-tight">
-            星を読み解き、
-            <br />
-            本質を知る。
-          </h1>
-          <p className="mt-4 text-sm text-slate-400 leading-relaxed">
-            四柱推命と西洋占星術から導く、
-            <br />
-            あなただけの性格と運命の羅針盤
-          </p>
+            className="relative h-full w-full max-w-[1100px] bg-cover bg-center"
+            style={{ backgroundImage: 'url(/images/hero-bg.webp)' }}
+          >
+            <div className="absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-[#07071A] to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-1/5 bg-gradient-to-l from-[#07071A] to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#07071A] to-transparent" />
+          </div>
         </div>
 
-        {/* ドットインジケーター */}
-        <div className="relative z-10 flex items-center justify-center gap-2 mt-8">
-          <div className="w-5 h-px bg-purple-700/60" />
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-          <div className="w-2 h-2 rounded-full bg-white" />
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-          <div className="w-5 h-px bg-purple-700/60" />
+        {/* テキスト */}
+        <div className="relative z-10 px-6 pt-24 pb-44 sm:pt-36 sm:pb-64 text-center">
+          <h1 className="text-[1.75rem] sm:text-6xl font-bold tracking-[0.08em] sm:tracking-[0.12em] leading-tight whitespace-nowrap">
+            四柱推命 × 星占い
+          </h1>
+          <p className="mt-6 text-sm sm:text-base text-slate-300 leading-relaxed font-medium">
+            東洋と西洋の占いをかけ合わせて、
+            <br />
+            あなたの性格と運命をのぞき見します。
+          </p>
         </div>
       </section>
 
+      <div className="max-w-md mx-auto">
+
       {/* ── フォームカード ────────────────────────────── */}
-      <section className="px-4 pb-2">
+      <section className="relative z-10 px-4 pb-2 -mt-28 sm:-mt-36">
         <div
           className="rounded-3xl border border-purple-900/30 p-6"
           style={{ background: 'rgba(12, 12, 34, 0.97)', backdropFilter: 'blur(12px)', boxShadow: '0 0 60px rgba(90, 50, 180, 0.12)' }}
         >
           <div className="text-center mb-4">
-            <h2 className="text-lg font-bold text-white">四柱推命・60干支診断</h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500">
               生年月日を入力して、あなたの生まれ持った性格を見てみましょう
             </p>
           </div>
