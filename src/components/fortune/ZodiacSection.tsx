@@ -10,9 +10,16 @@ type ZodiacSectionProps = {
 export function ZodiacSection({ nickname, zodiac }: ZodiacSectionProps) {
   return (
     <div className="p-6">
-      <div className="flex items-center gap-2 mb-5">
-        <div className="w-1 h-4 rounded-full bg-indigo-500" />
-        <p className="text-xs text-indigo-400 font-medium tracking-widest">日柱</p>
+      {/* 一般の人向けの見出しと説明を先に、専門用語はおまけで小さく */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-4 rounded-full bg-indigo-500" />
+          <p className="text-sm text-indigo-300 font-bold tracking-wide">生まれ持った性格</p>
+          <span className="ml-auto text-[10px] text-slate-600 tracking-wider">四柱推命｜日柱</span>
+        </div>
+        <p className="mt-2 pl-3 text-xs text-slate-400 leading-relaxed">
+          あなたの素の性格や本質です。
+        </p>
       </div>
       <div className="text-center mb-6">
         <p className="text-slate-500 text-xs mb-2">あなたの性格は…?</p>
