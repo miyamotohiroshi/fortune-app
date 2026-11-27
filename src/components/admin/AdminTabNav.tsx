@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { AdminMenu } from './AdminMenu'
 
 type Props = {
-  active: 'self' | 'history'
+  /** 省略時はどちらのタブも非選択（資料ページなど） */
+  active?: 'self' | 'history'
 }
 
 export function AdminTabNav({ active }: Props) {
@@ -13,7 +15,10 @@ export function AdminTabNav({ active }: Props) {
     }`
 
   return (
-    <div className="flex justify-center mb-6">
+    // 左右に同幅の列を取り、中央のタブとハンバーガーが狭い画面でも重ならないようにする
+    <div className="grid grid-cols-[2.75rem_1fr_2.75rem] items-center mb-6">
+      <div />
+      <div className="flex justify-center">
       <div
         className="inline-flex items-center gap-1 rounded-full border border-purple-900/40 p-1"
         style={{ background: 'rgba(20,20,40,0.8)' }}
@@ -32,6 +37,10 @@ export function AdminTabNav({ active }: Props) {
         >
           占断履歴
         </Link>
+      </div>
+      </div>
+      <div className="flex justify-end">
+        <AdminMenu />
       </div>
     </div>
   )

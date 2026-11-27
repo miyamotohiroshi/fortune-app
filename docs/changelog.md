@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-11-27 管理者用「占星術ノート」ページとハンバーガーメニューを追加
+
+### 新規ファイル
+- `src/data/astro-note.ts` — 本の解説データ（性格（出生図）255件・ディレクション61件。トランシット・相性は空）。元の `占いデータ.html` のデータ部分を変換したもの
+- `src/app/admin/note/page.tsx` — `/admin/note` 占星術ノートのページ（サーバー側で天体順に並べ替えて渡す。`?cat=` で初期タブを指定）
+- `src/app/admin/note/AstroNote.tsx` — カテゴリタブ・キーワード検索・天体での絞り込み・★印のみ・すべて開く/閉じる・グループ見出し付きのカード一覧（角度の記述は黄色、検索語はマーカー表示）
+- `src/components/admin/AdminMenu.tsx` — ハンバーガーボタンと右から出るメニュー（自分の結果／占断履歴／新しく占断する／資料：占星術ノート）。Esc・背景クリックで閉じる
+
+### 修正ファイル
+- `src/components/admin/AdminTabNav.tsx` — 右上にハンバーガーを配置。3列グリッドにしてスマホ幅でもタブと重ならないように。`active` を省略可能に（資料ページ用）
+
+### フロー・補足
+- `/admin/*` は既存の admin layout で管理者以外をリダイレクトするため、ノートは管理者のみ閲覧可能
+- 本文データはクライアントコンポーネントから直接 import せず、サーバーコンポーネントから props で渡す（公開 JS チャンクに含めないため）
+- 元HTMLは localStorage で最後のタブを記憶していたが、URL の `?cat=` で保持する方式に変更
+
+## 2026-11-27 出生地に北海道・沖縄の都市を追加し、都市リストを共通化
+
+### 修正ファイル
+- `src/lib/astrology/cities.ts` — 北海道9都市（小樽・室蘭・苫小牧・稚内・北見・網走・帯広・釧路・根室）と沖縄3都市（名護・宮古島・石垣）の緯度経度を追加。出生地セレクト用の `CITY_REGIONS` をここに一本化してエクスポート
+- `src/app/SignupPage.tsx` / `src/app/try/TryPage.tsx` / `src/app/account/AccountForm.tsx` / `src/app/admin/lookup/page.tsx` / `src/app/admin/history/[id]/edit/EditHistoryForm.tsx` — 各ファイルに重複していた `CITY_REGIONS` を削除し、`cities.ts` から import
+
+### フロー・補足
+- 出生地の緯度経度は西洋占星術の ASC・ハウス計算に使われる。経度1°のずれは出生時刻約4分のずれに相当し、従来は道東（根室・釧路など）で旭川から2〜3°、先島（石垣・宮古島）で那覇から2〜3.5°ずれていた
+- 相性タブの都市リストは `CITY_COORDS` のキーから生成しているため自動で追加される
+- 都市は名前で保存しているため、既存ユーザーのデータへの影響はない
+
+## 2026-11-27 結果ページのタイトル下に生年月日・出生時刻・出生地を表示
+
+### 新規ファイル
+- `src/components/fortune/BirthInfoLine.tsx` — 生年月日（JST・「1987年8月5日」形式）・出生時刻・出生地を1行で小さく表示する共通コンポーネント
+
+### 修正ファイル
+- `src/app/result/page.tsx` — 会員の結果ページ（管理者の「自分の結果」含む）の「占い結果」見出し下に `BirthInfoLine` を追加
+- `src/app/admin/history/[id]/page.tsx` — 管理者の占断履歴詳細の見出し下に `BirthInfoLine` を追加
+- `src/app/try/result/page.tsx` — 無料体験の結果ページの見出し下に `BirthInfoLine` を追加（URLの YYYYMMDD から UTC 正午の Date を作り、サーバーのTZに依存せず正しい暦日を表示）
+
+### フロー・補足
+- 出生時刻・出生地が未登録の場合はその項目を省略して表示する
+
 ## 2026-11-27 トップページのヒーローを背景画像付きデザインに刷新
 
 ### 新規ファイル
