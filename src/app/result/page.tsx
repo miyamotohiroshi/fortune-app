@@ -9,6 +9,7 @@ import { logout } from '@/src/app/actions/auth';
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection';
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection';
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection';
+import { PersonalityPromptSection } from '@/src/components/fortune/PersonalityPromptSection';
 import { ResultTabs } from '@/src/components/fortune/ResultTabs';
 import { TransitSection } from '@/src/components/fortune/TransitSection';
 import { SynastryTab } from '@/src/components/fortune/SynastryTab';
@@ -175,6 +176,19 @@ export default async function ResultPage({
             />
           }
           kyusei={<KyuseiSection nickname={user.nickname} birth={toJstYmd(user.birthday)} />}
+          personalityPrompt={
+            <Suspense fallback={null}>
+              <PersonalityPromptSection
+                birth={toJstYmd(user.birthday)}
+                birthday={user.birthday}
+                birthTime={user.birthTime}
+                birthCity={user.birthCity}
+                zodiac={zodiac}
+                genmei={genmei}
+                meishiki={meishiki}
+              />
+            </Suspense>
+          }
           western={
             <Suspense fallback={<LoadingOverlay fullScreen={false} text="性格占断（西洋）を計算中" />}>
               <WesternAstrologySection

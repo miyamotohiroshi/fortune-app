@@ -29,6 +29,8 @@ type Props = {
   western: React.ReactNode
   /** 人生（西洋占星術） */
   life: React.ReactNode
+  /** 性格をAIでまとめて読むプロンプトボタン。東洋・西洋の両方の一番下に表示する */
+  personalityPrompt?: React.ReactNode
   /** 運気（今年） */
   transit?: React.ReactNode
   /** 相性（2人のシナストリー） */
@@ -37,7 +39,7 @@ type Props = {
   openCompat?: boolean
 }
 
-export function ResultTabs({ shichu, kyusei, western, life, transit, compat, openCompat }: Props) {
+export function ResultTabs({ shichu, kyusei, western, personalityPrompt, life, transit, compat, openCompat }: Props) {
   const panels = [
     <PersonalityTabs
       key="personality"
@@ -53,9 +55,15 @@ export function ResultTabs({ shichu, kyusei, western, life, transit, compat, ope
               {kyusei}
             </div>
           )}
+          {personalityPrompt}
         </div>
       }
-      western={western}
+      western={
+        <>
+          {western}
+          {personalityPrompt}
+        </>
+      }
     />,
     life,
     ...(transit !== undefined ? [transit] : []),

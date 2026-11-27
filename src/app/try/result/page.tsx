@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ShichusuimeiSection } from '@/src/components/fortune/ShichusuimeiSection'
 import { WesternAstrologySection } from '@/src/components/fortune/WesternAstrologySection'
 import { DirectionLifeSection } from '@/src/components/fortune/DirectionLifeSection'
+import { PersonalityPromptSection } from '@/src/components/fortune/PersonalityPromptSection'
 import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { SynastryTab } from '@/src/components/fortune/SynastryTab'
@@ -86,6 +87,17 @@ export default async function TryResultPage({
             />
           }
           kyusei={<KyuseiSection nickname={displayName} birth={{ year: y, month: m + 1, day: d }} />}
+          personalityPrompt={
+            <PersonalityPromptSection
+              birth={{ year: y, month: m + 1, day: d }}
+              birthday={birthday}
+              birthTime={birthTime ?? null}
+              birthCity={birthCity ?? null}
+              zodiac={zodiac}
+              genmei={genmei}
+              meishiki={meishiki}
+            />
+          }
           western={
             <WesternAstrologySection
               birthday={birthday}
