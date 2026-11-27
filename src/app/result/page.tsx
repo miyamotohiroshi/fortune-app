@@ -16,6 +16,8 @@ import { AdminTabNav } from '@/src/components/admin/AdminTabNav';
 import { synastryFromBirth } from '@/src/lib/astrology/synastry-server';
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay';
 import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine';
+import { KyuseiSection } from '@/src/components/fortune/KyuseiSection';
+import { toJstYmd } from '@/src/lib/kyuseiCalc';
 import type { User } from '@prisma/client';
 
 /**
@@ -172,6 +174,7 @@ export default async function ResultPage({
               meishiki={meishiki}
             />
           }
+          kyusei={<KyuseiSection nickname={user.nickname} birth={toJstYmd(user.birthday)} />}
           western={
             <Suspense fallback={<LoadingOverlay fullScreen={false} text="性格占断（西洋）を計算中" />}>
               <WesternAstrologySection

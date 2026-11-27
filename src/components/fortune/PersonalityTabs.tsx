@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 const SUB_TABS = [
-  { label: '東洋', sub: '四柱推命' },
+  { label: '東洋', sub: '四柱推命・九星気学' },
   { label: '西洋', sub: '西洋占星術' },
 ]
 

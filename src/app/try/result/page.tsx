@@ -9,6 +9,7 @@ import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { SynastryTab } from '@/src/components/fortune/SynastryTab'
 import { computeMeishiki } from '@/src/lib/meishikiCalc'
 import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine'
+import { KyuseiSection } from '@/src/components/fortune/KyuseiSection'
 
 export default async function TryResultPage({
   searchParams,
@@ -84,6 +85,7 @@ export default async function TryResultPage({
               meishiki={meishiki}
             />
           }
+          kyusei={<KyuseiSection nickname={displayName} birth={{ year: y, month: m + 1, day: d }} />}
           western={
             <WesternAstrologySection
               birthday={birthday}
