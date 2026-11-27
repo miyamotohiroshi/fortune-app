@@ -14,6 +14,7 @@ import { ASPECT_NAMES_JA } from '@/src/lib/astrology/constants'
 import type { AspectType } from '@/src/lib/astrology/constants'
 import { computeYearFortune, branchRelations, STEMS, BRANCHES, TSUHENSEI, JUNI_UN, type YearFortune, type BranchRelation } from '@/src/lib/meishikiCalc'
 import { NENUN_COMMON, NENUN_BY_GENMEI, NENUN_JUNIUN, NENUN_KUBOU_NOTE, TENTOKU_INTRO, TENTOKU_HIT_TEXT, TENTOKU_NONE_TEXT } from '@/src/data/nenun-master'
+import { LifePromptButtons } from './LifePromptButtons'
 import { AISHO_TEXT, aishoVerdict, TENKOKU_CHICHU_TEXT, AISHO_NONE_TEXT } from '@/src/data/aisho-master'
 
 // 相性トーン → 配色
@@ -38,6 +39,8 @@ type Props = {
   dayBranch: number | null
   monthBranch: number | null
   genmei: number | null // 元命（通変星ID 1-10）
+  /** AIプロンプト用の出生情報（名前は含めない） */
+  promptContext: { birthYmd: string; birthTime: string | null; birthCity: string | null; hasTime: boolean }
 }
 
 const PLANET_SHORT: Record<string, string> = {
@@ -431,7 +434,7 @@ function DetailCard({
   )
 }
 
-export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, endYear, currentYear, birthday, dayStem, dayBranch, monthBranch, genmei }: Props) {
+export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, endYear, currentYear, birthday, dayStem, dayBranch, monthBranch, genmei, promptContext }: Props) {
   const [selected, setSelected] = useState<SelectedAspect | null>(null)
   const [filterMode, setFilterMode] = useState<'all' | 'important'>('important')
   const [orb, setOrb] = useState<number>(0.5)
@@ -826,6 +829,21 @@ export function DirectionLifeTab({ aspects, directionTriggerWindows, startYear, 
           重要度{DIRECTION_IMPORTANCE_THRESHOLD}以上のダイレクションアスペクトは見つかりませんでした
         </p>
       )}
+
+      {/* 人生の概要をAIで読むプロンプト（これまで／これから）。表示の絞り込みに関係なく全ダイレクションから作る */}
+      <LifePromptButtons
+        input={{
+          aspects,
+          ...promptContext,
+          startYear,
+          endYear,
+          currentYear,
+          shichu:
+            dayStem !== null && dayBranch !== null && monthBranch !== null
+              ? { dayStem, dayBranch, monthBranch, genmei }
+              : null,
+        }}
+      />
     </div>
   )
 }

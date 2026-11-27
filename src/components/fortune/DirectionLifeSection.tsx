@@ -76,6 +76,12 @@ export async function DirectionLifeSection({ birthday, birthTime, birthCity }: P
         dayBranch={dayBranch}
         monthBranch={monthBranch}
         genmei={genmei}
+        promptContext={{
+          birthYmd: `${birthday.getFullYear()}-${String(birthday.getMonth() + 1).padStart(2, '0')}-${String(birthday.getDate()).padStart(2, '0')}`,
+          birthTime,
+          birthCity,
+          hasTime,
+        }}
       />
     </div>
   )
