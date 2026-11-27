@@ -22,6 +22,7 @@ import { TRIPLE_DESC_4 } from './triple-desc-4'
 import { TRIPLE_DESC_5 } from './triple-desc-5'
 import { TRIPLE_DESC_SUN } from './triple-desc-sun'
 import { PAIR_DESC_ENRICHED } from './pair-desc-enriched'
+import { PAIR_DESC_BOOK } from './pair-desc-book'
 import { TRIPLE_DESC_ENRICHED } from './triple-desc-enriched'
 
 const prisma = new PrismaClient()
@@ -79,6 +80,11 @@ const ALL_PAIR_DESC: Record<string, { title: string; description: string }> = {
   ...PAIR_DESC_5,
   ...PAIR_DESC_6,
   ...PAIR_DESC_ENRICHED, // 膨らませ版（フランク現代口語・全546件）で上書き
+}
+
+// 本（占星術ノート）の出生図解説をもとに書き直した本文で description だけ最終上書き（title は維持）
+for (const [id, description] of Object.entries(PAIR_DESC_BOOK)) {
+  if (ALL_PAIR_DESC[id]) ALL_PAIR_DESC[id] = { ...ALL_PAIR_DESC[id], description }
 }
 
 const ALL_TRIPLE_DESC: Record<string, { title: string; description: string }> = {
