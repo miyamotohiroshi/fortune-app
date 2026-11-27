@@ -12,6 +12,7 @@ import { SynastryTab } from '@/src/components/fortune/SynastryTab'
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav'
 import { computeMeishikiFromBirth } from '@/src/lib/meishikiCalc'
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay'
+import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine'
 
 /** 相性タブ: 管理者は登録済みの人（この人以外の占断履歴）から相手を選べる。Suspenseで他セクションと切り離す */
 async function CompatSection({
@@ -87,6 +88,7 @@ export default async function AdminHistoryDetailPage({
           <p className="text-xs text-purple-400 tracking-widest mb-1">占断履歴</p>
           <p className="text-sm text-slate-400">{history.name}さんの</p>
           <h1 className="text-3xl font-bold text-white">占い結果</h1>
+          <BirthInfoLine birthday={history.birthday} birthTime={history.birthTime} birthCity={history.birthCity} />
         </div>
 
         <ResultTabs

@@ -15,6 +15,7 @@ import { SynastryTab } from '@/src/components/fortune/SynastryTab';
 import { AdminTabNav } from '@/src/components/admin/AdminTabNav';
 import { synastryFromBirth } from '@/src/lib/astrology/synastry-server';
 import { LoadingOverlay } from '@/src/components/ui/LoadingOverlay';
+import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine';
 import type { User } from '@prisma/client';
 
 /**
@@ -145,6 +146,7 @@ export default async function ResultPage({
           <div>
             <p className="text-sm text-slate-400">{user.nickname}さんの</p>
             <h1 className="text-3xl font-bold text-white">占い結果</h1>
+            <BirthInfoLine birthday={user.birthday} birthTime={user.birthTime} birthCity={user.birthCity} />
           </div>
           <div className="flex items-center gap-2">
             <Link

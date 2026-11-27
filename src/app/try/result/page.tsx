@@ -8,6 +8,7 @@ import { ResultTabs } from '@/src/components/fortune/ResultTabs'
 import { TransitSection } from '@/src/components/fortune/TransitSection'
 import { SynastryTab } from '@/src/components/fortune/SynastryTab'
 import { computeMeishiki } from '@/src/lib/meishikiCalc'
+import { BirthInfoLine } from '@/src/components/fortune/BirthInfoLine'
 
 export default async function TryResultPage({
   searchParams,
@@ -69,6 +70,8 @@ export default async function TryResultPage({
           <p className="text-xs text-purple-400 tracking-widest mb-1">無料体験 / 鑑定結果</p>
           <p className="text-sm text-slate-400">{displayName}さんの</p>
           <h1 className="text-3xl font-bold text-white">占い結果</h1>
+          {/* UTC正午で作ればJST表示でも同じ暦日になる（サーバーのTZに依存しない） */}
+          <BirthInfoLine birthday={new Date(Date.UTC(y, m, d, 12))} birthTime={birthTime} birthCity={birthCity} />
         </div>
 
         {/* タブ */}
